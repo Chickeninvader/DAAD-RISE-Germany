@@ -6,6 +6,8 @@ import time
 import os
 import cv2
 import torch
+import numpy as np
+import matplotlib.path as mpltPath
 
 # All BDD100K (dataset) classes and the corresponding class colors for drawing
 # the bounding boxes 
@@ -39,14 +41,14 @@ def main():
     print("Loading the model")
     print("...")
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    device = torch.device('cuda')
+    device = torch.device('cpu')
     model = YOLOv1(int(args.split_size), int(args.num_boxes), int(args.num_classes)).to(device)
     num_param = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print("Amount of YOLO parameters: " + str(num_param))
     print("...")
     print("Loading model weights")
     print("...")
-    weights = torch.load(args.weights)
+    weights = torch.load(args.weights, map_location='cpu')
     model.load_state_dict(weights["state_dict"])
     model.eval()
 
@@ -101,6 +103,16 @@ def main():
         # Extracts the class index with the highest confidence scores
         corr_class = torch.argmax(output[0, :, :, 10:23], dim=2)
 
+        # Define region for critical driving scenario:
+        # List of points, each point being a tuple (x, y)
+        point_list = [(100, 447), (447 - 100, 447), (447 - 150, 300), (150, 300)]
+
+        # Convert the list to a NumPy array with the expected format
+        points = np.array(point_list, dtype=np.int32)
+
+        # Draw lines connecting the points
+        # cv2.polylines(img, [points.reshape((-1, 1, 2))], isClosed=True, color=(0, 0, 0))
+
         for cell_h in range(output.shape[1]):
             for cell_w in range(output.shape[2]):
                 # Determines the best bounding box prediction 
@@ -147,6 +159,17 @@ def main():
                     # displays the current FPS for the prediction
                     cv2.putText(img, str(curr_fps) + "FPS", (25, 30),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+
+                    # display text when there is critical driving scenario
+                    path = mpltPath.Path(vertices=points, closed=True)
+                    if path.contains_points([(centre_x, centre_y)]):
+                        cv2.putText(img,
+                                    text='Critical driving scenario',
+                                    org=(0, 0),
+                                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                                    fontScale=1,
+                                    color=(0, 0, 0),
+                                    thickness=2)
 
         out.write(img)  # Stores the frame with the predictions on a new mp4 file
     print("Average FPS was: " + str(int(sum_fps / amount_frames)))
