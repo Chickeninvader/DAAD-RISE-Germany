@@ -162,7 +162,7 @@ def main():
 
                     # display text when there is critical driving scenario
                     path = mpltPath.Path(vertices=points, closed=True)
-                    if path.contains_points([(float(centre_x), float(centre_y))]):
+                    if path.contains_points([(int(centre_x * ratio_x), int(centre_y * ratio_y))]):
                         cv2.putText(img,
                                     text='Critical driving scenario',
                                     org=(100, 100),
