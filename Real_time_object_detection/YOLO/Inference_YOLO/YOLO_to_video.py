@@ -105,10 +105,15 @@ def main():
 
         # Define region for critical driving scenario:
         # List of points, each point being a tuple (x, y)
-        point_list = [(100, 447), (447 - 100, 447), (447 - 150, 300), (150, 300)]
+        point_list = [(100, 447),
+                      (447 - 100, 447),
+                      (447 - 150, 300),
+                      (150, 300)]
 
         # Convert the list to a NumPy array with the expected format
         points = np.array(point_list, dtype=np.int32)
+        points[:, 0] = points[:, 0] * ratio_x
+        points[:, 1] = points[:, 1] * ratio_y
 
         # Draw lines connecting the points
         # cv2.polylines(img, [points.reshape((-1, 1, 2))], isClosed=True, color=(0, 0, 0))
@@ -161,7 +166,7 @@ def main():
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
 
                     # display text when there is critical driving scenario
-                    path = mpltPath.Path(vertices=points, closed=True)
+                    path = mpltPath.Path(vertices=points)
                     if path.contains_points([(int(centre_x * ratio_x), int(centre_y * ratio_y))]):
                         cv2.putText(img,
                                     text='Critical driving scenario',
