@@ -82,7 +82,7 @@ def main():
         if not grabbed:
             break
 
-            # Logging the amount of processed frames
+        # Logging the amount of processed frames
         print("Loading frame " + str(idx) + " out of " + str(amount_frames))
         print("Percentage done: {0:.0%}".format(idx / amount_frames))
         print("")
@@ -105,10 +105,11 @@ def main():
 
         # Define region for critical driving scenario:
         # List of points, each point being a tuple (x, y)
-        point_list = [(100, 447),
-                      (447 - 100, 447),
-                      (447 - 150, 300),
-                      (150, 300)]
+        point_list = [(200, 200),
+                      (150, 447),
+                      (447 - 150, 447),
+                      (447 - 200, 200),
+                      ]
 
         # Convert the list to a NumPy array with the expected format
         points = np.array(point_list, dtype=np.int32)
@@ -117,6 +118,11 @@ def main():
 
         # Draw lines connecting the points
         # cv2.polylines(img, [points.reshape((-1, 1, 2))], isClosed=True, color=(0, 0, 0))
+        point_list = [(int(item[0] * ratio_x), int(item[1] * ratio_y)) for item in point_list]
+
+        for point_idx in range(len(point_list) - 1):
+            cv2.line(img, point_list[point_idx], point_list[point_idx + 1], color=(0, 0, 0), thickness=3)
+        cv2.line(img, point_list[-1], point_list[0], color=(0, 0, 0), thickness=3)
 
         for cell_h in range(output.shape[1]):
             for cell_w in range(output.shape[2]):
