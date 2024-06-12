@@ -41,14 +41,14 @@ def main():
     print("Loading the model")
     print("...")
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    device = torch.device('cpu')
+    device = torch.device('cuda')
     model = YOLOv1(int(args.split_size), int(args.num_boxes), int(args.num_classes)).to(device)
     num_param = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print("Amount of YOLO parameters: " + str(num_param))
     print("...")
     print("Loading model weights")
     print("...")
-    weights = torch.load(args.weights, map_location='cpu')
+    weights = torch.load(args.weights, map_location='cuda')
     model.load_state_dict(weights["state_dict"])
     model.eval()
 
