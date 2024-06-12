@@ -105,10 +105,10 @@ def main():
 
         # Define region for critical driving scenario:
         # List of points, each point being a tuple (x, y)
-        point_list = [(200, 200),
-                      (150, 447),
-                      (447 - 150, 447),
-                      (447 - 200, 200),
+        point_list = [(200, 300),
+                      (50, 447),
+                      (447 - 50, 447),
+                      (447 - 200, 300),
                       ]
 
         # Convert the list to a NumPy array with the expected format
