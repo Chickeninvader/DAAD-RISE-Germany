@@ -117,7 +117,7 @@ def main():
     frame_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
     # Defining the output video file
     out = cv2.VideoWriter(args.output, cv2.VideoWriter_fourcc(*"mp4v"), 30,
-                          (frame_width, frame_height), isColor=False)
+                          (frame_width, frame_height))
 
     # Used to scale the bounding box predictions to the original input frame
     # (448 is the dimension of the input image for the model)
@@ -159,8 +159,8 @@ def main():
                     best_class = corr_class[cell_h, cell_w]
 
                     # Transforms the box coordinates into pixel coordinates
-                    centre_x = (center_box[0] * 32 + 32 * cell_w) * ratio_x
-                    centre_y = (center_box[1] * 32 + 32 * cell_h) * ratio_y
+                    centre_x = (center_box[0] * 32 + 32 * cell_w)
+                    centre_y = (center_box[1] * 32 + 32 * cell_h)
                     width = center_box[2] * 448
                     height = center_box[3] * 448
 
