@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 sys.path.append(os.getcwd())
 
-from critical_classification.src import utils, models, context_handlers, backbone_pipeline
+from critical_classification.src import utils, context_handlers, backbone_pipeline
 from critical_classification import config
 
 if utils.is_local():

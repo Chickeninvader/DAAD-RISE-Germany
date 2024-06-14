@@ -6,7 +6,7 @@ import torch.utils.data
 
 sys.path.append(os.getcwd())
 
-from critical_classification.src import utils, models, data_preprocessing
+from critical_classification.src import utils, models_for_project, data_preprocessing
 
 
 def initiate(metadata: pd.DataFrame,
@@ -37,7 +37,7 @@ def initiate(metadata: pd.DataFrame,
                      ("cuda" if torch.cuda.is_available() else 'cpu')))
     print(f'Using {device}')
 
-    fine_tuner = models.ResNet3D()
+    fine_tuner = models_for_project.ResNet3D()
     loaders = data_preprocessing.get_loaders(datasets=datasets,
                                              batch_size=batch_size, )
 
