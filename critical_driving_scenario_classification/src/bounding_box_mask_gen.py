@@ -54,7 +54,9 @@ def bounding_box_mask_gen_single_video(input_path,
     frame_width = int(vs.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
     # Defining the output video file
-    out = cv2.VideoWriter(f'{os.path.splitext(input_path)[0]}_mask.mp4', cv2.VideoWriter_fourcc(*"mp4v"), 30,
+    out = cv2.VideoWriter(f'{os.path.dirname(input_path)}/{os.path.basename(input_path)[:-4]}_mask.mp4',
+                          cv2.VideoWriter_fourcc(*"mp4v"),
+                          30,
                           (frame_width, frame_height))
 
     # Used to scale the bounding box predictions to the original input frame
