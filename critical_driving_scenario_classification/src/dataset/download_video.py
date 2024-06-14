@@ -2,8 +2,7 @@ from pytube import YouTube
 import os
 import pandas as pd
 
-# yt = YouTube('http://youtube.com/watch?v=2lAe1cqCOXo')
-# yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first().download()
+
 def download_videos_from_file(file_path, output_dir, df):
     """Downloads YouTube videos from URLs in a text file and names them as video_{number}.mp4.
 
@@ -46,7 +45,7 @@ def download_videos_from_file(file_path, output_dir, df):
 
 if __name__ == '__main__':
     file_path = 'critical_driving_scenario_video_urls.txt'  # Replace with the actual path to your file
-    output_dir = 'youtube_video'  # Replace with your desired output directory
+    output_dir = 'youtube_video/original_video'  # Replace with your desired output directory
     df = pd.read_excel('/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/youtube_video/metadata.xlsx')
 
     update_df = download_videos_from_file(file_path, output_dir, df)
