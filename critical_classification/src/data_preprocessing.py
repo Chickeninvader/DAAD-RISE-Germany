@@ -1,15 +1,18 @@
 import cv2
 import os
 import numpy as np
+import pandas as pd
 import torch
 import torchvision
 import torch.utils.data
 import typing
 import random
 from torch.utils.data import Dataset
+from moviepy.editor import VideoFileClip
 
-random.seed(42)
-np.random.seed(42)
+
+# random.seed(42)
+# np.random.seed(42)
 
 
 def get_video_frames_as_tensor(video_path,
@@ -61,22 +64,40 @@ def get_video_frames_as_tensor(video_path,
     return frames_np
 
 
+def get_critical_label(critical_driving_time,
+                       chosen_time):
+    for start_end_time in critical_driving_time.split(","):
+        start_time, end_time = start_end_time.split('-')
+        start_time_in_second = sum(x * int(t) for x, t in zip([60, 1], start_time.split(":")))
+        end_time_in_second = sum(x * int(t) for x, t in zip([60, 1], end_time.split(":")))
+        if start_time_in_second < chosen_time < end_time_in_second:
+            return 1
+
+    return 0
+
+
 class DashcamVideoDataset(Dataset):
     def __init__(self,
-                 root_dir,
-                 metadata,
+                 metadata: pd.DataFrame,
                  duration,
                  frame_rate,
-                 transform=None):
+                 test: bool,
+                 transform=None, ):
         """
         Arguments:
-            csv_file (string): Path to the csv file with annotations.
             root_dir (string): Directory with all the images.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
-        self.metadata = metadata
-        self.root_dir = root_dir
+        self.metadata = metadata[metadata['train_or_test'] == 'test'] if test \
+            else metadata[metadata['train_or_test'] == 'train']
+
+        self.metadata['path'] = [
+            os.path.join(os.getcwd(), "critical_classification/dashcam_video/bounding_box_mask_video", filename)
+            for filename in self.metadata['path']
+        ]
+
+        self.metadata['duration'] = [VideoFileClip(path).duration for path in self.metadata['path']]
         self.transform = transform
         self.duration = duration
         self.frame_rate = frame_rate
@@ -85,16 +106,17 @@ class DashcamVideoDataset(Dataset):
         return len(self.metadata)
 
     def __getitem__(self, idx):
+        start_time = random.randint(0, self.metadata['duration'][idx] * 2) / 2.0
         video = get_video_frames_as_tensor(video_path=self.metadata[idx],
-                                           start_time=idx,
+                                           start_time=start_time,
                                            duration=self.duration,
                                            frame_rate=self.frame_rate)
-        label = self.metadata.iloc[idx, 1:]
+        critical_time = self.metadata['critical_driving_time'][idx]
 
         if self.transform:
             video = self.transform(video)
 
-        return video, label
+        return video, get_critical_label(critical_time, start_time)
 
 
 def get_datasets(metadata) -> \
@@ -106,18 +128,16 @@ def get_datasets(metadata) -> \
     ----------
     """
     datasets = {}
-    data_dir = os.getcwd()
 
     for train_or_test in ['train', 'test']:
-        full_data_dir = os.path.join(data_dir, train_or_test)
-
         print(f'get error detector loader for {train_or_test}')
         datasets[train_or_test] = DashcamVideoDataset(
-            root_dir=full_data_dir,
             metadata=metadata,
             transform=None,
             duration=0.5,
-            frame_rate=30)
+            frame_rate=30,
+            test=train_or_test == 'test'
+        )
 
     return datasets
 
@@ -130,7 +150,6 @@ def get_loaders(datasets: typing.Dict[str, torchvision.datasets.ImageFolder],
 
     Parameters
     ----------
-        :param evaluation:
         :param datasets:
         :param batch_size:
     """

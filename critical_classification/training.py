@@ -1,11 +1,17 @@
 import copy
 import os
-from src import utils, models, context_handlers, backbone_pipeline
+import sys
+
 import numpy as np
+from sklearn.metrics import accuracy_score, f1_score
 import torch
 import torch.utils.data
 import typing
 from tqdm import tqdm
+
+sys.path.append(os.getcwd())
+
+from critical_classification.src import utils, models, context_handlers, backbone_pipeline
 from critical_classification import config
 
 if utils.is_local():
@@ -15,9 +21,7 @@ if utils.is_local():
 def fine_tune_combined_model(fine_tuner: models.FineTuner,
                              device: torch.device,
                              loaders: typing.Dict[str, torch.utils.data.DataLoader],
-                             num_epochs: int,
-                             save_files: bool = True,
-                             additional_info: str = None,
+                             config,
                              evaluation: bool = False):
     fine_tuner.to(device)
     fine_tuner.train()
@@ -26,6 +30,7 @@ def fine_tune_combined_model(fine_tuner: models.FineTuner,
 
     prediction = []
     ground_truth = []
+    max_f1_score = 0
 
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
@@ -37,7 +42,7 @@ def fine_tune_combined_model(fine_tuner: models.FineTuner,
 
     print('#' * 100 + '\n')
 
-    for epoch in range(num_epochs):
+    for epoch in range(config.num_epochs):
         with (context_handlers.TimeWrapper()):
             total_running_loss = torch.Tensor([0.0]).to(device)
             batches = tqdm(enumerate(train_loader, 0),
@@ -53,6 +58,7 @@ def fine_tune_combined_model(fine_tuner: models.FineTuner,
                     ground_truth.append(Y_true)
 
                     if evaluation:
+                        del X, Y_pred, Y_true
                         continue
 
                     criterion = torch.nn.BCEWithLogitsLoss()
@@ -68,49 +74,49 @@ def fine_tune_combined_model(fine_tuner: models.FineTuner,
                 f'label use and count: '
                 f'{np.unique(np.array(ground_truth), return_counts=True)}'))
 
-    if save_files:
+            print(f'accuracy: {accuracy_score(ground_truth, prediction)}')
+            print(f'f1: {f1_score(ground_truth, prediction)}')
+
+            if max_f1_score < f1_score(ground_truth, prediction):
+                max_f1_score = f1_score(ground_truth, prediction)
+                best_fine_tuner = fine_tuner
+
+    if config.save_files:
         torch.save(best_fine_tuner.state_dict(),
-                   f"models/{best_fine_tuner}_lr{config.lr}_{config.loss}_{config.num_epochs}_{additional_info}.pth")
+                   f"save_models/{best_fine_tuner}_lr{config.lr}_{config.loss}_"
+                   f"{config.num_epochs}_{config.additional_info}.pth")
+
     print('#' * 100)
 
+    return best_fine_tuner
 
-def run_combined_fine_tuning_pipeline(model_name: str,
-                                      metadata,
-                                      pretrained_path: str = None,
-                                      save_files: bool = True,
-                                      debug: bool = utils.is_debug_mode(),
-                                      additional_info: str = None,):
+
+def run_combined_fine_tuning_pipeline(config,
+                                      debug: bool = utils.is_debug_mode()):
     fine_tuner, loaders, device = (
-        backbone_pipeline.initiate(metadata=metadata,
+        backbone_pipeline.initiate(metadata=config.metadata,
                                    batch_size=config.batch_size,
-                                   model_name=model_name,
-                                   pretrained_path=pretrained_path,
+                                   model_name=config.model_name,
+                                   pretrained_path=config.pretrained_path,
                                    debug=debug)
     )
 
-    fine_tune_combined_model(
+    best_fine_tuner = fine_tune_combined_model(
         fine_tuner=fine_tuner,
         device=device,
         loaders=loaders,
-        num_epochs=config.num_epochs,
-        save_files=save_files,
-        additional_info=additional_info
+        config=config
     )
     print('#' * 100)
     fine_tune_combined_model(
-        fine_tuner=fine_tuner,
+        fine_tuner=best_fine_tuner,
         device=device,
         loaders=loaders,
-        num_epochs=config.num_epochs,
-        save_files=save_files,
-        additional_info=additional_info,
+        config=config,
         evaluation=True
     )
     print('#' * 100)
 
 
 if __name__ == '__main__':
-
-    run_combined_fine_tuning_pipeline(model_name=config.model_name,
-                                      metadata=config.metadata,
-                                      additional_info=config.additional_saving_info)
+    run_combined_fine_tuning_pipeline(config)
