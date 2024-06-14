@@ -9,12 +9,13 @@
 from torchvision import transforms
 from PIL import Image
 import argparse
-import os
+import os, sys
 import cv2
 import torch
 import numpy as np
 from tqdm import tqdm
 
+sys.path.append(os.getcwd())
 from critical_classification.src.models import YOLOv1
 
 # All BDD100K (dataset) classes and the corresponding class colors for drawing
@@ -53,6 +54,7 @@ def bounding_box_mask_gen_single_video(input_path,
     frame_width = int(vs.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
     # Defining the output video file
+    print(f'output bounding box mask save at {os.path.dirname(input_path)}/{os.path.basename(input_path)[:-4]}_mask.mp4')
     out = cv2.VideoWriter(f'{os.path.dirname(input_path)}/{os.path.basename(input_path)[:-4]}_mask.mp4',
                           cv2.VideoWriter_fourcc(*"mp4v"),
                           30,
