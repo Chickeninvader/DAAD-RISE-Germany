@@ -62,7 +62,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                         continue
 
                     criterion = torch.nn.BCEWithLogitsLoss()
-                    batch_total_loss = criterion(Y_pred, Y_true.float())
+                    batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
                     total_running_loss += batch_total_loss.item() / len(batches)
                     print(f'Current total loss: {total_running_loss.item()}')
                     batch_total_loss.backward()
