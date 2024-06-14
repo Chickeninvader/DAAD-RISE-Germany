@@ -38,6 +38,8 @@ ap.add_argument("-nb", "--num_boxes", default=2,
                 help="number of bounding boxes which are being predicted")
 ap.add_argument("-nc", "--num_classes", default=13,
                 help="number of classes which are being predicted")
+ap.add_argument("-i", "--dataset_path", required=True,
+                help="path to dataset")
 args = ap.parse_args()
 
 
@@ -145,4 +147,4 @@ def bounding_box_mask_gen(dataset_path: str):
 
 
 if __name__ == '__main__':
-    bounding_box_mask_gen(dataset_path='~/../../youtube_video/original_video')
+    bounding_box_mask_gen(dataset_path=args.dataset_path)
