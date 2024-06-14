@@ -18,7 +18,7 @@ if utils.is_local():
     os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
 
 
-def fine_tune_combined_model(fine_tuner: models.FineTuner,
+def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                              device: torch.device,
                              loaders: typing.Dict[str, torch.utils.data.DataLoader],
                              config,

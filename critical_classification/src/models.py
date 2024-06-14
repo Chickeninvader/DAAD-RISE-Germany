@@ -148,13 +148,18 @@ class YOLOv1(nn.Module):
 
 
 class ResNet3D(torch.nn.Module):
-    def __init__(self,):
-
+    def __init__(self, ):
         super().__init__()
 
         self.resnet_3d = torchvision.models.video.r3d_18()
-        self.output_layer = torch.nn.Linear(in_features=self.resnet_3d.classifier[-1].out_features,
-                                            out_features=1)
+        self.output_layer = nn.Sequential(
+            nn.Linear(400, 64),  # First layer
+            nn.LeakyReLU(0.1),
+            nn.Linear(64, 8),  # Second layer
+            nn.LeakyReLU(0.1),  # Leaky ReLU
+            nn.Linear(8, 1),  # Output layer
+            nn.Sigmoid()
+        )
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         X = self.resnet_3d(X)

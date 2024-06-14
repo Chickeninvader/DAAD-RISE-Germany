@@ -49,7 +49,8 @@ def get_video_frames_as_tensor(video_path,
     for i in range(duration_in_ms // int(1000 / frame_rate)):
         ret, frame = cap.read()
         if ret:
-            frames.append(frame)
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            frames.append(gray_frame)
             print(f'finish frame {i}')
             cv2.imshow(f'frame {i}', frame)
         else:
@@ -92,12 +93,12 @@ class DashcamVideoDataset(Dataset):
         self.metadata = metadata[metadata['train_or_test'] == 'test'] if test \
             else metadata[metadata['train_or_test'] == 'train']
 
-        self.metadata['path'] = [
-            os.path.join(os.getcwd(), "critical_classification/dashcam_video/bounding_box_mask_video", filename)
+        self.metadata['full_path'] = [
+            os.path.join(os.getcwd(), "dashcam_video/bounding_box_mask_video", filename)
             for filename in self.metadata['path']
         ]
 
-        self.metadata['duration'] = [VideoFileClip(path).duration for path in self.metadata['path']]
+        # self.metadata['duration'] = [VideoFileClip(path).duration for path in self.metadata['full_path']]
         self.transform = transform
         self.duration = duration
         self.frame_rate = frame_rate
@@ -107,7 +108,7 @@ class DashcamVideoDataset(Dataset):
 
     def __getitem__(self, idx):
         start_time = random.randint(0, self.metadata['duration'][idx] * 2) / 2.0
-        video = get_video_frames_as_tensor(video_path=self.metadata[idx],
+        video = get_video_frames_as_tensor(video_path=self.metadata['full_path'][idx],
                                            start_time=start_time,
                                            duration=self.duration,
                                            frame_rate=self.frame_rate)
