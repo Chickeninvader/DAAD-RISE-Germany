@@ -98,7 +98,7 @@ class DashcamVideoDataset(Dataset):
             for filename in self.metadata['path']
         ]
 
-        # self.metadata['duration'] = [VideoFileClip(path).duration for path in self.metadata['full_path']]
+        self.metadata['duration'] = [VideoFileClip(path).duration for path in self.metadata['full_path']]
         self.transform = transform
         self.duration = duration
         self.frame_rate = frame_rate
