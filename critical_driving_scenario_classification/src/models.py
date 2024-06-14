@@ -1,6 +1,13 @@
 import torch
 import torch.nn as nn
 
+import abc
+import torchvision
+import torch
+import torch.nn.parallel
+import torch.optim
+import torch.utils.data.distributed
+
 
 class YOLOv1(nn.Module):
     """
@@ -138,3 +145,18 @@ class YOLOv1(nn.Module):
         x = x.view(x.shape[0], self.split_size, self.split_size,
                    self.num_boxes * 5 + self.num_classes)
         return x
+
+
+class ResNet3D(torch.nn.Module):
+    def __init__(self,):
+
+        super().__init__()
+
+        self.resnet_3d = torchvision.models.video.r3d_18()
+        self.output_layer = torch.nn.Linear(in_features=self.resnet_3d.classifier[-1].out_features,
+                                            out_features=1)
+
+    def forward(self, X: torch.Tensor) -> torch.Tensor:
+        X = self.resnet_3d(X)
+        X = self.output_layer(X)
+        return X

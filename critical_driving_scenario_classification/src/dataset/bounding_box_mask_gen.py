@@ -7,15 +7,13 @@
 # do inference on some videos
 
 from torchvision import transforms
-from models import YOLOv1
+from ..models import YOLOv1
 from PIL import Image
 import argparse
-import time
 import os
 import cv2
 import torch
 import numpy as np
-import matplotlib.path as mpltPath
 from tqdm import tqdm
 
 # All BDD100K (dataset) classes and the corresponding class colors for drawing
