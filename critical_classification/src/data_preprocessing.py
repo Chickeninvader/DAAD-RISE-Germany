@@ -114,7 +114,7 @@ class DashcamVideoDataset(Dataset):
             else metadata[metadata['train_or_test'] == 'train']
 
         self.metadata['full_path'] = [
-            os.path.join(os.getcwd(), "dashcam_video/bounding_box_mask_video", f'{filename[:-4]}_mask.mp4')
+            os.path.join(os.getcwd(), "critical_classification/dashcam_video/bounding_box_mask_video", f'{filename[:-4]}_mask.mp4')
             for filename in self.metadata['path']
         ]
 

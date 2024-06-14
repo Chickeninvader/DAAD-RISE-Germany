@@ -9,4 +9,4 @@ additional_saving_info = ''
 pretrained_path = None
 save_file = False
 
-metadata = pd.read_excel('dashcam_video/metadata.xlsx')
+metadata = pd.read_excel('critical_classification/dashcam_video/metadata.xlsx')
