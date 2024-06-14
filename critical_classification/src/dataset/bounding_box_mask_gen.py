@@ -37,8 +37,8 @@ ap.add_argument("-nb", "--num_boxes", default=2,
                 help="number of bounding boxes which are being predicted")
 ap.add_argument("-nc", "--num_classes", default=13,
                 help="number of classes which are being predicted")
-ap.add_argument("-i", "--dataset_path", required=True,
-                help="path to dataset")
+ap.add_argument("-i", "--dataset_path",
+                help="path to dataset", default='critical_classification/dashcam_video/original_video')
 args = ap.parse_args()
 
 
