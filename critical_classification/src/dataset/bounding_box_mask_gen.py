@@ -7,7 +7,6 @@
 # do inference on some videos
 
 from torchvision import transforms
-from .. import models
 from PIL import Image
 import argparse
 import os
@@ -15,6 +14,8 @@ import cv2
 import torch
 import numpy as np
 from tqdm import tqdm
+
+from critical_classification.src.models import YOLOv1
 
 # All BDD100K (dataset) classes and the corresponding class colors for drawing
 # the bounding boxes
@@ -119,7 +120,7 @@ def bounding_box_mask_gen(dataset_path: str):
     print("...")
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     device = torch.device('cuda')
-    model = models.YOLOv1(int(args.split_size), int(args.num_boxes), int(args.num_classes)).to(device)
+    model = YOLOv1(int(args.split_size), int(args.num_boxes), int(args.num_classes)).to(device)
     num_param = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print("Amount of YOLO parameters: " + str(num_param))
     print("...")
