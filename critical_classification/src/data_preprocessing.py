@@ -9,8 +9,7 @@ import typing
 import random
 from torchvision import transforms
 from torch.utils.data import Dataset
-from moviepy.editor import VideoFileClip
-from PIL import Image
+
 
 # random.seed(42)
 # np.random.seed(42)
@@ -78,6 +77,26 @@ def get_critical_label(critical_driving_time,
     return 0
 
 
+def get_video_duration_opencv(video_path):
+    """Gets the duration of a video using OpenCV."""
+    cap = cv2.VideoCapture(video_path)
+
+    if not cap.isOpened():
+        raise ValueError("Error opening video file!")
+
+    # Get frame rate
+    frame_rate = cap.get(cv2.CAP_PROP_FPS)
+
+    # Get total number of frames (may not be accurate for all video formats)
+    num_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    # Calculate duration in seconds (assuming frame count is accurate)
+    duration_in_seconds = num_frames / frame_rate
+
+    cap.release()
+    return duration_in_seconds
+
+
 class DashcamVideoDataset(Dataset):
     def __init__(self,
                  metadata: pd.DataFrame,
@@ -99,7 +118,7 @@ class DashcamVideoDataset(Dataset):
             for filename in self.metadata['path']
         ]
 
-        self.metadata['duration'] = [VideoFileClip(path).duration for path in self.metadata['full_path']]
+        self.metadata['duration'] = [get_video_duration_opencv(path) for path in self.metadata['full_path']]
         self.transform = transform
         self.duration = duration
         self.frame_rate = frame_rate
@@ -166,4 +185,3 @@ def get_loaders(datasets: typing.Dict[str, torchvision.datasets.ImageFolder],
             num_workers=4,
         )
     return loaders
-
