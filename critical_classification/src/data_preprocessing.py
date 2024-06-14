@@ -7,9 +7,10 @@ import torchvision
 import torch.utils.data
 import typing
 import random
+from torchvision import transforms
 from torch.utils.data import Dataset
 from moviepy.editor import VideoFileClip
-
+from PIL import Image
 
 # random.seed(42)
 # np.random.seed(42)
@@ -18,7 +19,8 @@ from moviepy.editor import VideoFileClip
 def get_video_frames_as_tensor(video_path,
                                start_time,
                                duration=5,
-                               frame_rate=30):
+                               frame_rate=30,
+                               transform=None):
     """
     This function reads a video at a specific time and captures frames for a
     given duration, returning them as a NumPy array.
@@ -41,7 +43,7 @@ def get_video_frames_as_tensor(video_path,
         raise ValueError("Error opening video file!")
 
     start_time_in_ms = start_time * 1000
-    duration_in_ms = 1000 * duration  # Capture 5 seconds (adjustable)
+    duration_in_ms = int(1000 * duration)  # Capture 5 seconds (adjustable)
 
     cap.set(cv2.CAP_PROP_POS_MSEC, start_time_in_ms)
 
@@ -49,10 +51,9 @@ def get_video_frames_as_tensor(video_path,
     for i in range(duration_in_ms // int(1000 / frame_rate)):
         ret, frame = cap.read()
         if ret:
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            frames.append(gray_frame)
-            print(f'finish frame {i}')
-            cv2.imshow(f'frame {i}', frame)
+            frame = cv2.resize(frame, (448, 448))
+            # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            frames.append(transform(frame))
         else:
             raise ValueError("Error: Frame not read!")
 
@@ -60,9 +61,9 @@ def get_video_frames_as_tensor(video_path,
     cv2.destroyAllWindows()
     cv2.waitKey(1)
 
-    # Convert frames to NumPy array
-    frames_np = np.stack(frames, axis=0)
-    return frames_np
+    # Convert frames to Torch.tensor
+    frames_tensor = torch.from_numpy(np.stack(frames, axis=1)).float()
+    return frames_tensor
 
 
 def get_critical_label(critical_driving_time,
@@ -94,7 +95,7 @@ class DashcamVideoDataset(Dataset):
             else metadata[metadata['train_or_test'] == 'train']
 
         self.metadata['full_path'] = [
-            os.path.join(os.getcwd(), "dashcam_video/bounding_box_mask_video", filename)
+            os.path.join(os.getcwd(), "dashcam_video/bounding_box_mask_video", f'{filename[:-4]}_mask.mp4')
             for filename in self.metadata['path']
         ]
 
@@ -107,15 +108,13 @@ class DashcamVideoDataset(Dataset):
         return len(self.metadata)
 
     def __getitem__(self, idx):
-        start_time = random.randint(0, self.metadata['duration'][idx] * 2) / 2.0
+        start_time = random.randint(0, int(self.metadata['duration'][idx] - 1) * 2) / 2.0
         video = get_video_frames_as_tensor(video_path=self.metadata['full_path'][idx],
                                            start_time=start_time,
                                            duration=self.duration,
-                                           frame_rate=self.frame_rate)
+                                           frame_rate=self.frame_rate,
+                                           transform=self.transform)
         critical_time = self.metadata['critical_driving_time'][idx]
-
-        if self.transform:
-            video = self.transform(video)
 
         return video, get_critical_label(critical_time, start_time)
 
@@ -130,11 +129,15 @@ def get_datasets(metadata) -> \
     """
     datasets = {}
 
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+    ])
+
     for train_or_test in ['train', 'test']:
         print(f'get error detector loader for {train_or_test}')
         datasets[train_or_test] = DashcamVideoDataset(
             metadata=metadata,
-            transform=None,
+            transform=transform,
             duration=0.5,
             frame_rate=30,
             test=train_or_test == 'test'

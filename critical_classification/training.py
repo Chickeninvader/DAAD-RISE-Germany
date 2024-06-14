@@ -54,7 +54,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
 
                     Y_pred = fine_tuner(X)
 
-                    prediction.append(1 if Y_pred > 0.5 else 0)
+                    prediction.append(torch.where(Y_pred > 0.5), 1, 0)
                     ground_truth.append(Y_true)
 
                     if evaluation:
