@@ -28,8 +28,6 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     train_loader = loaders['train'] if not evaluation else loaders['test']
     num_batches = len(train_loader)
 
-    prediction = []
-    ground_truth = []
     max_f1_score = 0
 
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
@@ -43,6 +41,8 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     print('#' * 100 + '\n')
 
     for epoch in range(config.num_epochs):
+        prediction = []
+        ground_truth = []
         with (context_handlers.TimeWrapper()):
             total_running_loss = torch.Tensor([0.0]).to(device)
             batches = tqdm(enumerate(train_loader, 0),
