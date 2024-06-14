@@ -116,7 +116,7 @@ class DashcamVideoDataset(Dataset):
                                            transform=self.transform)
         critical_time = self.metadata['critical_driving_time'][idx]
 
-        return video, get_critical_label(critical_time, start_time)
+        return video, get_critical_label(critical_time, start_time), start_time
 
 
 def get_datasets(metadata) -> \
@@ -167,10 +167,3 @@ def get_loaders(datasets: typing.Dict[str, torchvision.datasets.ImageFolder],
         )
     return loaders
 
-
-if __name__ == '__main__':
-    # Example usage
-    video_path = "/critical_classification/dashcam_video/video_1.mp4"
-    frames_tensor = get_video_frames_as_tensor(video_path, 0, 2)
-
-    print(frames_tensor.shape)  # Output: (number_of_frames, height, width, channels)

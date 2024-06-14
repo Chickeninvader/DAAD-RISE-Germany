@@ -50,11 +50,11 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
 
             for batch_num, batch in batches:
                 with context_handlers.ClearCache(device=device):
-                    X, Y_true = [b.to(device) for b in batch]
+                    X, Y_true, time = [b.to(device) for b in batch]
 
                     Y_pred = fine_tuner(X)
 
-                    prediction.append(torch.where(Y_pred > 0.5), 1, 0)
+                    prediction.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)))
                     ground_truth.append(Y_true)
 
                     if evaluation:
