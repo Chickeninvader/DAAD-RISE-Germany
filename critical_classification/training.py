@@ -54,8 +54,8 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
 
                     Y_pred = fine_tuner(X)
 
-                    prediction.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)))
-                    ground_truth.append(Y_true)
+                    prediction.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)).detach().to('cpu'))
+                    ground_truth.append(Y_true.detach().to('cpu'))
 
                     if evaluation:
                         del X, Y_pred, Y_true
