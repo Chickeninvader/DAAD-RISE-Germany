@@ -38,85 +38,21 @@ ap.add_argument("-nb", "--num_boxes", default=2,
                 help="number of bounding boxes which are being predicted")
 ap.add_argument("-nc", "--num_classes", default=13,
                 help="number of classes which are being predicted")
-ap.add_argument("-i", "--input", required=True, help="path to your input video")
-ap.add_argument("-o", "--output", required=True, help="path to your output video")
 args = ap.parse_args()
 
 
-def manual_detection(centre_x,
-                     centre_y,
-                     ratio_x,
-                     ratio_y,
-                     img):
-    # Define region for critical driving scenario:
-    # List of points, each point being a tuple (x, y)
-    point_list = [(200, 300),
-                  (50, 447),
-                  (447 - 50, 447),
-                  (447 - 200, 300),
-                  ]
-
-    # Convert the list to a NumPy array with the expected format
-    points = np.array(point_list, dtype=np.int32)
-    points[:, 0] = points[:, 0] * ratio_x
-    points[:, 1] = points[:, 1] * ratio_y
-
-    # display text when there is critical driving scenario
-    path = mpltPath.Path(vertices=points)
-    if path.contains_points([(int(centre_x * ratio_x), int(centre_y * ratio_y))]):
-        cv2.putText(img,
-                    text='Critical driving scenario',
-                    org=(int(100 * ratio_x), int(100 * ratio_y)),
-                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=5,
-                    color=(0, 0, 0),
-                    thickness=2)
-        # Draw lines connecting the points
-        point_list = [(int(item[0] * ratio_x), int(item[1] * ratio_y)) for item in point_list]
-
-        for point_idx in range(len(point_list) - 1):
-            cv2.line(img, point_list[point_idx], point_list[point_idx + 1], color=(0, 0, 0), thickness=3)
-        cv2.line(img, point_list[-1], point_list[0], color=(0, 0, 0), thickness=3)
-
-    return img
-
-
-def neural_network_detection():
-    pass
-
-
-def main():
-    print("")
-    print("##### YOLO OBJECT DETECTION FOR VIDEOS #####")
-    print("")
-    print("Loading the model")
-    print("...")
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    device = torch.device('cuda')
-    model = YOLOv1(int(args.split_size), int(args.num_boxes), int(args.num_classes)).to(device)
-    num_param = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print("Amount of YOLO parameters: " + str(num_param))
-    print("...")
-    print("Loading model weights")
-    print("...")
-    weights = torch.load(args.weights, map_location='cuda')
-    model.load_state_dict(weights["state_dict"])
-    model.eval()
-
-    # Transform is applied to the input frames
-    # It resizes the image and converts it into a tensor
-    transform = transforms.Compose([
-        transforms.Resize((448, 448), Image.NEAREST),
-        transforms.ToTensor(),
-    ])
-
+def bounding_box_mask_gen_single_video(input_path,
+                                       transform,
+                                       device,
+                                       model
+                                       ):
     print("Loading input video file")
     print("...")
-    vs = cv2.VideoCapture(args.input)
+    vs = cv2.VideoCapture(input_path)
     frame_width = int(vs.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
     # Defining the output video file
-    out = cv2.VideoWriter(args.output, cv2.VideoWriter_fourcc(*"mp4v"), 30,
+    out = cv2.VideoWriter(f'{os.path.splitext(input_path)[0]}_mask.mp4', cv2.VideoWriter_fourcc(*"mp4v"), 30,
                           (frame_width, frame_height))
 
     # Used to scale the bounding box predictions to the original input frame
@@ -171,7 +107,42 @@ def main():
                     y2 = int((centre_y + height / 2) * ratio_y)
 
                     cv2.rectangle(mask, (x1, y1), (x2, y2), (255, 255, 255), 2)
+
         out.write(np.uint8(mask))
 
+
+def bounding_box_mask_gen(dataset_path: str):
+    print("##### YOLO OBJECT DETECTION FOR VIDEOS #####")
+    print("Loading the model")
+    print("...")
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    device = torch.device('cuda')
+    model = YOLOv1(int(args.split_size), int(args.num_boxes), int(args.num_classes)).to(device)
+    num_param = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print("Amount of YOLO parameters: " + str(num_param))
+    print("...")
+    print("Loading model weights")
+    print("...")
+    weights = torch.load(args.weights, map_location='cuda')
+    model.load_state_dict(weights["state_dict"])
+    model.eval()
+
+    # Transform is applied to the input frames
+    # It resizes the image and converts it into a tensor
+    transform = transforms.Compose([
+        transforms.Resize((448, 448), Image.NEAREST),
+        transforms.ToTensor(),
+    ])
+
+    for filename in os.listdir(dataset_path):
+        # Construct the full filepath
+        file_path = os.path.join(dataset_path, filename)
+
+        bounding_box_mask_gen_single_video(input_path=file_path,
+                                           model=model,
+                                           transform=transform,
+                                           device=device)
+
+
 if __name__ == '__main__':
-    main()
+    bounding_box_mask_gen(dataset_path='~/../../youtube_video/original_video')
