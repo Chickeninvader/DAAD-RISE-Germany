@@ -54,8 +54,12 @@ def bounding_box_mask_gen_single_video(input_path,
     frame_width = int(vs.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
     # Defining the output video file
-    print(f'output bounding box mask save at {os.path.dirname(input_path)}/{os.path.basename(input_path)[:-4]}_mask.mp4')
-    out = cv2.VideoWriter(f'{os.path.dirname(input_path)}/{os.path.basename(input_path)[:-4]}_mask.mp4',
+    print(f'output bounding box mask save at'
+          f'{os.path.dirname(os.path.dirname(input_path))}/bounding_box_mask_video/'
+          f'{os.path.basename(input_path)[:-4]}_mask.mp4'
+          )
+    out = cv2.VideoWriter(f'{os.path.dirname(os.path.dirname(input_path))}/bounding_box_mask_video/'
+                          f'{os.path.basename(input_path)[:-4]}_mask.mp4',
                           cv2.VideoWriter_fourcc(*"mp4v"),
                           30,
                           (frame_width, frame_height))
