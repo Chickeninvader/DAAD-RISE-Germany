@@ -57,7 +57,6 @@ def get_video_frames_as_tensor(video_path,
             raise ValueError("Error: Frame not read!")
 
     cap.release()
-    cv2.waitKey(1)
 
     # Convert frames to Torch.tensor
     frames_tensor = torch.from_numpy(np.stack(frames, axis=1)).float()
