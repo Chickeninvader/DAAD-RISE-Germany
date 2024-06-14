@@ -70,6 +70,10 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
 
                 del X, Y_pred, Y_true
 
+            prediction[-1] = prediction[-1].unsqueeze(dim=0) if prediction[-1].ndim == 0 else prediction[-1]
+            prediction = torch.cat(prediction)
+            ground_truth = torch.cat(ground_truth)
+
             print(utils.blue_text(
                 f'label use and count: '
                 f'{np.unique(np.array(ground_truth), return_counts=True)}'))
