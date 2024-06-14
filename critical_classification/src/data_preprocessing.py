@@ -138,8 +138,7 @@ class DashcamVideoDataset(Dataset):
         return video, get_critical_label(critical_time, start_time), start_time
 
 
-def get_datasets(metadata) -> \
-        (typing.Dict[str, torchvision.datasets]):
+def get_datasets(metadata):
     """
     Instantiates and returns train and test datasets
 
