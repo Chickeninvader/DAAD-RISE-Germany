@@ -130,7 +130,7 @@ def bounding_box_mask_gen_single_video(input_path,
                     mask_single_channel = draw_gaussian(
                         mask_single_channel,
                         blob_center=[int(centre_x * ratio_x), int(centre_y * ratio_y)],
-                        blob_width_and_height=[int(width) * ratio_x, int(height) * ratio_y]
+                        blob_width_and_height=[int(width * ratio_x), int(height * ratio_y)]
                     )
                 else:
                     mask = draw_rectangle(mask,
