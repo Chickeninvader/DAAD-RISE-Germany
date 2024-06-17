@@ -80,6 +80,7 @@ def bounding_box_mask_gen_single_video(input_path,
 
         # Create a mask
         mask = np.zeros_like(frame, dtype=np.float32)
+        mask_single_channel = np.zeros_like(frame[:, :, 0], dtype=np.float32)
 
         img = Image.fromarray(frame)
         img_tensor = transform(img).unsqueeze(0).to(device)
@@ -116,7 +117,7 @@ def bounding_box_mask_gen_single_video(input_path,
                 height = center_box[3] * 448
 
                 mask_single_channel = draw_gaussian(
-                    mask,
+                    mask_single_channel,
                     blob_center=[int(centre_x * ratio_x), int(centre_y * ratio_y)],
                     blob_width_and_height=[int(width), int(height)]
                 )
