@@ -19,11 +19,11 @@ if utils.is_local():
 
 
 def batch_learning_and_evaluating(loaders,
-                                  num_batches,
                                   device: torch.device,
                                   optimizer: torch.optim,
                                   fine_tuner: torch.nn.Module,
                                   evaluation: bool = False):
+    num_batches = len(loaders)
     batches = tqdm(enumerate(loaders, 0),
                    total=num_batches)
 
@@ -96,8 +96,6 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                              evaluation: bool = False):
     fine_tuner.to(device)
     fine_tuner.train()
-    train_loader = loaders['train'] if not evaluation else loaders['test']
-    num_batches = len(train_loader)
 
     max_f1_score = 0
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
@@ -115,7 +113,6 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
 
             optimizer, fine_tuner, train_accuracy, train_f1 = \
                 batch_learning_and_evaluating(loaders=loaders['train'],
-                                              num_batches=num_batches,
                                               device=device,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner)
@@ -123,7 +120,6 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             # Testing
             optimizer, fine_tuner, test_accuracy, test_f1 = \
                 batch_learning_and_evaluating(loaders=loaders['test'],
-                                              num_batches=num_batches,
                                               device=device,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner,
@@ -153,7 +149,7 @@ def run_combined_fine_tuning_pipeline(config,
                                    debug=debug)
     )
 
-    best_fine_tuner = fine_tune_combined_model(
+    fine_tune_combined_model(
         fine_tuner=fine_tuner,
         device=device,
         loaders=loaders,
