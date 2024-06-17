@@ -71,6 +71,8 @@ def batch_learning_and_evaluating(batches,
         else:
             print(utils.blue_text(f'{video_name}{" " * (120 - len(video_name))} '
                                   f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
+        if idx > 10:
+            break
     accuracy = accuracy_score(ground_truths, predictions)
     f1 = f1_score(ground_truths, predictions)
     print(f'accuracy: {accuracy}')
