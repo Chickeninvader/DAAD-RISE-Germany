@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-from termcolor import colored
 
 # ref:
 # https://stackoverflow.com/questions/76723027/how-to-draw-2d-gaussian-blob-on-an-opencv-image/76724003#76724003
