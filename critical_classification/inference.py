@@ -132,11 +132,6 @@ def main():
         if not grabbed:
             break
 
-        # Logging the amount of processed frames
-        print("Loading frame " + str(idx) + " out of " + str(amount_frames))
-        print("Percentage done: {0:.0%}".format(idx / amount_frames))
-        print("")
-
         idx += 1  # Frame index
         img = Image.fromarray(frame)
         img_tensor = transform(img).unsqueeze(0).to(device)
