@@ -32,10 +32,10 @@ def draw_gaussian(heatmap,
     blob_1_width, blob_1_height = blob_width_and_height
 
     if blob_1_width % 2 == 0:
-        blob_1_width -= 1
+        blob_1_width += 1
 
     if blob_1_height % 2 == 0:
-        blob_1_height -= 1
+        blob_1_height += 1
 
     gaussian_blob_1 = make_gaussian_blob(blob_1_width, blob_1_height)
     try:

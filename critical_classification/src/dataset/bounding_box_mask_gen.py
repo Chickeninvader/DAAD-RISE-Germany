@@ -132,7 +132,7 @@ def bounding_box_mask_gen_single_video(input_path,
                         blob_center=[int(centre_x * ratio_x), int(centre_y * ratio_y)],
                         blob_width_and_height=[int(width * ratio_x), int(height * ratio_y)]
                     )
-                else:
+                elif args.shape == 'rectangle':
                     mask = draw_rectangle(mask,
                                           centre=[centre_x, centre_y],
                                           width_and_height=[width, height],
