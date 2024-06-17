@@ -165,6 +165,7 @@ def run_combined_fine_tuning_pipeline(config,
                                    batch_size=config.batch_size,
                                    model_name=config.model_name,
                                    pretrained_path=config.pretrained_path,
+                                   representation=config.representation,
                                    debug=debug)
     )
 

@@ -120,6 +120,7 @@ class DashcamVideoDataset(Dataset):
                  duration,
                  frame_rate,
                  test: bool,
+                 representation: str,
                  transform=None, ):
         """
         Arguments:
@@ -131,9 +132,15 @@ class DashcamVideoDataset(Dataset):
         self.metadata = metadata[metadata['train_or_test'] == 'test'] if test \
             else metadata[metadata['train_or_test'] == 'train']
 
+        if representation == 'rectangle':
+            folder_path = 'bounding_box_mask_video'
+        elif representation == 'rectangle':
+            folder_path = 'gaussian_mask_video'
+        else:
+            raise ValueError('wrong representation!')
         self.metadata['full_path'] = [
             os.path.join(os.getcwd(),
-                         "critical_classification/dashcam_video/bounding_box_mask_video", f'{filename[:-4]}_mask.mp4')
+                         f"critical_classification/dashcam_video/{folder_path}", f'{filename[:-4]}_mask.mp4')
             for filename in self.metadata['path']
         ]
 
@@ -158,7 +165,8 @@ class DashcamVideoDataset(Dataset):
         return video, label, (self.metadata['full_path'][idx], start_time)
 
 
-def get_datasets(metadata):
+def get_datasets(metadata: pd.DataFrame,
+                 representation: str):
     """
     Instantiates and returns train and test datasets
 
@@ -178,6 +186,7 @@ def get_datasets(metadata):
             transform=transform,
             duration=0.5,
             frame_rate=30,
+            representation=representation,
             test=train_or_test == 'test'
         )
 

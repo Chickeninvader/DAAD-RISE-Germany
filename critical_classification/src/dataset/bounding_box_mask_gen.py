@@ -117,7 +117,7 @@ def bounding_box_mask_gen_single_video(input_path,
                 best_class = corr_class[cell_h, cell_w]
 
                 # Checks if the confidence score is above the specified threshold
-                if confidence_score <= float(args.threshold) and best_class not in interest_list:
+                if confidence_score <= float(args.threshold) or best_class not in interest_list:
                     continue
 
                 # Transforms the box coordinates into pixel coordinates

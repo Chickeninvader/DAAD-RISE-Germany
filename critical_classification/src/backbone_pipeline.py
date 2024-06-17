@@ -13,6 +13,7 @@ def initiate(metadata: pd.DataFrame,
              batch_size: int,
              model_name: str = 'resnet_3d',
              pretrained_path: str = None,
+             representation: str = 'gaussian',
              debug: bool = False,
              ):
     """
@@ -27,7 +28,8 @@ def initiate(metadata: pd.DataFrame,
     """
 
     datasets = data_preprocessing.get_datasets(
-        metadata=metadata
+        metadata=metadata,
+        representation=representation
     )
 
     device = torch.device('cpu') if debug else (
@@ -37,7 +39,7 @@ def initiate(metadata: pd.DataFrame,
 
     fine_tuner = models_for_project.ResNet3D()
     loaders = data_preprocessing.get_loaders(datasets=datasets,
-                                             batch_size=batch_size, )
+                                             batch_size=batch_size)
 
     print(f"Total number of train video: {len(loaders['train'].dataset)}\n"
           f"Total number of test video: {len(loaders['test'].dataset)}")
