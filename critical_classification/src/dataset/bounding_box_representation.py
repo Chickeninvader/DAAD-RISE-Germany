@@ -29,7 +29,7 @@ def draw_gaussian(heatmap,
     np.set_printoptions(suppress=True)
 
     blob_1_center_x, blob_1_center_y = blob_center
-    blob_1_width, blob_1_height = blob_width_and_height[0] * 1.5, blob_width_and_height[1] * 1.5
+    blob_1_width, blob_1_height = int(blob_width_and_height[0] * 1.5), int(blob_width_and_height[1] * 1.5)
 
     if blob_1_width % 2 == 0:
         blob_1_width += 1
