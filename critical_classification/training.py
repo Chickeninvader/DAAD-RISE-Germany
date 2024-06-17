@@ -18,11 +18,15 @@ if utils.is_local():
     os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
 
 
-def batch_learning_and_evaluating(batches,
+def batch_learning_and_evaluating(loaders,
+                                  num_batches,
                                   device: torch.device,
                                   optimizer: torch.optim,
                                   fine_tuner: torch.nn.Module,
                                   evaluation: bool = False):
+    batches = tqdm(enumerate(loaders, 0),
+                   total=num_batches)
+
     predictions = []
     ground_truths = []
     video_name_with_time = []
@@ -35,13 +39,14 @@ def batch_learning_and_evaluating(batches,
             Y_true = Y_true.to(device)
 
             Y_pred = fine_tuner(X)
+            # Y_pred = Y_true
+            # evaluation = True
 
             predictions.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)).detach().to('cpu'))
             ground_truths.append(Y_true.detach().to('cpu'))
             video_name_with_time.extend([(os.path.basename(item[0]), item[1])
                                          for item in zip(video_name_with_time_batch[0],
                                                          video_name_with_time_batch[1])])
-
             if evaluation:
                 del X, Y_pred, Y_true
                 continue
@@ -49,7 +54,9 @@ def batch_learning_and_evaluating(batches,
             criterion = torch.nn.BCEWithLogitsLoss()
             batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
             total_running_loss += batch_total_loss.item() / len(batches)
-            print(f'Current total loss: {total_running_loss.item()}')
+            # Update progress bar with informative text (without newline)
+            tqdm.write(f'Current total loss: {total_running_loss.item()}')
+
             batch_total_loss.backward()
             optimizer.step()
 
@@ -105,22 +112,17 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     for epoch in range(config.num_epochs):
         with ((context_handlers.TimeWrapper())):
 
-            # Training
-            batches = tqdm(enumerate(train_loader, 0),
-                           total=num_batches)
-
             optimizer, fine_tuner, train_accuracy, train_f1 = \
-                batch_learning_and_evaluating(batches,
+                batch_learning_and_evaluating(loaders=loaders['train'],
+                                              num_batches=num_batches,
                                               device=device,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner)
 
             # Testing
-            batches = tqdm(enumerate(train_loader, 0),
-                           total=num_batches)
-
             optimizer, fine_tuner, test_accuracy, test_f1 = \
-                batch_learning_and_evaluating(batches,
+                batch_learning_and_evaluating(loaders=loaders['test'],
+                                              num_batches=num_batches,
                                               device=device,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner,
