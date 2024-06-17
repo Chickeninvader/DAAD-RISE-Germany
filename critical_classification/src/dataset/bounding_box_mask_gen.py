@@ -44,6 +44,9 @@ ap.add_argument("-nc", "--num_classes", default=13,
                 help="number of classes which are being predicted")
 ap.add_argument("-i", "--dataset_path",
                 help="path to dataset", default='critical_classification/dashcam_video/original_video')
+ap.add_argument("-s", "--shape",
+                help="shape to generate, rectangle or gaussian", default='gaussian')
+
 args = ap.parse_args()
 
 
@@ -62,7 +65,14 @@ def bounding_box_mask_gen_single_video(input_path,
           f'{os.path.dirname(os.path.dirname(input_path))}/bounding_box_mask_video/'
           f'{os.path.basename(input_path)[:-4]}_mask.mp4'
           )
-    out = cv2.VideoWriter(f'{os.path.dirname(os.path.dirname(input_path))}/bounding_box_mask_video/'
+    if args.shape == 'rectangle':
+        shape_folder = 'bounding_box_mask_video'
+    elif args.shape == 'gaussian':
+        shape_folder = 'gaussian_mask_video'
+    else:
+        raise ValueError('shape must be rectangle or gaussian')
+
+    out = cv2.VideoWriter(f'{os.path.dirname(os.path.dirname(input_path))}/{shape_folder}/'
                           f'{os.path.basename(input_path)[:-4]}_mask.mp4',
                           cv2.VideoWriter_fourcc(*"mp4v"),
                           30,
@@ -121,13 +131,13 @@ def bounding_box_mask_gen_single_video(input_path,
                     blob_center=[int(centre_x * ratio_x), int(centre_y * ratio_y)],
                     blob_width_and_height=[int(width), int(height)]
                 )
-                mask = cv2.merge([mask_single_channel, mask_single_channel, mask_single_channel])
 
-                mask = draw_rectangle(mask,
-                                      centre=[centre_x, centre_y],
-                                      width_and_height=[width, height],
-                                      ratio=[ratio_x, ratio_y])
+                # mask = draw_rectangle(mask,
+                #                       centre=[centre_x, centre_y],
+                #                       width_and_height=[width, height],
+                #                       ratio=[ratio_x, ratio_y])
 
+        mask = cv2.merge([mask_single_channel, mask_single_channel, mask_single_channel])
         out.write(np.uint8(mask))
 
 
