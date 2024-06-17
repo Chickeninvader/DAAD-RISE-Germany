@@ -29,7 +29,7 @@ def draw_gaussian(heatmap,
     np.set_printoptions(suppress=True)
 
     blob_1_center_x, blob_1_center_y = blob_center
-    blob_1_width, blob_1_height = int(blob_width_and_height[0]), int(blob_width_and_height[1])
+    blob_1_width, blob_1_height = int(blob_width_and_height[0] * 1.2), int(blob_width_and_height[1] * 1.2)
 
     if blob_1_width % 2 == 0:
         blob_1_width += 1
@@ -38,10 +38,8 @@ def draw_gaussian(heatmap,
         blob_1_height += 1
 
     gaussian_blob_1 = make_gaussian_blob(blob_1_width, blob_1_height)
-    # try:
     heatmap = add_gaussian_blob_to_heatmap(gaussian_blob_1, blob_1_center_x, blob_1_center_y, heatmap)
-    # except ValueError:
-    #     pass
+
     return heatmap
 
 
