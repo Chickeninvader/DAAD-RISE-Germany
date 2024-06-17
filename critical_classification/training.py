@@ -43,6 +43,7 @@ def print_info_for_debug(ground_truths,
             break
     pass
 
+
 def batch_learning_and_evaluating(loaders,
                                   device: torch.device,
                                   optimizer: torch.optim,

@@ -16,12 +16,16 @@ import numpy as np
 from tqdm import tqdm
 
 sys.path.append(os.getcwd())
+
 from critical_classification.src.models_for_project import YOLOv1
+from critical_classification.src.dataset.bounding_box_representation import draw_gaussian, draw_rectangle
 
 # All BDD100K (dataset) classes and the corresponding class colors for drawing
 # the bounding boxes
 category_list = ["other vehicle", "pedestrian", "traffic light", "traffic sign",
                  "truck", "train", "other person", "bus", "car", "rider",
+                 "motorcycle", "bicycle", "trailer"]
+interest_list = ["other vehicle", "pedestrian", "truck", "train", "other person", "bus", "car", "rider",
                  "motorcycle", "bicycle", "trailer"]
 category_color = [(255, 255, 0), (255, 0, 0), (255, 128, 0), (0, 255, 255), (255, 0, 255),
                   (128, 255, 0), (0, 255, 128), (255, 0, 127), (0, 255, 0), (0, 0, 255),
@@ -96,26 +100,32 @@ def bounding_box_mask_gen_single_video(input_path,
                         best_box = box
                         max_conf = output[0, cell_h, cell_w, box * 5]
 
+                # Extracts the box confidence score, the box coordinates and class
+                confidence_score = output[0, cell_h, cell_w, best_box * 5]
+                center_box = output[0, cell_h, cell_w, best_box * 5 + 1:best_box * 5 + 5]
+                best_class = corr_class[cell_h, cell_w]
+
                 # Checks if the confidence score is above the specified threshold
-                if output[0, cell_h, cell_w, best_box * 5] >= float(args.threshold):
-                    # Extracts the box confidence score, the box coordinates and class
-                    confidence_score = output[0, cell_h, cell_w, best_box * 5]
-                    center_box = output[0, cell_h, cell_w, best_box * 5 + 1:best_box * 5 + 5]
-                    best_class = corr_class[cell_h, cell_w]
+                if confidence_score <= float(args.threshold) and best_class not in interest_list:
+                    continue
 
-                    # Transforms the box coordinates into pixel coordinates
-                    centre_x = (center_box[0] * 32 + 32 * cell_w)
-                    centre_y = (center_box[1] * 32 + 32 * cell_h)
-                    width = center_box[2] * 448
-                    height = center_box[3] * 448
+                # Transforms the box coordinates into pixel coordinates
+                centre_x = (center_box[0] * 32 + 32 * cell_w)
+                centre_y = (center_box[1] * 32 + 32 * cell_h)
+                width = center_box[2] * 448
+                height = center_box[3] * 448
 
-                    # Calculates the corner values of the bounding box
-                    x1 = int((centre_x - width / 2) * ratio_x)
-                    y1 = int((centre_y - height / 2) * ratio_y)
-                    x2 = int((centre_x + width / 2) * ratio_x)
-                    y2 = int((centre_y + height / 2) * ratio_y)
+                mask_single_channel = draw_gaussian(
+                    mask,
+                    blob_center=[int(centre_x * ratio_x), int(centre_y * ratio_y)],
+                    blob_width_and_height=[int(width), int(height)]
+                )
+                mask = cv2.merge([mask_single_channel, mask_single_channel, mask_single_channel])
 
-                    cv2.rectangle(mask, (x1, y1), (x2, y2), (255, 255, 255), 2)
+                mask = draw_rectangle(mask,
+                                      centre=[centre_x, centre_y],
+                                      width_and_height=[width, height],
+                                      ratio=[ratio_x, ratio_y])
 
         out.write(np.uint8(mask))
 
