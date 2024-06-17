@@ -38,10 +38,10 @@ def draw_gaussian(heatmap,
         blob_1_height += 1
 
     gaussian_blob_1 = make_gaussian_blob(blob_1_width, blob_1_height)
-    try:
-        heatmap = add_gaussian_blob_to_heatmap(gaussian_blob_1, blob_1_center_x, blob_1_center_y, heatmap)
-    except ValueError as e:
-        print(e)
+    # try:
+    heatmap = add_gaussian_blob_to_heatmap(gaussian_blob_1, blob_1_center_x, blob_1_center_y, heatmap)
+    # except ValueError:
+    #     pass
     return heatmap
 
 
