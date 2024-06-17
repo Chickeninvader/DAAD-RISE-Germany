@@ -49,10 +49,10 @@ def manual_detection(centre_x,
                      img):
     # Define region for critical driving scenario:
     # List of points, each point being a tuple (x, y)
-    point_list = [(200, 300),
+    point_list = [(180, 280),
                   (50, 447),
                   (447 - 50, 447),
-                  (447 - 200, 300),
+                  (447 - 180, 280),
                   ]
 
     # Convert the list to a NumPy array with the expected format
