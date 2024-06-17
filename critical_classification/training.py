@@ -8,11 +8,14 @@ import torch
 import torch.utils.data
 import typing
 from tqdm import tqdm
+import warnings
 
 sys.path.append(os.getcwd())
 
 from critical_classification.src import utils, context_handlers, backbone_pipeline
 from critical_classification import config
+
+warnings.filterwarnings("ignore")
 
 if utils.is_local():
     os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
@@ -68,7 +71,11 @@ def batch_learning_and_evaluating(loaders,
     ground_truths = torch.cat(ground_truths)
 
     print(utils.blue_text(
-        f'label use and count: '
+        f'ground truth use and count: '
+        f'{np.unique(np.array(ground_truths), return_counts=True)}\n'))
+
+    print(utils.blue_text(
+        f'prediction use and count: '
         f'{np.unique(np.array(ground_truths), return_counts=True)}\n'))
 
     print(utils.blue_text(f'video name and time for training: '))
