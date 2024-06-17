@@ -32,6 +32,12 @@ def draw_gaussian(heatmap,
     blob_1_center_x, blob_1_center_y = blob_center
     blob_1_width, blob_1_height = blob_width_and_height
 
+    if blob_1_width % 2 == 0:
+        blob_1_width -= 1
+
+    if blob_1_height % 2 == 0:
+        blob_1_height -= 1
+
     gaussian_blob_1 = make_gaussian_blob(blob_1_width, blob_1_height)
 
     heatmap = add_gaussian_blob_to_heatmap(gaussian_blob_1, blob_1_center_x, blob_1_center_y, heatmap)
@@ -39,9 +45,8 @@ def draw_gaussian(heatmap,
 
 
 def make_gaussian_blob(blob_width, blob_height):
-    assert blob_height % 2 == 1 and blob_width % 2 == 1, \
-        colored('\n\n' + 'in make_gaussian_blob, blob_height and blob_width must be odd numbers !!' + '\n', color='red',
-                attrs=['bold'])
+    assert blob_height % 2 == 1 and blob_width % 2 == 1, (f'in make_gaussian_blob, '
+                                                          f'blob_height and blob_width must be odd numbers !!')
 
     # Create a 2D Gaussian blob
     # +-2.5 was derived from experimentation
