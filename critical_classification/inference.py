@@ -67,7 +67,7 @@ def manual_detection(corner,
                     text='Critical driving scenario',
                     org=(int(50 * ratio_x), int(50 * ratio_y)),
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                    fontScale=2,
+                    fontScale=1,
                     color=(0, 0, 0),
                     thickness=2)
         # Draw lines connecting the points
@@ -133,7 +133,7 @@ def main():
             break
 
         # Logging the amount of processed frames
-        if idx % int(amount_frames / 10) == 0:
+        if idx % int(amount_frames / 10) == 1:
             print("Loading frame " + str(idx) + " out of " + str(amount_frames))
             print("Percentage done: {0:.0%}".format(idx / amount_frames))
             print("")
