@@ -3,7 +3,7 @@ import os
 import sys
 
 import numpy as np
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import torch
 import torch.utils.data
 import typing
@@ -21,11 +21,34 @@ if utils.is_local():
     os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
 
 
+def print_info_for_debug(ground_truths,
+                         predictions,
+                         video_name_with_time):
+    print(utils.blue_text(
+        f'ground truth use and count: '
+        f'{np.unique(np.array(ground_truths), return_counts=True)}\n'))
+
+    print(utils.blue_text(
+        f'prediction use and count: '
+        f'{np.unique(np.array(predictions), return_counts=True)}\n'))
+
+    for idx, (video_name, time) in enumerate(video_name_with_time):
+        if ground_truths[idx] == 1:
+            print(utils.red_text(f'{video_name}{" " * (120 - len(video_name))} '
+                                 f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
+        else:
+            print(utils.blue_text(f'{video_name}{" " * (120 - len(video_name))} '
+                                  f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
+        if idx > 10:
+            break
+    pass
+
 def batch_learning_and_evaluating(loaders,
                                   device: torch.device,
                                   optimizer: torch.optim,
                                   fine_tuner: torch.nn.Module,
-                                  evaluation: bool = False):
+                                  evaluation: bool = False,
+                                  print_info: bool = False):
     num_batches = len(loaders)
     batches = tqdm(enumerate(loaders, 0),
                    total=num_batches)
@@ -70,28 +93,17 @@ def batch_learning_and_evaluating(loaders,
     predictions = torch.cat(predictions)
     ground_truths = torch.cat(ground_truths)
 
-    print(utils.blue_text(
-        f'ground truth use and count: '
-        f'{np.unique(np.array(ground_truths), return_counts=True)}\n'))
+    if print_info:
+        print_info_for_debug(ground_truths,
+                             predictions,
+                             video_name_with_time)
 
-    print(utils.blue_text(
-        f'prediction use and count: '
-        f'{np.unique(np.array(ground_truths), return_counts=True)}\n'))
-
-    print(utils.blue_text(f'video name and time for training: '))
-    for idx, (video_name, time) in enumerate(video_name_with_time):
-        if ground_truths[idx] == 1:
-            print(utils.red_text(f'{video_name}{" " * (120 - len(video_name))} '
-                                 f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
-        else:
-            print(utils.blue_text(f'{video_name}{" " * (120 - len(video_name))} '
-                                  f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
-        if idx > 10:
-            break
     accuracy = accuracy_score(ground_truths, predictions)
     f1 = f1_score(ground_truths, predictions)
-    print(f'accuracy: {accuracy}')
-    print(f'f1: {f1}')
+    precision = precision_score(ground_truths, predictions)
+    recall = recall_score(ground_truths, precision)
+
+    print(f'accuracy: {accuracy}, f1: {f1}, precision: {precision}, recall: {recall}')
 
     return optimizer, fine_tuner, accuracy, f1
 
