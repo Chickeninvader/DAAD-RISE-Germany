@@ -65,9 +65,9 @@ def manual_detection(centre_x,
     if path.contains_points([(int(centre_x * ratio_x), int(centre_y * ratio_y))]):
         cv2.putText(img,
                     text='Critical driving scenario',
-                    org=(int(100 * ratio_x), int(100 * ratio_y)),
-                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=5,
+                    org=(int(50 * ratio_x), int(50 * ratio_y)),
+                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                    fontScale=2,
                     color=(0, 0, 0),
                     thickness=2)
         # Draw lines connecting the points
