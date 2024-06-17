@@ -42,8 +42,7 @@ ap.add_argument("-o", "--output", required=True, help="path to your output video
 args = ap.parse_args()
 
 
-def manual_detection(centre_x,
-                     centre_y,
+def manual_detection(corner,
                      ratio_x,
                      ratio_y,
                      img):
@@ -55,6 +54,7 @@ def manual_detection(centre_x,
                   (447 - 180, 280),
                   ]
 
+    x1, y1, x2, y2 = corner
     # Convert the list to a NumPy array with the expected format
     points = np.array(point_list, dtype=np.int32)
     points[:, 0] = points[:, 0] * ratio_x
@@ -62,7 +62,7 @@ def manual_detection(centre_x,
 
     # display text when there is critical driving scenario
     path = mpltPath.Path(vertices=points)
-    if path.contains_points([(int(centre_x * ratio_x), int(centre_y * ratio_y))]):
+    if path.contains_points([(x1, y1), (x2, y2), (x2, y1), (x1, y2)]):
         cv2.putText(img,
                     text='Critical driving scenario',
                     org=(int(50 * ratio_x), int(50 * ratio_y)),
@@ -199,8 +199,7 @@ def main():
                     cv2.putText(img, str(curr_fps) + "FPS", (25, 30),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
 
-                    img = manual_detection(centre_x=centre_x,
-                                           centre_y=centre_y,
+                    img = manual_detection(corner=[x1, y1, x2, y2],
                                            ratio_x=ratio_x,
                                            ratio_y=ratio_y,
                                            img=img)
