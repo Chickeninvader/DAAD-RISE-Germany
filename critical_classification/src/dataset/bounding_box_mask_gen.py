@@ -56,21 +56,21 @@ def bounding_box_mask_gen_single_video(input_path,
                                        model
                                        ):
     print("Loading input video file")
-    print("...")
     vs = cv2.VideoCapture(input_path)
     frame_width = int(vs.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
     # Defining the output video file
-    print(f'output bounding box mask save at'
-          f'{os.path.dirname(os.path.dirname(input_path))}/bounding_box_mask_video/'
-          f'{os.path.basename(input_path)[:-4]}_mask.mp4'
-          )
     if args.shape == 'rectangle':
         shape_folder = 'bounding_box_mask_video'
     elif args.shape == 'gaussian':
         shape_folder = 'gaussian_mask_video'
     else:
         raise ValueError('shape must be rectangle or gaussian')
+
+    print(f'output bounding box mask save at'
+          f'{os.path.dirname(os.path.dirname(input_path))}/{shape_folder}/'
+          f'{os.path.basename(input_path)[:-4]}_mask.mp4'
+          )
 
     out = cv2.VideoWriter(f'{os.path.dirname(os.path.dirname(input_path))}/{shape_folder}/'
                           f'{os.path.basename(input_path)[:-4]}_mask.mp4',
