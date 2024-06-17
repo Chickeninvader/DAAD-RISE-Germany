@@ -147,6 +147,12 @@ class YOLOv1(nn.Module):
         return x
 
 
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        torch.nn.init.xavier_uniform(m.weight)
+        m.bias.data.fill_(0.01)
+
+
 class ResNet3D(torch.nn.Module):
     def __init__(self, ):
         super().__init__()
@@ -160,6 +166,7 @@ class ResNet3D(torch.nn.Module):
             nn.Linear(8, 1),  # Output layer
             nn.Sigmoid()
         )
+        self.output_layer.apply(init_weights)
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         X = self.resnet_3d(X)
