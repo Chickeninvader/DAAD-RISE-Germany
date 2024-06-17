@@ -132,6 +132,12 @@ def main():
         if not grabbed:
             break
 
+        # Logging the amount of processed frames
+        if idx % int(amount_frames / 10) == 0:
+            print("Loading frame " + str(idx) + " out of " + str(amount_frames))
+            print("Percentage done: {0:.0%}".format(idx / amount_frames))
+            print("")
+
         idx += 1  # Frame index
         img = Image.fromarray(frame)
         img_tensor = transform(img).unsqueeze(0).to(device)
@@ -142,8 +148,6 @@ def main():
             output = model(img_tensor)  # Makes a prediction on the input frame
             curr_fps = int(1.0 / (time.time() - start_time))  # Prediction FPS
             sum_fps += curr_fps
-            print("FPS for YOLO prediction: " + str(curr_fps))
-            print("")
 
         # Extracts the class index with the highest confidence scores
         corr_class = torch.argmax(output[0, :, :, 10:23], dim=2)
