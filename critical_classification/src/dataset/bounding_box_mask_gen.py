@@ -126,18 +126,19 @@ def bounding_box_mask_gen_single_video(input_path,
                 width = center_box[2] * 448
                 height = center_box[3] * 448
 
-                mask_single_channel = draw_gaussian(
-                    mask_single_channel,
-                    blob_center=[int(centre_x * ratio_x), int(centre_y * ratio_y)],
-                    blob_width_and_height=[int(width), int(height)]
-                )
-
-                # mask = draw_rectangle(mask,
-                #                       centre=[centre_x, centre_y],
-                #                       width_and_height=[width, height],
-                #                       ratio=[ratio_x, ratio_y])
-
-        mask = cv2.merge([mask_single_channel, mask_single_channel, mask_single_channel])
+                if args.shape == 'gaussian':
+                    mask_single_channel = draw_gaussian(
+                        mask_single_channel,
+                        blob_center=[int(centre_x * ratio_x), int(centre_y * ratio_y)],
+                        blob_width_and_height=[int(width) * ratio_x, int(height) * ratio_y]
+                    )
+                else:
+                    mask = draw_rectangle(mask,
+                                          centre=[centre_x, centre_y],
+                                          width_and_height=[width, height],
+                                          ratio=[ratio_x, ratio_y])
+        if args.shape == 'gaussian':
+            mask = cv2.merge([mask_single_channel, mask_single_channel, mask_single_channel])
         out.write(np.uint8(mask))
 
 
