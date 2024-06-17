@@ -18,6 +18,67 @@ if utils.is_local():
     os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
 
 
+def batch_learning_and_evaluating(batches,
+                                  device: torch.device,
+                                  optimizer: torch.optim,
+                                  fine_tuner: torch.nn.Module,
+                                  evaluation: bool = False):
+    predictions = []
+    ground_truths = []
+    video_name_with_time = []
+    total_running_loss = torch.Tensor([0.0]).to(device)
+
+    for batch_num, batch in batches:
+        with context_handlers.ClearCache(device=device):
+            X, Y_true, video_name_with_time_batch = batch
+            X = X.to(device)
+            Y_true = Y_true.to(device)
+
+            Y_pred = fine_tuner(X)
+
+            predictions.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)).detach().to('cpu'))
+            ground_truths.append(Y_true.detach().to('cpu'))
+            video_name_with_time.extend([(os.path.basename(item[0]), item[1])
+                                         for item in zip(video_name_with_time_batch[0],
+                                                         video_name_with_time_batch[1])])
+
+            if evaluation:
+                del X, Y_pred, Y_true
+                continue
+
+            criterion = torch.nn.BCEWithLogitsLoss()
+            batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
+            total_running_loss += batch_total_loss.item() / len(batches)
+            print(f'Current total loss: {total_running_loss.item()}')
+            batch_total_loss.backward()
+            optimizer.step()
+
+            del X, Y_pred, Y_true
+
+    predictions[-1] = predictions[-1].unsqueeze(dim=0) if predictions[-1].ndim == 0 else predictions[-1]
+    predictions = torch.cat(predictions)
+    ground_truths = torch.cat(ground_truths)
+
+    print(utils.blue_text(
+        f'label use and count: '
+        f'{np.unique(np.array(ground_truths), return_counts=True)}\n'))
+
+    print(utils.blue_text(f'video name and time for training: '))
+    for idx, (video_name, time) in enumerate(video_name_with_time):
+        if ground_truths[idx] == 1:
+            print(utils.red_text(f'{video_name}{" " * (120 - len(video_name))} '
+                                 f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
+        else:
+            print(utils.blue_text(f'{video_name}{" " * (120 - len(video_name))} '
+                                  f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
+    accuracy = accuracy_score(ground_truths, predictions)
+    f1 = f1_score(ground_truths, predictions)
+    print(f'accuracy: {accuracy}')
+    print(f'f1: {f1}')
+
+    return optimizer, fine_tuner, accuracy, f1
+
+
 def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                              device: torch.device,
                              loaders: typing.Dict[str, torch.utils.data.DataLoader],
@@ -29,7 +90,6 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     num_batches = len(train_loader)
 
     max_f1_score = 0
-
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
 
@@ -41,48 +101,31 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     print('#' * 100 + '\n')
 
     for epoch in range(config.num_epochs):
-        prediction = []
-        ground_truth = []
-        with (context_handlers.TimeWrapper()):
-            total_running_loss = torch.Tensor([0.0]).to(device)
+        with ((context_handlers.TimeWrapper())):
+
+            # Training
             batches = tqdm(enumerate(train_loader, 0),
                            total=num_batches)
 
-            for batch_num, batch in batches:
-                with context_handlers.ClearCache(device=device):
-                    X, Y_true, time = [b.to(device) for b in batch]
+            optimizer, fine_tuner, train_accuracy, train_f1 = \
+                batch_learning_and_evaluating(batches,
+                                              device=device,
+                                              optimizer=optimizer,
+                                              fine_tuner=fine_tuner)
 
-                    Y_pred = fine_tuner(X)
+            # Testing
+            batches = tqdm(enumerate(train_loader, 0),
+                           total=num_batches)
 
-                    prediction.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)).detach().to('cpu'))
-                    ground_truth.append(Y_true.detach().to('cpu'))
+            optimizer, fine_tuner, test_accuracy, test_f1 = \
+                batch_learning_and_evaluating(batches,
+                                              device=device,
+                                              optimizer=optimizer,
+                                              fine_tuner=fine_tuner,
+                                              evaluation=True)
 
-                    if evaluation:
-                        del X, Y_pred, Y_true
-                        continue
-
-                    criterion = torch.nn.BCEWithLogitsLoss()
-                    batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
-                    total_running_loss += batch_total_loss.item() / len(batches)
-                    print(f'Current total loss: {total_running_loss.item()}')
-                    batch_total_loss.backward()
-                    optimizer.step()
-
-                del X, Y_pred, Y_true
-
-            prediction[-1] = prediction[-1].unsqueeze(dim=0) if prediction[-1].ndim == 0 else prediction[-1]
-            prediction = torch.cat(prediction)
-            ground_truth = torch.cat(ground_truth)
-
-            print(utils.blue_text(
-                f'label use and count: '
-                f'{np.unique(np.array(ground_truth), return_counts=True)}'))
-
-            print(f'accuracy: {accuracy_score(ground_truth, prediction)}')
-            print(f'f1: {f1_score(ground_truth, prediction)}')
-
-            if max_f1_score < f1_score(ground_truth, prediction):
-                max_f1_score = f1_score(ground_truth, prediction)
+            if max_f1_score < test_f1:
+                max_f1_score = test_f1
                 best_fine_tuner = fine_tuner
 
     if config.save_files:
@@ -110,14 +153,6 @@ def run_combined_fine_tuning_pipeline(config,
         device=device,
         loaders=loaders,
         config=config
-    )
-    print('#' * 100)
-    fine_tune_combined_model(
-        fine_tuner=best_fine_tuner,
-        device=device,
-        loaders=loaders,
-        config=config,
-        evaluation=True
     )
     print('#' * 100)
 

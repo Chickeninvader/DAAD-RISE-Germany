@@ -24,8 +24,6 @@ def initiate(metadata: pd.DataFrame,
              - fine_tuners: A list of VITFineTuner model objects.
              - loaders: A dictionary of data loaders for train, val, and test.
              - devices: A list of torch.device objects for model placement.
-             - num_fine_grain_classes: The number of fine-grained classes.
-             - num_coarse_grain_classes: The number of coarse-grained classes.
     """
 
     datasets = data_preprocessing.get_datasets(

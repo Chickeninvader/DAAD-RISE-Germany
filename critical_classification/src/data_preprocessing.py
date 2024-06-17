@@ -15,8 +15,8 @@ from torch.utils.data import Dataset
 # np.random.seed(42)
 
 
-def get_video_frames_as_tensor(video_path,
-                               start_time,
+def get_video_frames_as_tensor(index,
+                               metadata,
                                duration=5,
                                frame_rate=30,
                                transform=None):
@@ -36,12 +36,20 @@ def get_video_frames_as_tensor(video_path,
     Raises:
       ValueError: If video cannot be opened or frame is not read successfully.
     """
+    video_path = metadata['full_path'][index]
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
         raise ValueError("Error opening video file!")
 
-    start_time_in_ms = start_time * 1000
+    critical_time = metadata['critical_driving_time'][index]
+    video_duration = int(metadata['duration'][index])
+    label = 0 if random.random() < 0.5 else 1
+    start_time = get_critical_mid_time(duration=video_duration,
+                                       critical_driving_time=critical_time,
+                                       label=label)
+
+    start_time_in_ms = int(start_time * 1000) - duration * 500
     duration_in_ms = int(1000 * duration)  # Capture 5 seconds (adjustable)
 
     cap.set(cv2.CAP_PROP_POS_MSEC, start_time_in_ms)
@@ -60,19 +68,30 @@ def get_video_frames_as_tensor(video_path,
 
     # Convert frames to Torch.tensor
     frames_tensor = torch.from_numpy(np.stack(frames, axis=1)).float()
-    return frames_tensor
+    return frames_tensor, start_time, label
 
 
-def get_critical_label(critical_driving_time,
-                       chosen_time):
+def get_critical_mid_time(critical_driving_time,
+                          duration,
+                          label):
+    time_ranges = []
     for start_end_time in critical_driving_time.split(","):
         start_time, end_time = start_end_time.split('-')
         start_time_in_second = sum(x * int(t) for x, t in zip([60, 1], start_time.split(":")))
         end_time_in_second = sum(x * int(t) for x, t in zip([60, 1], end_time.split(":")))
-        if start_time_in_second < chosen_time < end_time_in_second:
-            return 1
+        time_ranges.append((start_time_in_second, end_time_in_second))
 
-    return 0
+    # Pick a random index from the list
+    random_index = random.randint(0, len(time_ranges) - 1)
+
+    if label == 1:
+        # Generate a random float number within the chosen range
+        return random.uniform(time_ranges[random_index][0], time_ranges[random_index][1])
+
+    if random_index == len(time_ranges) - 1:
+        return random.uniform(time_ranges[random_index][1], duration)
+
+    return random.uniform(time_ranges[random_index][1], time_ranges[random_index + 1][0])
 
 
 def get_video_duration_opencv(video_path):
@@ -112,7 +131,8 @@ class DashcamVideoDataset(Dataset):
             else metadata[metadata['train_or_test'] == 'train']
 
         self.metadata['full_path'] = [
-            os.path.join(os.getcwd(), "critical_classification/dashcam_video/bounding_box_mask_video", f'{filename[:-4]}_mask.mp4')
+            os.path.join(os.getcwd(),
+                         "critical_classification/dashcam_video/bounding_box_mask_video", f'{filename[:-4]}_mask.mp4')
             for filename in self.metadata['path']
         ]
 
@@ -122,18 +142,18 @@ class DashcamVideoDataset(Dataset):
         self.frame_rate = frame_rate
 
     def __len__(self):
-        return len(self.metadata)
+        # sample 100x data
+        return len(self.metadata) * 100
 
     def __getitem__(self, idx):
-        start_time = random.randint(0, int(self.metadata['duration'][idx] - 1) * 2) / 2.0
-        video = get_video_frames_as_tensor(video_path=self.metadata['full_path'][idx],
-                                           start_time=start_time,
-                                           duration=self.duration,
-                                           frame_rate=self.frame_rate,
-                                           transform=self.transform)
-        critical_time = self.metadata['critical_driving_time'][idx]
+        idx = idx % len(self.metadata)
+        video, start_time, label = get_video_frames_as_tensor(index=idx,
+                                                              metadata=self.metadata,
+                                                              duration=self.duration,
+                                                              frame_rate=self.frame_rate,
+                                                              transform=self.transform)
 
-        return video, get_critical_label(critical_time, start_time), start_time
+        return video, label, (self.metadata['full_path'][idx], start_time)
 
 
 def get_datasets(metadata):
@@ -179,6 +199,7 @@ def get_loaders(datasets: typing.Dict[str, torchvision.datasets.ImageFolder],
         loaders[split] = torch.utils.data.DataLoader(
             dataset=datasets[split],
             batch_size=batch_size,
+            shuffle=split == 'train',
             num_workers=4,
         )
     return loaders

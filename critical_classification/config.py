@@ -1,6 +1,6 @@
 import pandas as pd
 
-batch_size = 4
+batch_size = 16
 loss = 'BCE'
 num_epochs = 10
 lr = 0.0001
