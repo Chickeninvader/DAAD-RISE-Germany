@@ -62,7 +62,7 @@ def manual_detection(corner,
 
     # display text when there is critical driving scenario
     path = mpltPath.Path(vertices=points)
-    if path.contains_points([[x1, y1], [x2, y2], [x2, y1], [x1, y2]]):
+    if path.contains_points([[x1, y1], [x2, y2], [x2, y1], [x1, y2]]).any():
         cv2.putText(img,
                     text='Critical driving scenario',
                     org=(int(50 * ratio_x), int(50 * ratio_y)),
