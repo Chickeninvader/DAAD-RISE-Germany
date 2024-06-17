@@ -127,6 +127,7 @@ class DashcamVideoDataset(Dataset):
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
+
         self.metadata = metadata[metadata['train_or_test'] == 'test'] if test \
             else metadata[metadata['train_or_test'] == 'train']
 
@@ -137,6 +138,7 @@ class DashcamVideoDataset(Dataset):
         ]
 
         self.metadata['duration'] = [get_video_duration_opencv(path) for path in self.metadata['full_path']]
+        self.metadata.reset_index()
         self.transform = transform
         self.duration = duration
         self.frame_rate = frame_rate

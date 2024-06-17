@@ -92,8 +92,7 @@ def batch_learning_and_evaluating(loaders,
 def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                              device: torch.device,
                              loaders: typing.Dict[str, torch.utils.data.DataLoader],
-                             config,
-                             evaluation: bool = False):
+                             config):
     fine_tuner.to(device)
     fine_tuner.train()
 
