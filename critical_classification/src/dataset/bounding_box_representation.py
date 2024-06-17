@@ -29,7 +29,7 @@ def draw_gaussian(heatmap,
     np.set_printoptions(suppress=True)
 
     blob_1_center_x, blob_1_center_y = blob_center
-    blob_1_width, blob_1_height = int(blob_width_and_height[0] * 1.5), int(blob_width_and_height[1] * 1.5)
+    blob_1_width, blob_1_height = int(blob_width_and_height[0]), int(blob_width_and_height[1])
 
     if blob_1_width % 2 == 0:
         blob_1_width += 1
@@ -70,15 +70,35 @@ def add_gaussian_blob_to_heatmap(gaussian_blob, blob_center_x, blob_center_y, he
     blob_height, blob_width = gaussian_blob.shape[0:2]
     blob_left_edge_loc = round(blob_center_x - ((blob_width - 1) * 0.5))
     blob_right_edge_loc = round(blob_center_x + ((blob_width - 1) * 0.5))
+    gaussian_left_edge = 0
+    gaussian_right_edge = gaussian_blob.shape[1] - 1
+    if blob_left_edge_loc < 0:
+        gaussian_left_edge = -blob_left_edge_loc
+        blob_left_edge_loc = 0
+    if blob_right_edge_loc >= heatmap.shape[1]:
+        gaussian_right_edge = gaussian_blob.shape[1] - 1 - (blob_right_edge_loc - (heatmap.shape[1] - 1))
+        blob_right_edge_loc = heatmap.shape[1] - 1
 
     blob_top_edge_loc = round(blob_center_y - ((blob_height - 1) * 0.5))
     blob_bottom_edge_loc = round(blob_center_y + ((blob_height - 1) * 0.5))
+    gaussian_top_edge = 0
+    gaussian_bottom_edge = gaussian_blob.shape[0] - 1
+    if blob_top_edge_loc < 0:
+        gaussian_top_edge = -blob_top_edge_loc
+        blob_top_edge_loc = 0
+    if blob_bottom_edge_loc >= heatmap.shape[0]:
+        gaussian_bottom_edge = gaussian_blob.shape[0] - 1 - (blob_bottom_edge_loc - (heatmap.shape[0] - 1))
+        blob_bottom_edge_loc = heatmap.shape[0] - 1
 
     heatmap = heatmap.astype(np.uint16)
     gaussian_blob = gaussian_blob.astype(np.uint16)
 
-    heatmap[blob_top_edge_loc:blob_bottom_edge_loc + 1, blob_left_edge_loc:blob_right_edge_loc + 1] += gaussian_blob
+    heatmap[blob_top_edge_loc:blob_bottom_edge_loc, blob_left_edge_loc:blob_right_edge_loc] += gaussian_blob[
+                                                                                               gaussian_top_edge:gaussian_bottom_edge,
+                                                                                               gaussian_left_edge:gaussian_right_edge]
 
     heatmap = np.where(heatmap > 255, 255, heatmap).astype(np.uint8)
+
+    return heatmap
 
     return heatmap
