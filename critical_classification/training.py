@@ -55,7 +55,8 @@ def batch_learning_and_evaluating(loaders,
             batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
             total_running_loss += batch_total_loss.item() / len(batches)
             # Update progress bar with informative text (without newline)
-            tqdm.write(f'Current total loss: {total_running_loss.item()}')
+            if batch_num % (int(num_batches / 3.0)) == 0:
+                tqdm.write(f'Current total loss: {total_running_loss.item()}')
 
             batch_total_loss.backward()
             optimizer.step()
