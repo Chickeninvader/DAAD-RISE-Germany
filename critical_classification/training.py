@@ -102,7 +102,7 @@ def batch_learning_and_evaluating(loaders,
     accuracy = accuracy_score(ground_truths, predictions)
     f1 = f1_score(ground_truths, predictions)
     precision = precision_score(ground_truths, predictions)
-    recall = recall_score(ground_truths, precision)
+    recall = recall_score(ground_truths, predictions)
 
     print(f'accuracy: {accuracy}, f1: {f1}, precision: {precision}, recall: {recall}')
 
