@@ -22,9 +22,9 @@ import matplotlib.path as mpltPath
 category_list = ["other vehicle", "pedestrian", "traffic light", "traffic sign",
                  "truck", "train", "other person", "bus", "car", "rider",
                  "motorcycle", "bicycle", "trailer"]
-category_color = [(255, 255, 0), (255, 0, 0), (255, 128, 0), (0, 255, 255), (255, 0, 255),
-                  (128, 255, 0), (0, 255, 128), (255, 0, 127), (255, 0, 0), (0, 0, 255),
-                  (127, 0, 255), (0, 128, 255), (128, 128, 128)]
+category_color = [(255, 255, 0), (0, 0, 255), (255, 128, 0), (0, 255, 255), (255, 0, 255),
+                  (128, 255, 0), (0, 255, 128), (255, 0, 127), (0, 0, 255), (0, 0, 255),
+                  (127, 0, 255), (0, 0, 255), (128, 128, 128)]
 
 # Argparse to apply YOLO algorithm to a video file from the console
 ap = argparse.ArgumentParser()
@@ -68,7 +68,7 @@ def manual_detection(corner,
                     org=(int(50 * ratio_x), int(50 * ratio_y)),
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
                     fontScale=1,
-                    color=(255, 0, 0),
+                    color=(0, 0, 255),
                     thickness=2)
         # Draw lines connecting the points
         point_list = [(int(item[0] * ratio_x), int(item[1] * ratio_y)) for item in point_list]
