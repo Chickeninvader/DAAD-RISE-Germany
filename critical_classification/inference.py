@@ -23,7 +23,7 @@ category_list = ["other vehicle", "pedestrian", "traffic light", "traffic sign",
                  "truck", "train", "other person", "bus", "car", "rider",
                  "motorcycle", "bicycle", "trailer"]
 category_color = [(255, 255, 0), (255, 0, 0), (255, 128, 0), (0, 255, 255), (255, 0, 255),
-                  (128, 255, 0), (0, 255, 128), (255, 0, 127), (0, 255, 0), (0, 0, 255),
+                  (128, 255, 0), (0, 255, 128), (255, 0, 127), (255, 0, 0), (0, 0, 255),
                   (127, 0, 255), (0, 128, 255), (128, 128, 128)]
 
 # Argparse to apply YOLO algorithm to a video file from the console
@@ -64,11 +64,11 @@ def manual_detection(corner,
     path = mpltPath.Path(vertices=points)
     if path.contains_points([[x1, y1], [x2, y2], [x2, y1], [x1, y2]]).any():
         cv2.putText(img,
-                    text='Critical driving scenario',
+                    text='Critical',
                     org=(int(50 * ratio_x), int(50 * ratio_y)),
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
                     fontScale=1,
-                    color=(0, 0, 0),
+                    color=(255, 0, 0),
                     thickness=2)
         # Draw lines connecting the points
         point_list = [(int(item[0] * ratio_x), int(item[1] * ratio_y)) for item in point_list]
@@ -193,11 +193,11 @@ def main():
                                   category_color[best_class], -1)
                     cv2.putText(img, category_list[best_class] + " " +
                                 str(int(confidence_score.item() * 100)) + "%", (x1, y1 - 5),
-                                cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+                                cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
                     # Generates a small window in the top left corner which
                     # displays the current FPS for the prediction
-                    cv2.putText(img, str(curr_fps) + "FPS", (25, 30),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+                    # cv2.putText(img, str(curr_fps) + "FPS", (25, 30),
+                    #             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
 
                     img = manual_detection(corner=[x1, y1, x2, y2],
                                            ratio_x=ratio_x,
