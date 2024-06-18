@@ -134,8 +134,10 @@ class DashcamVideoDataset(Dataset):
 
         if representation == 'rectangle':
             folder_path = 'bounding_box_mask_video'
-        elif representation == 'rectangle':
+            print('use rectangle representation')
+        elif representation == 'gaussian':
             folder_path = 'gaussian_mask_video'
+            print('use gaussian representation')
         else:
             raise ValueError('wrong representation!')
         self.metadata['full_path'] = [
