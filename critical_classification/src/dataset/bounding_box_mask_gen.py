@@ -67,13 +67,11 @@ def bounding_box_mask_gen_single_video(input_path,
     else:
         raise ValueError('shape must be rectangle or gaussian')
 
-    print(f'output bounding box mask save at'
-          f'{os.path.dirname(os.path.dirname(input_path))}/{shape_folder}/'
-          f'{os.path.basename(input_path)[:-4]}_mask.mp4'
-          )
+    save_path = (f'{os.path.dirname(os.path.dirname(input_path))}/{shape_folder}'
+                 f'/{os.path.basename(input_path)[:-4]}_mask.mp4')
+    print(f'output bounding box mask save at {save_path}')
 
-    out = cv2.VideoWriter(f'{os.path.dirname(os.path.dirname(input_path))}/{shape_folder}/'
-                          f'{os.path.basename(input_path)[:-4]}_mask.mp4',
+    out = cv2.VideoWriter(save_path,
                           cv2.VideoWriter_fourcc(*"mp4v"),
                           30,
                           (frame_width, frame_height))
@@ -117,7 +115,7 @@ def bounding_box_mask_gen_single_video(input_path,
                 best_class = corr_class[cell_h, cell_w]
 
                 # Checks if the confidence score is above the specified threshold
-                if confidence_score <= float(args.threshold) or best_class not in interest_list:
+                if confidence_score <= float(args.threshold) or category_list[best_class] not in interest_list:
                     continue
 
                 # Transforms the box coordinates into pixel coordinates

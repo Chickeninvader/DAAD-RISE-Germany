@@ -98,5 +98,3 @@ def add_gaussian_blob_to_heatmap(gaussian_blob, blob_center_x, blob_center_y, he
     heatmap = np.where(heatmap > 255, 255, heatmap).astype(np.uint8)
 
     return heatmap
-
-    return heatmap
