@@ -89,7 +89,8 @@ def get_critical_mid_time(critical_driving_time,
         return random.uniform(time_ranges[random_index][0], time_ranges[random_index][1])
 
     if random_index == len(time_ranges) - 1:
-        return random.uniform(time_ranges[random_index][1], duration)
+        # Avoid loading video error at the end of the video
+        return random.uniform(time_ranges[random_index][1], duration - 2)
 
     return random.uniform(time_ranges[random_index][1], time_ranges[random_index + 1][0])
 
