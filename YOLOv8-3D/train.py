@@ -11,7 +11,6 @@ from tensorflow.keras.applications import *
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
-
 import matplotlib.pyplot as plt
 
 import copy
@@ -45,8 +44,8 @@ AUGMENTATION = False
 # select_model = 'efficientnetb5'
 select_model = 'mobilenetv2'
 
-label_dir = '/home/bharath/Downloads/test_codes/3Dbbox/kitti/training/label_2/'
-image_dir = '/home/bharath/Downloads/test_codes/3Dbbox/kitti/training/image_2/'
+label_dir = '/scratch/ngocbach/kitti/training/label_2/'
+image_dir = '/scratch/ngocbach/kitti/training/image_2/'
 
 seq = iaa.Sequential([
     iaa.Crop(px=(0, 7)),  # will randomly crop between 0 to 7 pixels from the left side.
