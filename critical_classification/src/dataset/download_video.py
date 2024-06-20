@@ -11,8 +11,7 @@ def download_videos_from_file(file_path, output_dir, df):
         output_dir (str): Directory to save the downloaded videos.
     """
     # Resolve the output directory path relative to the script's location
-    script_dir = os.path.dirname(os.path.abspath(__file__))  # Get script's directory
-    output_dir = os.path.join(os.path.dirname(script_dir), output_dir)  # Join with relative path
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # Get script's directory\
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -34,6 +33,7 @@ def download_videos_from_file(file_path, output_dir, df):
                     df.at[df.shape[1] + video_number, 'path'] = filename
 
                 if os.path.exists(downloaded_path):
+                    print(f'video {url} already exist')
                     continue
                 print(f"Downloaded video: {url}")
                 stream.download(output_path=output_dir)
@@ -45,8 +45,8 @@ def download_videos_from_file(file_path, output_dir, df):
 
 if __name__ == '__main__':
     file_path = 'critical_driving_scenario_video_urls.txt'  # Replace with the actual path to your file
-    output_dir = 'dashcam_video/original_video'  # Replace with your desired output directory
-    df = pd.read_excel('/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/dashcam_video/metadata.xlsx')
+    output_dir = '/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/dashcam_video/original_video'  # Replace with your desired output directory
+    df = pd.read_excel('/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/dashcam_video/metadata.xlsx')
 
     update_df = download_videos_from_file(file_path, output_dir, df)
-    update_df.to_excel('/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/dashcam_video/metadata.xlsx', index=False)
+    update_df.to_excel('/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/dashcam_video/metadata.xlsx', index=False)
