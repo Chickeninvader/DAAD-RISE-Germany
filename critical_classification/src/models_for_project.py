@@ -1,3 +1,5 @@
+import typing
+
 import torch
 import torch.nn as nn
 
@@ -171,4 +173,32 @@ class ResNet3D(torch.nn.Module):
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         X = self.resnet_3d(X)
         X = self.output_layer(X)
+        return X
+
+
+from transformers import VideoMAEForVideoClassification
+
+
+class VideoMAE(torch.nn.Module):
+    def __init__(self,
+                 labels=None):
+        super().__init__()
+
+        if labels is None:
+            labels = ['critical', 'non_critical']
+        class_labels = sorted({item for item in labels})
+        label2id = {label: i for i, label in enumerate(class_labels)}
+        id2label = {i: label for label, i in label2id.items()}
+
+        model_ckpt = "MCG-NJU/videomae-base"
+        self.model = VideoMAEForVideoClassification.from_pretrained(
+            model_ckpt,
+            label2id=label2id,
+            id2label=id2label,
+            ignore_mismatched_sizes=True,
+            # provide this in case you're planning to fine-tune an already fine-tuned checkpoint
+        )
+
+    def forward(self, X: torch.Tensor) -> torch.Tensor:
+        X = self.model(X)
         return X

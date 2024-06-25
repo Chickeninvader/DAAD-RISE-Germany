@@ -14,13 +14,12 @@ def initiate(metadata: pd.DataFrame,
              model_name: str = 'resnet_3d',
              pretrained_path: str = None,
              representation: str = 'gaussian',
-             debug: bool = False,
+             sample_duration: float = 2
              ):
     """
     Initializes save_models, datasets, and devices for training.
     :param model_name:
     :param pretrained_path: Path to a pretrained model (optional).
-    :param debug: True to force CPU usage for debugging.
     :return: A tuple containing:
              - fine_tuners: A list of VITFineTuner model objects.
              - loaders: A dictionary of data loaders for train, val, and test.
@@ -29,15 +28,19 @@ def initiate(metadata: pd.DataFrame,
 
     datasets = data_preprocessing.get_datasets(
         metadata=metadata,
-        representation=representation
+        representation=representation,
+        sample_duration=sample_duration,
+        model_name=model_name
     )
 
-    device = torch.device('cpu') if debug else (
-        torch.device('mps' if utils.is_local() and torch.backends.mps.is_available() else
-                     ("cuda" if torch.cuda.is_available() else 'cpu')))
+    device = torch.device('mps' if utils.is_local() and torch.backends.mps.is_available() else
+                          ("cuda" if torch.cuda.is_available() else 'cpu'))
     print(f'Using {device}')
 
-    fine_tuner = models_for_project.ResNet3D()
+    if model_name == 'VideoMAP':
+        fine_tuner = models_for_project.VideoMAE()
+    else:
+        fine_tuner = models_for_project.ResNet3D()
     loaders = data_preprocessing.get_loaders(datasets=datasets,
                                              batch_size=batch_size)
 

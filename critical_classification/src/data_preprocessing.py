@@ -1,25 +1,40 @@
-import cv2
 import os
+import random
+import typing
+import re
+
+import cv2
 import numpy as np
 import pandas as pd
 import torch
-import torchvision
 import torch.utils.data
-import typing
-import random
-from torchvision import transforms
+import torchvision
+from pytorchvideo.transforms import (
+    ApplyTransformToKey,
+    Normalize,
+    RandomShortSideScale,
+)
 from torch.utils.data import Dataset
+from torchvision.transforms import (
+    Compose,
+    Lambda,
+    RandomCrop,
+    Resize,
+)
+from transformers import VideoMAEImageProcessor
 
 
 # random.seed(42)
 # np.random.seed(42)
 
 
-def get_video_frames_as_tensor(index,
-                               metadata,
-                               duration=5,
-                               frame_rate=30,
-                               transform=None):
+def get_video_frames_as_tensor(train_or_test: str,
+                               index: int,
+                               metadata: pd.DataFrame,
+                               model_name: str,
+                               sample_duration: int = 2,
+                               frame_rate: int = 30,
+                               ):
     """
     This function reads a video at a specific time and captures frames for a
     given duration, returning them as a NumPy array.
@@ -27,7 +42,7 @@ def get_video_frames_as_tensor(index,
     Args:
       video_path: Path to the video file.
       start_time: Time in seconds from where to start capturing frames.
-      duration: Duration of video
+      sample_duration: Duration of video
       frame_rate: Optional frame rate of the video (default 30fps).
 
     Returns:
@@ -44,13 +59,13 @@ def get_video_frames_as_tensor(index,
 
     critical_time = metadata['critical_driving_time'][index]
     video_duration = int(metadata['duration'][index])
-    label = 0 if random.random() < 0.5 else 1
-    start_time = get_critical_mid_time(duration=video_duration,
+    label = 0 if random.random() < 0.5 or not isinstance(critical_time, str) else 1
+    start_time = get_critical_mid_time(sample_time=video_duration,
                                        critical_driving_time=critical_time,
                                        label=label)
 
-    start_time_in_ms = int(start_time * 1000) - duration * 500
-    duration_in_ms = int(1000 * duration)  # Capture 5 seconds (adjustable)
+    start_time_in_ms = int(start_time * 1000) - sample_duration * 500
+    duration_in_ms = int(1000 * sample_duration)
 
     cap.set(cv2.CAP_PROP_POS_MSEC, start_time_in_ms)
 
@@ -58,22 +73,40 @@ def get_video_frames_as_tensor(index,
     for i in range(duration_in_ms // int(1000 / frame_rate)):
         ret, frame = cap.read()
         if ret:
-            frame = cv2.resize(frame, (448, 448))
-            # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            frames.append(transform(frame))
+            # frame = cv2.resize(frame, (448, 448))
+            # frames.append(transform(frame))
+            frames.append(frame)
         else:
             raise ValueError("Error: Frame not read!")
 
     cap.release()
 
     # Convert frames to Torch.tensor
-    frames_tensor = torch.from_numpy(np.stack(frames, axis=1)).float()
+    frames_tensor = torch.from_numpy(np.stack(frames, axis=1)).permute(3, 1, 0, 2).float()
+    frames_tensor = dataset_transforms(video_tensor={'video': frames_tensor},
+                                       train_or_test=train_or_test,
+                                       model_name=model_name)
     return frames_tensor, start_time, label
 
 
 def get_critical_mid_time(critical_driving_time,
-                          duration,
+                          sample_time,
                           label):
+    """
+    Generates a random time within or between specified critical time ranges in a video.
+
+    Args:
+    critical_driving_time (str): A string containing comma-separated time ranges (e.g., "1:09-1:10, 1:47-1:48"). If the
+        string is not provided or invalid, a random time within the video duration is returned.
+    sample_time (float): The total duration of the video in seconds.
+    label (int): A label indicating whether to pick a time within a critical range (1) or between ranges (other values).
+
+    Returns:
+    float: A random time within the specified conditions.
+    """
+
+    if not isinstance(critical_driving_time, str):
+        return random.uniform(0, sample_time)
     time_ranges = []
     for start_end_time in critical_driving_time.split(","):
         start_time, end_time = start_end_time.split('-')
@@ -90,7 +123,7 @@ def get_critical_mid_time(critical_driving_time,
 
     if random_index == len(time_ranges) - 1:
         # Avoid loading video error at the end of the video
-        return random.uniform(time_ranges[random_index][1], duration - 2)
+        return random.uniform(time_ranges[random_index][1], sample_time - 2)
 
     return random.uniform(time_ranges[random_index][1], time_ranges[random_index + 1][0])
 
@@ -100,7 +133,7 @@ def get_video_duration_opencv(video_path):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
-        raise ValueError("Error opening video file!")
+        raise ValueError(f"Error opening video file at {video_path}!")
 
     # Get frame rate
     frame_rate = cap.get(cv2.CAP_PROP_FPS)
@@ -115,14 +148,40 @@ def get_video_duration_opencv(video_path):
     return duration_in_seconds
 
 
-class DashcamVideoDataset(Dataset):
+def is_valid_time_format(critical_driving_time):
+    """
+    Checks if the given string follows the time range format like:
+    '1:09-1:10, 1:47-1:48, 5:07-5:08, 5:29-5:30, 5:55-5:56, 7:31-7:32'
+
+    Args:
+    time_str (str): The input string to validate.
+
+    Returns:
+    bool: True if the string is valid, False otherwise.
+    """
+    try:
+        if not isinstance(critical_driving_time, str):
+            return True
+
+        time_ranges = []
+        for start_end_time in critical_driving_time.split(","):
+            start_time, end_time = start_end_time.split('-')
+            start_time_in_second = sum(x * int(t) for x, t in zip([60, 1], start_time.split(":")))
+            end_time_in_second = sum(x * int(t) for x, t in zip([60, 1], end_time.split(":")))
+            time_ranges.append((start_time_in_second, end_time_in_second))
+        return True
+    except ValueError or AttributeError:
+        return False
+
+
+class VideoDataset(Dataset):
     def __init__(self,
                  metadata: pd.DataFrame,
                  duration,
                  frame_rate,
                  test: bool,
                  representation: str,
-                 transform=None, ):
+                 model_name: str):
         """
         Arguments:
             root_dir (string): Directory with all the images.
@@ -135,23 +194,32 @@ class DashcamVideoDataset(Dataset):
 
         if representation == 'rectangle':
             folder_path = 'bounding_box_mask_video'
+            mask_str = '_mask'
             print('use rectangle representation')
         elif representation == 'gaussian':
             folder_path = 'gaussian_mask_video'
+            mask_str = '_mask'
             print('use gaussian representation')
         else:
-            raise ValueError('wrong representation!')
+            folder_path = 'original_video'
+            mask_str = ''
+            print('use original representation')
         self.metadata['full_path'] = [
             os.path.join(os.getcwd(),
-                         f"critical_classification/dashcam_video/{folder_path}", f'{filename[:-4]}_mask.mp4')
+                         f"critical_classification/dashcam_video/{folder_path}", f'{filename[:-4]}{mask_str}.mp4')
             for filename in self.metadata['path']
         ]
 
         self.metadata['duration'] = [get_video_duration_opencv(path) for path in self.metadata['full_path']]
         self.metadata = self.metadata.reset_index()
-        self.transform = transform
         self.duration = duration
         self.frame_rate = frame_rate
+        self.train_or_test = 'test' if test else 'train'
+        self.model_name = model_name
+
+        invalid_rows = self.metadata['critical_driving_time'].apply(is_valid_time_format)
+        if not invalid_rows.all():
+            raise ValueError(f"Invalid time format found in rows:\n{invalid_rows}")
 
     def __len__(self):
         # sample 100x data
@@ -159,17 +227,20 @@ class DashcamVideoDataset(Dataset):
 
     def __getitem__(self, idx):
         idx = idx % len(self.metadata)
-        video, start_time, label = get_video_frames_as_tensor(index=idx,
+        video, start_time, label = get_video_frames_as_tensor(train_or_test=self.train_or_test,
+                                                              index=idx,
                                                               metadata=self.metadata,
-                                                              duration=self.duration,
+                                                              sample_duration=self.duration,
                                                               frame_rate=self.frame_rate,
-                                                              transform=self.transform)
+                                                              model_name=self.model_name)
 
         return video, label, (self.metadata['full_path'][idx], start_time)
 
 
 def get_datasets(metadata: pd.DataFrame,
-                 representation: str):
+                 representation: str,
+                 sample_duration: float,
+                 model_name: str = 'VideoMAP'):
     """
     Instantiates and returns train and test datasets
 
@@ -178,19 +249,15 @@ def get_datasets(metadata: pd.DataFrame,
     """
     datasets = {}
 
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-    ])
-
     for train_or_test in ['train', 'test']:
         print(f'get error detector loader for {train_or_test}')
-        datasets[train_or_test] = DashcamVideoDataset(
+        datasets[train_or_test] = VideoDataset(
             metadata=metadata,
-            transform=transform,
-            duration=0.5,
+            duration=sample_duration,
             frame_rate=30,
             representation=representation,
-            test=train_or_test == 'test'
+            test=train_or_test == 'test',
+            model_name=model_name
         )
 
     return datasets
@@ -217,3 +284,58 @@ def get_loaders(datasets: typing.Dict[str, torchvision.datasets.ImageFolder],
             num_workers=4,
         )
     return loaders
+
+
+def dataset_transforms(video_tensor,
+                       train_or_test: str,
+                       model_name: str = 'VideoMAE') -> torch.tensor:
+    """
+    Returns the transforms required for the VIT for training or test datasets
+    """
+
+    if model_name == 'VideoMAE':
+        model_ckpt = "MCG-NJU/videomae-base"
+        image_processor = VideoMAEImageProcessor.from_pretrained(model_ckpt)
+        mean = image_processor.image_mean
+        std = image_processor.image_std
+        if "shortest_edge" in image_processor.size:
+            height = width = image_processor.size["shortest_edge"]
+        else:
+            height = image_processor.size["height"]
+            width = image_processor.size["width"]
+
+        train_transform = Compose(
+            [
+                ApplyTransformToKey(
+                    key="video",
+                    transform=Compose(
+                        [
+                            Lambda(lambda x: x / 255.0),
+                            Normalize(mean, std),
+                            RandomShortSideScale(min_size=256, max_size=320),
+                            RandomCrop((height, width)),
+                        ]
+                    ),
+                ),
+            ]
+        )
+
+        test_transform = Compose(
+            [
+                ApplyTransformToKey(
+                    key="video",
+                    transform=Compose(
+                        [
+                            Lambda(lambda x: x / 255.0),
+                            Normalize(mean, std),
+                            Resize((height, width)),
+                        ]
+                    ),
+                ),
+            ]
+        )
+    else:
+        train_transform = None
+        test_transform = None
+
+    return train_transform(video_tensor)['video'] if train_or_test == 'train' else test_transform(video_tensor)['video']

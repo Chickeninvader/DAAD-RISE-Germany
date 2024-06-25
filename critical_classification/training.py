@@ -166,7 +166,7 @@ def run_combined_fine_tuning_pipeline(config,
                                    model_name=config.model_name,
                                    pretrained_path=config.pretrained_path,
                                    representation=config.representation,
-                                   debug=debug)
+                                   sample_duration=config.duration)
     )
 
     fine_tune_combined_model(
