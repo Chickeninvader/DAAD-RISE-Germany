@@ -1,5 +1,7 @@
 import os
 
+from keras.optimizers import Adam
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'} to control the verbosity
 
 import tensorflow as tf
@@ -172,7 +174,7 @@ def prepare_input_and_output(train_inst):
 
     # resize the image to standard size
     img = cv2.resize(img, (NORM_H, NORM_W))
-    img = img - np.array([[[103.939, 116.779, 123.68]]])
+    img = img / 255.0
     #img = img[:,:,::-1]
 
     ### Fix orientation and confidence
@@ -311,7 +313,7 @@ model = Model(inputs=base_model.input, outputs=[dimension, orientation, confiden
 
 
 ###### Training ##########
-@tf.keras.saving.register_keras_serializable()
+@tf.keras.utils.register_keras_serializable()
 def orientation_loss(y_true, y_pred):
     # Find number of anchors
     anchors = tf.reduce_sum(tf.square(y_true), axis=2)
