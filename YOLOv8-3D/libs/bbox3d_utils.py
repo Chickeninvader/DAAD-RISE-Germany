@@ -1,9 +1,11 @@
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'} to control the verbosity
 import numpy as np
 import csv
 import tensorflow as tf
 from .Plotting import *
+
 
 class KITTILoader():
     def __init__(self, subset='training'):
@@ -48,7 +50,6 @@ class KITTILoader():
                                           'xmax': int(float(row['xmax'])), 'ymax': int(float(row['ymax'])),
                                           'dims': dimensions, 'trans': translations, 'rot_y': float(row['ry'])}
 
-
                         self.image_data.append(annotation)
 
     def get_average_dimension(self):
@@ -63,6 +64,7 @@ class KITTILoader():
                 dims_cnt[current_data['name']] += 1
                 dims_avg[current_data['name']] /= dims_cnt[current_data['name']]
         return dims_avg, dims_cnt
+
 
 def get_new_alpha(alpha):
     """
@@ -162,7 +164,7 @@ class detectionInfo(object):
 
         # soft constraint
         div = soft_range * np.pi / 180
-        if 0 < rot_local < div or 2*np.pi-div < rot_local < 2*np.pi:
+        if 0 < rot_local < div or 2 * np.pi - div < rot_local < 2 * np.pi:
             xmin_candi = point8
             xmax_candi = point6
             ymin_candi = point6
@@ -175,8 +177,6 @@ class detectionInfo(object):
             ymax_candi = point1
 
         return xmin_candi, xmax_candi, ymin_candi, ymax_candi
-
-
 
 
 def recover_angle(bin_anchor, bin_confidence, bin_num):
@@ -224,23 +224,23 @@ def compute_orientaion(P2, obj):
 def translation_constraints(P2, obj, rot_local):
     bbox = [obj.xmin, obj.ymin, obj.xmax, obj.ymax]
     # rotation matrix
-    R = np.array([[ np.cos(obj.rot_global), 0,  np.sin(obj.rot_global)],
-                  [          0,             1,             0          ],
-                  [-np.sin(obj.rot_global), 0,  np.cos(obj.rot_global)]])
+    R = np.array([[np.cos(obj.rot_global), 0, np.sin(obj.rot_global)],
+                  [0, 1, 0],
+                  [-np.sin(obj.rot_global), 0, np.cos(obj.rot_global)]])
     A = np.zeros((4, 3))
     b = np.zeros((4, 1))
     I = np.identity(3)
 
     xmin_candi, xmax_candi, ymin_candi, ymax_candi = obj.box3d_candidate(rot_local, soft_range=8)
 
-    X  = np.bmat([xmin_candi, xmax_candi,
-                  ymin_candi, ymax_candi])
+    X = np.bmat([xmin_candi, xmax_candi,
+                 ymin_candi, ymax_candi])
     # X: [x, y, z] in object coordinate
-    X = X.reshape(4,3).T
+    X = X.reshape(4, 3).T
 
     # construct equation (4, 3)
     for i in range(4):
-        matrice = np.bmat([[I, np.matmul(R, X[:,i])], [np.zeros((1,3)), np.ones((1,1))]])
+        matrice = np.bmat([[I, np.matmul(R, X[:, i])], [np.zeros((1, 3)), np.ones((1, 1))]])
         M = np.matmul(P2, matrice)
 
         if i % 2 == 0:
@@ -340,7 +340,7 @@ class detectionInfo(object):
 
         # soft constraint
         div = soft_range * np.pi / 180
-        if 0 < rot_local < div or 2*np.pi-div < rot_local < 2*np.pi:
+        if 0 < rot_local < div or 2 * np.pi - div < rot_local < 2 * np.pi:
             xmin_candi = point8
             xmax_candi = point6
             ymin_candi = point6
@@ -355,11 +355,7 @@ class detectionInfo(object):
         return xmin_candi, xmax_candi, ymin_candi, ymax_candi
 
 
-
-
 ###########################
-
-
 
 
 class KITTILoader():
@@ -405,7 +401,6 @@ class KITTILoader():
                                           'xmax': int(float(row['xmax'])), 'ymax': int(float(row['ymax'])),
                                           'dims': dimensions, 'trans': translations, 'rot_y': float(row['ry'])}
 
-
                         self.image_data.append(annotation)
 
     def get_average_dimension(self):
@@ -421,6 +416,7 @@ class KITTILoader():
                 dims_avg[current_data['name']] /= dims_cnt[current_data['name']]
         return dims_avg, dims_cnt
 
+
 def get_new_alpha(alpha):
     """
     change the range of orientation from [-pi, pi] to [0, 2pi]
@@ -434,6 +430,7 @@ def get_new_alpha(alpha):
     new_alpha = new_alpha - int(new_alpha / (2. * np.pi)) * (2. * np.pi)
 
     return new_alpha
+
 
 def compute_orientaion_(P2, xmax, ymin, alpha):
     x = (xmax + ymin) / 2
@@ -452,12 +449,13 @@ def compute_orientaion_(P2, xmax, ymin, alpha):
     rot_global = tf.round(rot_global)
     return rot_global, rot_local
 
+
 def translation_constraints_(P2, bbox, rot_local, rot_global, h, w, l):
     [xmin, ymin, xmax, ymax] = bbox
     # rotation matrix
-    R = np.array([[ np.cos(rot_global), 0,  np.sin(rot_global)],
-                  [          0,             1,             0          ],
-                  [-np.sin(rot_global), 0,  np.cos(rot_global)]])
+    R = np.array([[np.cos(rot_global), 0, np.sin(rot_global)],
+                  [0, 1, 0],
+                  [-np.sin(rot_global), 0, np.cos(rot_global)]])
     A = np.zeros((4, 3))
     b = np.zeros((4, 1))
     I = np.identity(3)
@@ -466,33 +464,32 @@ def translation_constraints_(P2, bbox, rot_local, rot_global, h, w, l):
     # print(xmin_candi, xmax_candi, ymin_candi, ymax_candi)
 
     if xmin_candi != 0 or xmax_candi != 0 or ymin_candi != 0 or ymax_candi != 0:
-      X  = np.bmat([xmin_candi, xmax_candi,
-                    ymin_candi, ymax_candi])
-      # X: [x, y, z] in featuresect coordinate
-      X = X.reshape(4,3).T
+        X = np.bmat([xmin_candi, xmax_candi,
+                     ymin_candi, ymax_candi])
+        # X: [x, y, z] in featuresect coordinate
+        X = X.reshape(4, 3).T
 
-      # construct equation (4, 3)
-      for i in range(4):
-          matrice = np.bmat([[I, np.matmul(R, X[:,i])], [np.zeros((1,3)), np.ones((1,1))]])
-          M = np.matmul(P2, matrice)
+        # construct equation (4, 3)
+        for i in range(4):
+            matrice = np.bmat([[I, np.matmul(R, X[:, i])], [np.zeros((1, 3)), np.ones((1, 1))]])
+            M = np.matmul(P2, matrice)
 
-          if i % 2 == 0:
-              A[i, :] = M[0, 0:3] - bbox[i] * M[2, 0:3]
-              b[i, :] = M[2, 3] * bbox[i] - M[0, 3]
-          else:
-              A[i, :] = M[1, 0:3] - bbox[i] * M[2, 0:3]
-              b[i, :] = M[2, 3] * bbox[i] - M[1, 3]
+            if i % 2 == 0:
+                A[i, :] = M[0, 0:3] - bbox[i] * M[2, 0:3]
+                b[i, :] = M[2, 3] * bbox[i] - M[0, 3]
+            else:
+                A[i, :] = M[1, 0:3] - bbox[i] * M[2, 0:3]
+                b[i, :] = M[2, 3] * bbox[i] - M[1, 3]
 
-      # solve x, y, z, using method of least square
-      Tran = np.matmul(np.linalg.pinv(A), b)
-      tx, ty, tz = [float(np.around(tran[0], 2)) for tran in Tran]
+        # solve x, y, z, using method of least square
+        Tran = np.matmul(np.linalg.pinv(A), b)
+        tx, ty, tz = [float(np.around(tran[0], 2)) for tran in Tran]
     else:
-      return 0, 0, 0  
+        return 0, 0, 0
     return tx, ty, tz
 
 
 def box3d_candidate_(rot_local, soft_range, h, w, l):
-
     x_corners = [l, l, l, l, 0, 0, 0, 0]
     y_corners = [h, 0, h, 0, h, 0, h, 0]
     z_corners = [0, 0, w, w, w, w, 0, 0]
@@ -540,7 +537,7 @@ def box3d_candidate_(rot_local, soft_range, h, w, l):
 
     # soft constraint
     div = soft_range * np.pi / 180
-    if 0 < rot_local < div or 2*np.pi-div < rot_local < 2*np.pi:
+    if 0 < rot_local < div or 2 * np.pi - div < rot_local < 2 * np.pi:
         xmin_candi = point8
         xmax_candi = point6
         ymin_candi = point6
@@ -555,8 +552,6 @@ def box3d_candidate_(rot_local, soft_range, h, w, l):
     return xmin_candi, xmax_candi, ymin_candi, ymax_candi
 
 
-
-
 def calc_theta_ray(img, box_2d, proj_matrix):
     """
     Calculate global angle of object, see paper
@@ -565,13 +560,13 @@ def calc_theta_ray(img, box_2d, proj_matrix):
     # Angle of View: fovx (rad) => 3.14
     fovx = 2 * np.arctan(width / (2 * proj_matrix[0][0]))
     center = (box_2d[1] + box_2d[0]) / 2
-    dx = center - (width/2)
+    dx = center - (width / 2)
 
     mult = 1
     if dx < 0:
         mult = -1
     dx = abs(dx)
-    angle = np.arctan((2*dx*np.tan(fovx/2)) / width)
+    angle = np.arctan((2 * dx * np.tan(fovx / 2)) / width)
     angle = angle * mult
 
     return angle
@@ -583,13 +578,13 @@ def rotation_matrix(yaw, pitch=0, roll=0):
     ty = yaw
     tz = pitch
 
-    Rx = np.array([[1,0,0], [0, np.cos(tx), -np.sin(tx)], [0, np.sin(tx), np.cos(tx)]])
+    Rx = np.array([[1, 0, 0], [0, np.cos(tx), -np.sin(tx)], [0, np.sin(tx), np.cos(tx)]])
     Ry = np.array([[np.cos(ty), 0, np.sin(ty)], [0, 1, 0], [-np.sin(ty), 0, np.cos(ty)]])
-    Rz = np.array([[np.cos(tz), -np.sin(tz), 0], [np.sin(tz), np.cos(tz), 0], [0,0,1]])
+    Rz = np.array([[np.cos(tz), -np.sin(tz), 0], [np.sin(tz), np.cos(tz), 0], [0, 0, 1]])
 
-
-    return Ry.reshape([3,3])
+    return Ry.reshape([3, 3])
     # return np.dot(np.dot(Rz,Ry), Rx)
+
 
 # option to rotate and shift (for label info)
 def create_corners(dimension, location=None, R=None):
@@ -602,11 +597,11 @@ def create_corners(dimension, location=None, R=None):
     z_corners = []
 
     for i in [1, -1]:
-        for j in [1,-1]:
-            for k in [1,-1]:
-                x_corners.append(dx*i)
-                y_corners.append(dy*j)
-                z_corners.append(dz*k)
+        for j in [1, -1]:
+            for k in [1, -1]:
+                x_corners.append(dx * i)
+                y_corners.append(dy * j)
+                z_corners.append(dz * k)
 
     corners = [x_corners, y_corners, z_corners]
 
@@ -616,16 +611,14 @@ def create_corners(dimension, location=None, R=None):
 
     # shift if location is passed in
     if location is not None:
-        for i,loc in enumerate(location):
-            corners[i,:] = corners[i,:] + loc
+        for i, loc in enumerate(location):
+            corners[i, :] = corners[i, :] + loc
 
     final_corners = []
     for i in range(8):
         final_corners.append([corners[0][i], corners[1][i], corners[2][i]])
 
-
     return final_corners
-
 
 
 # this is based on the paper. Math!
@@ -685,18 +678,18 @@ def calc_location_(dimension, proj_matrix, box_2d, alpha, theta_ray):
 
     # left and right could either be the front of the car ot the back of the car
     # careful to use left and right based on image, no of actual car's left and right
-    for i in (-1,1):
-        left_constraints.append([left_mult * dx, i*dy, -switch_mult * dz])
-    for i in (-1,1):
-        right_constraints.append([right_mult * dx, i*dy, switch_mult * dz])
+    for i in (-1, 1):
+        left_constraints.append([left_mult * dx, i * dy, -switch_mult * dz])
+    for i in (-1, 1):
+        right_constraints.append([right_mult * dx, i * dy, switch_mult * dz])
 
     # top and bottom are easy, just the top and bottom of car
-    for i in (-1,1):
-        for j in (-1,1):
-            top_constraints.append([i*dx, -dy, j*dz])
-    for i in (-1,1):
-        for j in (-1,1):
-            bottom_constraints.append([i*dx, dy, j*dz])
+    for i in (-1, 1):
+        for j in (-1, 1):
+            top_constraints.append([i * dx, -dy, j * dz])
+    for i in (-1, 1):
+        for j in (-1, 1):
+            bottom_constraints.append([i * dx, dy, j * dz])
 
     # now, 64 combinations
     for left in left_constraints:
@@ -709,9 +702,9 @@ def calc_location_(dimension, proj_matrix, box_2d, alpha, theta_ray):
     constraints = filter(lambda x: len(x) == len(set(tuple(i) for i in x)), constraints)
 
     # create pre M (the term with I and the R*X)
-    pre_M = np.zeros([4,4])
+    pre_M = np.zeros([4, 4])
     # 1's down diagonal
-    for i in range(0,4):
+    for i in range(0, 4):
         pre_M[i][i] = 1
 
     best_loc = None
@@ -739,29 +732,29 @@ def calc_location_(dimension, proj_matrix, box_2d, alpha, theta_ray):
         M_array = [Ma, Mb, Mc, Md]
 
         # create A, b
-        A = np.zeros([4,3], dtype=float)
-        b = np.zeros([4,1])
+        A = np.zeros([4, 3], dtype=float)
+        b = np.zeros([4, 1])
 
-        indicies = [0,1,0,1]
+        indicies = [0, 1, 0, 1]
         for row, index in enumerate(indicies):
             X = X_array[row]
             M = M_array[row]
 
             # create M for corner Xx
             RX = np.dot(R, X)
-            M[:3,3] = RX.reshape(3)
+            M[:3, 3] = RX.reshape(3)
 
             M = np.dot(proj_matrix, M)
 
-            A[row, :] = M[index,:3] - box_corners[row] * M[2,:3]
-            b[row] = box_corners[row] * M[2,3] - M[index,3]
+            A[row, :] = M[index, :3] - box_corners[row] * M[2, :3]
+            b[row] = box_corners[row] * M[2, 3] - M[index, 3]
 
         # solve here with least squares, since over fit will get some error
         loc, error, rank, s = np.linalg.lstsq(A, b, rcond=None)
 
         # found a better estimation
         if error < best_error:
-            count += 1 # for debugging
+            count += 1  # for debugging
             best_loc = loc
             best_error = error
             best_X = X_array
@@ -771,15 +764,13 @@ def calc_location_(dimension, proj_matrix, box_2d, alpha, theta_ray):
     return best_loc, best_X
 
 
-
 def plot3d(img, proj_matrix, box_2d, dimensions, alpha, theta_ray, img_2d=None):
-
     # the math! returns X, the corners used for constraint
     location, X = calc_location_(dimensions, proj_matrix, box_2d, alpha, theta_ray)
     orient = alpha + theta_ray
     if img_2d is not None:
         plot_2d_box(img_2d, box_2d)
-    plot_3d_box(img, proj_matrix, orient, dimensions, location) # 3d boxes
+    plot_3d_box(img, proj_matrix, orient, dimensions, location)  # 3d boxes
 
     return location
 
@@ -789,7 +780,8 @@ class KITTIObject():
     utils for YOLO3D
     detectionInfo is a class that contains information about the detection
     """
-    def __init__(self, line = np.zeros(16)):
+
+    def __init__(self, line=np.zeros(16)):
         self.name = line[0]
 
         self.truncation = float(line[1])
@@ -874,7 +866,7 @@ class KITTIObject():
 
         # soft constraint
         div = soft_range * np.pi / 180
-        if 0 < rot_local < div or 2*np.pi-div < rot_local < 2*np.pi:
+        if 0 < rot_local < div or 2 * np.pi - div < rot_local < 2 * np.pi:
             xmin_candi = point8
             xmax_candi = point6
             ymin_candi = point6

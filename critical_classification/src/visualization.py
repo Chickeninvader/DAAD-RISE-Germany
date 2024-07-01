@@ -1,7 +1,4 @@
-# Visualization now work only for
-import imageio
-from IPython.display import Image
-
+import cv2
 from critical_classification.src import backbone_pipeline
 from critical_classification import config
 from transformers import VideoMAEImageProcessor
@@ -14,11 +11,7 @@ def unnormalize_img(img, std, mean):
     return img.clip(0, 255)
 
 
-def create_gif(video_tensor,
-               std,
-               mean,
-               duration,
-               filename: str = "critical_classification/dashcam_video/temp_video/sample.gif"):
+def create_gif(video_tensor, std, mean):
     """Prepares a GIF from a video tensor.
 
     The video tensor is expected to have the following shape:
@@ -31,19 +24,21 @@ def create_gif(video_tensor,
                                              std=std,
                                              mean=mean)
         frames.append(frame_unnormalized)
-    kargs = {"fps": duration / video_len, "duration": 2}
-    imageio.mimsave(filename, frames, "GIF", **kargs)
-    return filename
+    return frames
 
 
-def display_gif(video_tensor,
-                std,
-                mean,
-                duration):
+def save_video(video_tensor, std, mean,
+               base_folder: str = 'critical_classification/dashcam_video/temp_video/'):
     """Prepares and displays a GIF from a video tensor."""
     video_tensor = video_tensor[0].permute(1, 0, 2, 3)
-    gif_filename = create_gif(video_tensor, std, mean, duration)
-    return Image(filename=gif_filename)
+    frames = create_gif(video_tensor, std, mean)
+
+    # Create a video stream to display frames using OpenCV
+    height, width, _ = frames[0].shape
+    video_stream = cv2.VideoWriter(f'{base_folder}nothing.mp4', cv2.VideoWriter_fourcc(*"mp4v"), 30,
+                                   (width, height))
+    for frame in frames:
+        video_stream.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
 
 
 if __name__ == '__main__':
@@ -51,7 +46,6 @@ if __name__ == '__main__':
     image_processor = VideoMAEImageProcessor.from_pretrained(model_ckpt)
     mean = image_processor.image_mean
     std = image_processor.image_std
-    sample_duration = 2
 
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(metadata=config.metadata,
@@ -59,14 +53,17 @@ if __name__ == '__main__':
                                    model_name=config.model_name,
                                    pretrained_path=config.pretrained_path,
                                    representation=config.representation,
-                                   sample_duration=sample_duration)
+                                   sample_duration=2)
     )
+
+    label = None
+    video_tensor = None
+
     for video_tensor, label, metadata in loaders['train']:
         if label == 1:
             break
 
     print(f'image has label {label}')
-    display_gif(video_tensor,
-                std=std,
-                mean=mean,
-                duration=sample_duration)
+    save_video(video_tensor,
+               std=std,
+               mean=mean)

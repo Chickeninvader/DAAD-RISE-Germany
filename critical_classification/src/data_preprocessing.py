@@ -335,7 +335,34 @@ def dataset_transforms(video_tensor,
             ]
         )
     else:
-        train_transform = None
-        test_transform = None
+        height, width = 224, 224
+        train_transform = Compose(
+            [
+                ApplyTransformToKey(
+                    key="video",
+                    transform=Compose(
+                        [
+                            RandomShortSideScale(min_size=256, max_size=320),
+                            RandomCrop((height, width)),
+                            Lambda(lambda x: x / 255.0),
+                        ]
+                    ),
+                ),
+            ]
+        )
+
+        test_transform = Compose(
+            [
+                ApplyTransformToKey(
+                    key="video",
+                    transform=Compose(
+                        [
+                            Lambda(lambda x: x / 255.0),
+                            Resize((height, width)),
+                        ]
+                    ),
+                ),
+            ]
+        )
 
     return train_transform(video_tensor)['video'] if train_or_test == 'train' else test_transform(video_tensor)['video']

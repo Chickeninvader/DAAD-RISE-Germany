@@ -17,9 +17,9 @@ from train import *
 # select_model = 'vgg11'
 # select_model = 'vgg16'
 # select_model = 'vgg19'
-select_model = 'efficientnetb0'
+# select_model = 'efficientnetb0'
 # select_model = 'efficientnetb5'
-# select_model = 'mobilenetv2'
+select_model = 'mobilenetv2'
 
 
 # Load the 3D model
@@ -43,16 +43,16 @@ dims_avg = {'Car': np.array([1.52131309, 1.64441358, 3.85728004]),
 # Load a 2D model
 bbox2d_model = YOLO('yolov8n-seg.pt')  # load an official model
 # set model parameters
-bbox2d_model.overrides['conf'] = 0.9  # NMS confidence threshold
+bbox2d_model.overrides['conf'] = 0.5  # NMS confidence threshold
 bbox2d_model.overrides['iou'] = 0.45  # NMS IoU threshold
 bbox2d_model.overrides['agnostic_nms'] = False  # NMS class-agnostic
 bbox2d_model.overrides['max_det'] = 1000  # maximum number of detections per image
-bbox2d_model.overrides['classes'] = 2  ## define classes
+bbox2d_model.overrides['classes'] = [0, 1, 2, 3, 4, 5, 6, 7]  ## define classes
 yolo_classes = ['Pedestrian', 'Cyclist', 'Car', 'motorcycle', 'airplane', 'Van', 'train', 'Truck', 'boat']
 
 # Load the video
 video = cv2.VideoCapture(
-    '/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/dashcam_video/original_video/example2.mp4')
+    '/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/dashcam_video/original_video/Vollbremsungen Überholen durchs Bankett und Schleicherei  DDG Dashcam Germany  580.mp4')
 
 ### svae results
 # Get video information (frame width, height, frames per second)
@@ -188,7 +188,8 @@ def process3D(img, bboxes2d):
             dim += dims_avg[str(yolo_classes[int(classes.cpu().numpy())])] + dim
             DIMS.append(dim)
         except:
-            dim = DIMS[-1]
+            if DIMS:
+                dim = DIMS[-1]
 
         bbox_ = [int(xmin), int(ymin), int(xmax), int(ymax)]
         theta_ray = calc_theta_ray(frame, bbox_, P2)

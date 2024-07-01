@@ -46,8 +46,11 @@ AUGMENTATION = False
 # select_model = 'efficientnetb5'
 select_model = 'mobilenetv2'
 
-label_dir = '/scratch/ngocbach/driving_dataset/kitti/training/label_2/'
-image_dir = '/scratch/ngocbach/driving_dataset/kitti/training/image_2/'
+# label_dir = '/scratch/ngocbach/driving_dataset/kitti/training/label_2/'
+# image_dir = '/scratch/ngocbach/driving_dataset/kitti/training/image_2/'
+
+label_dir = '/Users/khoavo2003/Downloads/data_object_image_2/training/label_2/'
+image_dir = '/Users/khoavo2003/Downloads/data_object_image_2/training/image_2/'
 
 seq = iaa.Sequential([
     iaa.Crop(px=(0, 7)),  # will randomly crop between 0 to 7 pixels from the left side.
