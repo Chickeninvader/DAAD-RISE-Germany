@@ -34,6 +34,8 @@ def print_info_for_debug(ground_truths,
         f'{np.unique(np.array(predictions), return_counts=True)}\n'))
 
     for idx, (video_name, time) in enumerate(video_name_with_time):
+        if ground_truths[idx] == predictions[idx]:
+            print(utils.green_text(f'correct prediction: '), end='')
         if ground_truths[idx] == 1:
             print(utils.red_text(f'{video_name}{" " * (120 - len(video_name))} '
                                  f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
