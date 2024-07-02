@@ -15,6 +15,11 @@ from keras.models import Model
 from transformers import VideoMAEForVideoClassification
 from ultralytics import YOLO
 
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
 
 class YOLOv1(nn.Module):
     """
@@ -493,6 +498,7 @@ class CriticalClassification(tf.keras.Model):
                     patch = tf.image.resize(patch, (224, 224))
                     patch_list.append(patch)
                 patch_concat = tf.stack(patch_list, axis=0)  # Final shape: (num_predicted_box, height, width, channels)
+                print(patch_concat.shape)
                 features[int(id_)] = self.mono3d_model.call(patch_concat)
 
             # Predict critical event for a video using binary model if there are feature in image
