@@ -423,12 +423,10 @@ class BinaryModel(tf.keras.Model):
         final_feature_per_object = []
         for _, features in features_list.items():
             final_feature_per_object.append(self.rnn_for_extract_feature_per_object(tf.expand_dims(features, axis=0)))
-
         if len(final_feature_per_object) == 1:
             final_feature_per_object_reshape = tf.expand_dims(final_feature_per_object[0], axis=0)
         else:
-            final_feature_per_object_reshape = tf.stack(final_feature_per_object, axis=0)
-
+            final_feature_per_object_reshape = tf.stack(final_feature_per_object, axis=1)
         final_feature = self.global_average(final_feature_per_object_reshape)
         x = self.dense1(final_feature)
         x = self.dense2(x)
@@ -505,4 +503,6 @@ class CriticalClassification(tf.keras.Model):
             else:
                 predictions.append(tf.squeeze(self.binary_model.call(features)))
 
+        for item in predictions:
+            print(type(item))
         return tf.stack(predictions, axis=0)

@@ -63,6 +63,8 @@ def batch_learning_and_evaluating(loaders,
     for batch_num, batch in batches:
         X, Y_true, video_name_with_time_batch = batch
 
+        X = tf.convert_to_tensor(X)
+        Y_true = tf.convert_to_tensor(Y_true, dtype=tf.float32)
         with tf.GradientTape() as tape:
             Y_pred = fine_tuner(X, training=evaluation)
             batch_total_loss = criterion(Y_pred, Y_true)
