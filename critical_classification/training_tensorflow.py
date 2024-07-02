@@ -1,10 +1,8 @@
-import copy
 import os
 import sys
 
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-import torch
 import tensorflow as tf
 import torch.utils.data
 import typing
@@ -127,7 +125,7 @@ def fine_tune_combined_model(fine_tuner: tf.keras.Model,
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer,
     #                                             step_size=scheduler_step_size,
     #                                             gamma=scheduler_gamma)
-    best_fine_tuner = tf.keras.models.clone_model(fine_tuner)
+    # best_fine_tuner = tf.keras.models.clone_model(fine_tuner)
 
     print('#' * 100 + '\n')
 
@@ -148,9 +146,11 @@ def fine_tune_combined_model(fine_tuner: tf.keras.Model,
 
             if max_f1_score < test_f1:
                 max_f1_score = test_f1
-                best_fine_tuner = fine_tuner
+                print(f'best fine tuner will be update later')
+                # best_fine_tuner = fine_tuner
 
     if config.save_files:
+        best_fine_tuner = fine_tuner
         tf.keras.models.save_model(best_fine_tuner,
                                    f"save_models/{best_fine_tuner}_lr{config.lr}_{config.loss}_"
                                    f"{config.num_epochs}_{config.additional_info}.h5")
