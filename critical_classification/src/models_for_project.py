@@ -503,6 +503,4 @@ class CriticalClassification(tf.keras.Model):
             else:
                 predictions.append(tf.squeeze(self.binary_model.call(features)))
 
-        for item in predictions:
-            print(type(item))
         return tf.stack(predictions, axis=0)
