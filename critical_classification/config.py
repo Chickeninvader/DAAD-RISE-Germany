@@ -22,7 +22,7 @@ additional_saving_info = ''
 pretrained_path = ''
 
 # Flag to indicate whether to save the trained model
-save_file = False
+save_files = False
 
 # Type of data representation being used (e.g., 'original', 'gaussian', etc.)
 representation = 'original'
