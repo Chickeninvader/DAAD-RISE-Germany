@@ -96,6 +96,8 @@ def batch_learning_and_evaluating(loaders,
         if batch_num % (int(num_batches / 2.5)) == 0:
             tqdm.write(f'Current total loss: {total_running_loss}')
 
+        print(f'finish iter {batch_num}')
+
         del X, Y_pred, Y_true
 
     predictions = np.concatenate(predictions, axis=0)
