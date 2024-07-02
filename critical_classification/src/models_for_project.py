@@ -1,6 +1,6 @@
 import itertools
 import os.path
-from collections import deque
+from collections import deque, defaultdict
 
 import numpy as np
 import tensorflow as tf
@@ -361,6 +361,8 @@ class Monocular3D:
                     'Cyclist': np.array([1.73456498, 0.58174006, 1.77485499]),
                     'Tram': np.array([3.56020305, 2.40172589, 18.60659898])}
         self.load_model()
+        self.global_average = tf.keras.layers.GlobalAveragePooling2D(data_format='channels_last')
+        self.flatten = tf.keras.layers.Flatten()
 
     def load_model(self):
         if self.base_arch == 'mobilenetv2':
@@ -400,6 +402,8 @@ class Monocular3D:
     def call(self,
              img,):
         features = self.base_model(img, training=False)
+        features = self.global_average(features)
+        features = self.flatten(features)
         return features
 
 
@@ -407,16 +411,26 @@ class BinaryModel(tf.keras.Model):
     def __init__(self):
         super(BinaryModel, self).__init__()
         # Define your RNN layer
-        self.rnn = tf.keras.layers.LSTM(64, return_sequences=False)
+        self.rnn_for_extract_feature_per_object = tf.keras.layers.LSTM(64, return_sequences=False)
+        # self.rnn_for_prediction = tf.keras.layers.LSTM(64, return_sequences=False)
         # Define the MLP layers
+        self.global_average = tf.keras.layers.GlobalAveragePooling1D()
         self.dense1 = tf.keras.layers.Dense(16, activation='elu')
         self.dense2 = tf.keras.layers.Dense(4, activation='elu')
         self.output_layer = tf.keras.layers.Dense(1, activation='sigmoid')
 
     def call(self, features_list, training=None, mask=None):
-        features = tf.convert_to_tensor(features_list)
-        x = self.rnn(features)
-        x = self.dense1(x)
+        final_feature_per_object = []
+        for _, features in features_list.items():
+            final_feature_per_object.append(self.rnn_for_extract_feature_per_object(tf.expand_dims(features, axis=0)))
+
+        if len(final_feature_per_object) == 1:
+            final_feature_per_object_reshape = tf.expand_dims(final_feature_per_object[0], axis=0)
+        else:
+            final_feature_per_object_reshape = tf.stack(final_feature_per_object, axis=0)
+
+        final_feature = self.global_average(final_feature_per_object_reshape)
+        x = self.dense1(final_feature)
         x = self.dense2(x)
         return self.output_layer(x)
 
@@ -457,19 +471,20 @@ class CriticalClassification(tf.keras.Model):
 
             # Extract features using Monocular3D for each bounding box
             features = {}
-            bboxes2d_dict = {}
+            bboxes2d_dict = defaultdict(list)
             for item in bboxes2d:
                 bbox_coords, scores, classes, id_, image_idx = item
                 features[int(id_)] = []
-                if bboxes2d_dict[int(id_)] is None:
-                    bboxes2d_dict[int(id_)] = []
                 bboxes2d_dict[int(id_)].append(item)
 
-            images_list = [video[idx] for idx in range(video.shape[1])]
+            images_list = [video[idx] for idx in range(video.shape[0])]
             for id_, bboxes2d_of_id_ in bboxes2d_dict.items():
+                patch_list = []
                 for item in bboxes2d_of_id_:
                     bbox_coords, scores, classes, _, image_idx = item
                     padding = 0  # Set the padding value
+
+                    # get part of the image from 2d bounding box and feed to 3d model
                     img = images_list[image_idx]
                     xmin = max(0, bbox_coords[0] - padding)
                     ymin = max(0, bbox_coords[1] - padding)
@@ -480,12 +495,14 @@ class CriticalClassification(tf.keras.Model):
                     patch = tf.convert_to_tensor(crop, dtype=tf.float32)
                     patch /= 255.0  # Normalize to [0,1]
                     patch = tf.image.resize(patch, (224, 224))
-                    patch = tf.expand_dims(patch, axis=0)  # Final shape: (1, height, width, channels)
-                    features[int(id_)].append(self.mono3d_model.call(patch))
+                    patch_list.append(patch)
+                patch_concat = tf.stack(patch_list, axis=0)  # Final shape: (num_predicted_box, height, width, channels)
+                features[int(id_)] = self.mono3d_model.call(patch_concat)
 
             # Predict critical event for a video using binary model if there are feature in image
             if len(features) == 0:
-                predictions.append(tf.tensor(0))
+                predictions.append(tf.constant(0, dtype=tf.float32))
             else:
-                predictions.append(self.binary_model.predict(features))
-        return tf.convert_to_tensor(predictions, dtype=tf.float32)
+                predictions.append(tf.squeeze(self.binary_model.call(features)))
+
+        return tf.stack(predictions, axis=0)

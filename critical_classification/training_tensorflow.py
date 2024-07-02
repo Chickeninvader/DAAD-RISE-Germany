@@ -49,7 +49,7 @@ def batch_learning_and_evaluating(loaders,
                                   optimizer: torch.optim,
                                   fine_tuner: torch.nn.Module,
                                   evaluation: bool = False,
-                                  print_info: bool = False):
+                                  print_info: bool = True):
     num_batches = len(loaders)
     batches = tqdm(enumerate(loaders, 0),
                    total=num_batches)
@@ -62,10 +62,6 @@ def batch_learning_and_evaluating(loaders,
 
     for batch_num, batch in batches:
         X, Y_true, video_name_with_time_batch = batch
-
-        # for debuging
-        if not torch.all(torch.eq(Y_true, 1)):
-            continue
 
         with tf.GradientTape() as tape:
             Y_pred = fine_tuner(X, training=evaluation)

@@ -3,6 +3,7 @@ import sys
 
 import pandas as pd
 import torch.utils.data
+import tensorflow as tf
 
 from critical_classification.src.models_for_project import CriticalClassification
 
@@ -56,7 +57,9 @@ def initiate(metadata: pd.DataFrame,
           f"Total frames number of test video: {len(loaders['test'].dataset)}")
     print(f'Each frame are {sample_duration * 30} images')
 
-    if framework == 'tensorflow':
+    if framework == 'torch':
         device = torch.device(device_str)
         print(f'Using {device}')
+    else:
+        print(f"Tensorflow is using GPU: {tf.config.list_physical_devices('GPU')}")
     return fine_tuner, loaders, device
