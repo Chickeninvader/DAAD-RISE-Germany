@@ -9,9 +9,9 @@ import torch.nn.parallel
 import torch.optim
 import torch.utils.data.distributed
 import torchvision
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, LeakyReLU, Dropout, Reshape, Lambda
-from tensorflow.keras.models import Model
+from keras.applications import MobileNetV2
+from keras.layers import GlobalAveragePooling2D, Dense, LeakyReLU, Dropout, Reshape, Lambda
+from keras.models import Model
 from transformers import VideoMAEForVideoClassification
 from ultralytics import YOLO
 
