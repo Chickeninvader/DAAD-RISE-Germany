@@ -1,7 +1,6 @@
 import os
 import random
 import typing
-import re
 
 import cv2
 import numpy as np

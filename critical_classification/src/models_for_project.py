@@ -1,10 +1,8 @@
-import itertools
 import os.path
 from collections import deque, defaultdict
 
 import numpy as np
 import tensorflow as tf
-import cv2
 import torch
 import torch.nn as nn
 import torch.nn.parallel

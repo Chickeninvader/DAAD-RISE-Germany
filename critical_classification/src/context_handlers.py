@@ -1,6 +1,5 @@
 import abc
 import torch
-import matplotlib.pyplot as plt
 import time
 import os, sys
 
@@ -39,22 +38,6 @@ class ClearCache(Context):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.device_backend:
             self.device_backend.empty_cache()
-
-
-class Plot(Context):
-    def __init__(self,
-                 fig_sizes: tuple = None):
-        if fig_sizes:
-            plt.figure(figsize=fig_sizes)
-
-    def __enter__(self):
-        plt.cla()
-        plt.clf()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        plt.show()
-        plt.cla()
-        plt.clf()
 
 
 class WrapTQDM(Context):
