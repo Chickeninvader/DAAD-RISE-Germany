@@ -459,6 +459,7 @@ class CriticalClassification(tf.keras.Model):
         """
         # Change video shape to (batch_size, num_frames, height, width, channels).
         videos = (np.array(videos).transpose((0, 2, 3, 4, 1)) * 255.0).astype(np.uint8)
+        print(videos.shape)
         predictions = []
 
         for video in [videos[idx] for idx in range(videos.shape[0])]:
@@ -504,5 +505,7 @@ class CriticalClassification(tf.keras.Model):
                 predictions.append(tf.squeeze(self.binary_model.call(features)))
 
             print(f'finish getting prediction for a video')
+
+        print(f'finish everything!')
 
         return tf.stack(predictions, axis=0)
