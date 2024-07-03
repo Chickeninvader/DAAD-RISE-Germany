@@ -431,6 +431,7 @@ class BinaryModel(tf.keras.Model):
         return self.output_layer(x)
 
 
+@tf.keras.saving.register_keras_serializable()
 class CriticalClassification(tf.keras.Model):
     def __init__(self,
                  mono3d_weights_path,
