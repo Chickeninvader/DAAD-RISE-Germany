@@ -9,9 +9,9 @@ import torch.nn.parallel
 import torch.optim
 import torch.utils.data.distributed
 import torchvision
-from keras.applications import MobileNetV2
-from keras.layers import GlobalAveragePooling2D, Dense, LeakyReLU, Dropout, Reshape, Lambda
-from keras.models import Model
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, LeakyReLU, Dropout, Reshape, Lambda
+from tensorflow.keras.models import Model
 from transformers import VideoMAEForVideoClassification
 from ultralytics import YOLO
 
@@ -398,7 +398,7 @@ class Monocular3D:
             raise ValueError("Unsupported architecture")
 
     def call(self,
-             img,):
+             img, ):
         features = self.base_model(img, training=False)
         features = self.global_average(features)
         features = self.flatten(features)
@@ -496,12 +496,10 @@ class CriticalClassification(tf.keras.Model):
 
                 features[int(id_)] = self.mono3d_model.call(patch_concat)
 
-
             # Predict critical event for a video using binary model if there are feature in image
             if len(features) == 0:
                 predictions.append(tf.constant(0, dtype=tf.float32))
             else:
                 predictions.append(tf.squeeze(self.binary_model.call(features)))
-
 
         return tf.stack(predictions, axis=0)
