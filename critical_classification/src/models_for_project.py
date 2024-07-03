@@ -246,7 +246,7 @@ def get_bbox_info(predictions,
 
         """
     for bbox in predictions.boxes:
-        ## object detections
+        # object detections
         for scores, classes, bbox_coords, id_ in zip(bbox.conf, bbox.cls, bbox.xyxy, bbox.id):
             xmin = bbox_coords[0]
             ymin = bbox_coords[1]
@@ -458,8 +458,7 @@ class CriticalClassification(tf.keras.Model):
                        prediction is the output of the binary model.
         """
         # Change video shape to (batch_size, num_frames, height, width, channels).
-        videos = (np.array(videos).transpose((0, 2, 3, 4, 1)) * 255.0).astype(np.uint8)
-        print(videos.shape)
+        videos = (np.array(videos) * 255.0).astype(np.uint8)
         predictions = []
 
         for video in [videos[idx] for idx in range(videos.shape[0])]:
@@ -494,9 +493,9 @@ class CriticalClassification(tf.keras.Model):
                     patch = tf.image.resize(patch, (224, 224))
                     patch_list.append(patch)
                 patch_concat = tf.stack(patch_list, axis=0)  # Final shape: (num_predicted_box, height, width, channels)
-                print(patch_concat.shape)
+
                 features[int(id_)] = self.mono3d_model.call(patch_concat)
-                print(f'get feature for object id {int(id_)}')
+
 
             # Predict critical event for a video using binary model if there are feature in image
             if len(features) == 0:
@@ -504,8 +503,5 @@ class CriticalClassification(tf.keras.Model):
             else:
                 predictions.append(tf.squeeze(self.binary_model.call(features)))
 
-            print(f'finish getting prediction for a video')
-
-        print(f'finish everything!')
 
         return tf.stack(predictions, axis=0)

@@ -8,11 +8,7 @@ import pandas as pd
 import torch
 import torch.utils.data
 import torchvision
-from pytorchvideo.transforms import (
-    ApplyTransformToKey,
-    Normalize,
-    RandomShortSideScale,
-)
+
 from torch.utils.data import Dataset
 from torchvision.transforms import (
     Compose,
@@ -80,11 +76,11 @@ def get_video_frames_as_tensor(train_or_test: str,
 
     cap.release()
 
-    # Convert frames to Torch.tensor
-    frames_tensor = torch.from_numpy(np.stack(frames, axis=1)).permute(3, 1, 0, 2).float()
-    frames_tensor = dataset_transforms(video_tensor={'video': frames_tensor},
+    frames_tensor = np.stack(frames, axis=0)
+    frames_tensor = dataset_transforms(video_tensor=frames_tensor,
                                        train_or_test=train_or_test,
                                        model_name=model_name)
+    # Final shape: (num_frames, height, width, channel)
     return frames_tensor, start_time, label
 
 
@@ -285,13 +281,71 @@ def get_loaders(datasets: typing.Dict[str, torchvision.datasets.ImageFolder],
     return loaders
 
 
-def dataset_transforms(video_tensor,
+def random_short_side_scale(image, min_size=256, max_size=320):
+    h, w = image.shape[:2]
+    short_side = random.randint(min_size, max_size)
+    if h < w:
+        new_h = short_side
+        new_w = int((short_side / h) * w)
+    else:
+        new_w = short_side
+        new_h = int((short_side / w) * h)
+    return cv2.resize(image, (new_w, new_h))
+
+
+def random_crop(image, height, width):
+    h, w = image.shape[:2]
+    top = random.randint(0, h - height)
+    left = random.randint(0, w - width)
+    return image[top:top + height, left:left + width]
+
+
+def normalize(image, mean=None, std=None):
+    if mean and std is not None:
+        return (image - mean) / std
+    return image / 255.0
+
+
+def resize(image, height, width):
+    return cv2.resize(image, (width, height))
+
+
+def train_transform(video, height, width):
+    transformed_video = []
+    for frame in video:
+        frame = random_short_side_scale(frame)
+        frame = random_crop(frame, height, width)
+        frame = normalize(frame)
+        transformed_video.append(frame)
+    return np.array(transformed_video)
+
+
+def train_transform(video, height, width, mean, std, min_size=256, max_size=320):
+    transformed_video = []
+    for frame in video:
+        frame = normalize(frame, mean, std)
+        frame = random_short_side_scale(frame, min_size, max_size)
+        frame = random_crop(frame, height, width)
+        transformed_video.append(frame)
+    return np.array(transformed_video)
+
+
+def test_transform(video, height, width, mean, std):
+    transformed_video = []
+    for frame in video:
+        frame = normalize(frame, mean, std)
+        frame = resize(frame, height, width)
+        transformed_video.append(frame)
+    return np.array(transformed_video)
+
+
+def dataset_transforms(video_tensor: np.array,
                        train_or_test: str,
                        model_name: str = 'VideoMAE') -> torch.tensor:
     """
     Returns the transforms required for the VIT for training or test datasets
     """
-
+    mean, std = None, None
     if model_name == 'VideoMAE':
         model_ckpt = "MCG-NJU/videomae-base"
         image_processor = VideoMAEImageProcessor.from_pretrained(model_ckpt)
@@ -302,66 +356,10 @@ def dataset_transforms(video_tensor,
         else:
             height = image_processor.size["height"]
             width = image_processor.size["width"]
-
-        train_transform = Compose(
-            [
-                ApplyTransformToKey(
-                    key="video",
-                    transform=Compose(
-                        [
-                            Lambda(lambda x: x / 255.0),
-                            Normalize(mean, std),
-                            RandomShortSideScale(min_size=256, max_size=320),
-                            RandomCrop((height, width)),
-                        ]
-                    ),
-                ),
-            ]
-        )
-
-        test_transform = Compose(
-            [
-                ApplyTransformToKey(
-                    key="video",
-                    transform=Compose(
-                        [
-                            Lambda(lambda x: x / 255.0),
-                            Normalize(mean, std),
-                            Resize((height, width)),
-                        ]
-                    ),
-                ),
-            ]
-        )
     else:
         height, width = 224, 224
-        train_transform = Compose(
-            [
-                ApplyTransformToKey(
-                    key="video",
-                    transform=Compose(
-                        [
-                            RandomShortSideScale(min_size=256, max_size=320),
-                            RandomCrop((height, width)),
-                            Lambda(lambda x: x / 255.0),
-                        ]
-                    ),
-                ),
-            ]
-        )
 
-        test_transform = Compose(
-            [
-                ApplyTransformToKey(
-                    key="video",
-                    transform=Compose(
-                        [
-                            Lambda(lambda x: x / 255.0),
-                            Resize((height, width)),
-                        ]
-                    ),
-                ),
-            ]
-        )
-
-    return train_transform(video_tensor)['video'] if train_or_test == 'train' else test_transform(video_tensor)['video']
+    if train_or_test == 'train':
+        return train_transform(video_tensor, height, width, mean, std)
+    else:
+        return test_transform(video_tensor, height, width, mean, std)
