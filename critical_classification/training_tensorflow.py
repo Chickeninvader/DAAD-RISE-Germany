@@ -65,6 +65,7 @@ def batch_learning_and_evaluating(loaders,
 
         X = tf.convert_to_tensor(X)
         Y_true = tf.convert_to_tensor(Y_true, dtype=tf.float32)
+        Y_pred = fine_tuner(X, training=evaluation)
         with tf.GradientTape() as tape:
             Y_pred = fine_tuner(X, training=evaluation)
             batch_total_loss = criterion(Y_pred, Y_true)
@@ -130,6 +131,8 @@ def fine_tune_combined_model(fine_tuner: tf.keras.Model,
     # best_fine_tuner = tf.keras.models.clone_model(fine_tuner)
 
     print('#' * 100 + '\n')
+
+    # fine_tuner.summary()
 
     for epoch in range(config.num_epochs):
         with ((context_handlers.TimeWrapper())):
