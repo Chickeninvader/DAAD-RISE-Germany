@@ -7,7 +7,7 @@ batch_size = 4
 loss = 'BCE'
 
 # Number of epochs to train the model
-num_epochs = 1
+num_epochs = 2
 
 # Learning rate for the optimizer
 lr = 0.0001
@@ -16,13 +16,13 @@ lr = 0.0001
 model_name = 'Monocular3D'
 
 # Additional information to be appended to the saving file name
-additional_saving_info = ''
+additional_saving_info = 'experiment_1'
 
 # Path to pretrained model weights, if any
 pretrained_path = ''
 
 # Flag to indicate whether to save the trained model
-save_files = False
+save_files = True
 
 # Type of data representation being used (e.g., 'original', 'gaussian', etc.)
 representation = 'original'

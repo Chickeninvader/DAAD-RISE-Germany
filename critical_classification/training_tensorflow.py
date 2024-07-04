@@ -190,7 +190,7 @@ def fine_tune_combined_model(fine_tuner: tf.keras.Model,
 
     print('#' * 100)
 
-    return best_fine_tuner
+    return fine_tuner
 
 
 def run_combined_fine_tuning_pipeline(config):
