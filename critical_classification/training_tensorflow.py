@@ -8,6 +8,7 @@ import torch.utils.data
 import typing
 from tqdm import tqdm
 import warnings
+import logging
 
 sys.path.append(os.getcwd())
 
@@ -18,6 +19,31 @@ warnings.filterwarnings("ignore")
 
 if utils.is_local():
     os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
+
+# Setup logging to a file
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    handlers=[
+                        logging.FileHandler("output.log"),
+                        logging.StreamHandler(sys.stdout)
+                    ])
+
+
+# Redirect stdout and stderr to the logging file
+class LoggerWriter:
+    def __init__(self, level):
+        self.level = level
+
+    def write(self, message):
+        if message.strip() != "":
+            self.level(message)
+
+    def flush(self):
+        pass
+
+
+sys.stdout = LoggerWriter(logging.info)
+sys.stderr = LoggerWriter(logging.error)
 
 
 def print_info_for_debug(ground_truths,
@@ -87,7 +113,8 @@ def batch_learning_and_evaluating(loaders,
 
         if evaluation:
             del X, Y_pred, Y_true
-            continue
+            break  # for debug purpose
+            # continue
 
         grads = tape.gradient(batch_total_loss, fine_tuner.trainable_weights)
         optimizer.apply_gradients(zip(grads, fine_tuner.trainable_weights))
@@ -100,6 +127,7 @@ def batch_learning_and_evaluating(loaders,
         print(f'finish iter {batch_num}')
 
         del X, Y_pred, Y_true
+        break  # for debug purpose
 
     predictions = np.concatenate(predictions, axis=0)
     ground_truths = np.concatenate(ground_truths, axis=0)

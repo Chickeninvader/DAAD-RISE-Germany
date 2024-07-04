@@ -5,8 +5,6 @@ import pandas as pd
 import torch.utils.data
 import tensorflow as tf
 
-from critical_classification.src.models_for_project import CriticalClassification
-
 sys.path.append(os.getcwd())
 
 from critical_classification.src import utils, models_for_project, data_preprocessing
@@ -43,9 +41,10 @@ def initiate(metadata: pd.DataFrame,
     if model_name == 'VideoMAP':
         fine_tuner = models_for_project.VideoMAE()
     elif model_name == 'Monocular3D':
-        fine_tuner = CriticalClassification(mono3d_weights_path='critical_classification/save_models/mobilenetv2_weights.h5',
-                                            binary_model_weights_path=pretrained_path,
-                                            device=device_str)
+        fine_tuner = models_for_project.CriticalClassification(
+            mono3d_weights_path='critical_classification/save_models/mobilenetv2_weights.h5',
+            binary_model_weights_path=pretrained_path,
+            device=device_str)
         framework = 'tensorflow'
     else:
         fine_tuner = models_for_project.ResNet3D()

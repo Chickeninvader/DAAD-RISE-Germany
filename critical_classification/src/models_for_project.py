@@ -1,3 +1,4 @@
+import abc
 import os.path
 from collections import deque, defaultdict
 
@@ -278,7 +279,7 @@ class Monocular2D:
         self.bbox2d_model.overrides['agnostic_nms'] = False  # NMS class-agnostic
         self.bbox2d_model.overrides['max_det'] = 1000  # maximum number of detections per image
         self.bbox2d_model.overrides['classes'] = [0, 1, 2, 3, 4, 5, 6, 7]  # define classes
-        self.yolo_classes = ['Pedestrian', 'Cyclist', 'Car', 'motorcycle', 'airplane', 'Van', 'train', 'Truck', 'boat']
+        self.yolo_classes = ['Pedestrian', 'Cyclist', 'Car', 'motorcycle', 'airplane', 'Van', 'train', 'Truck']
         self.device = device
 
     def call(self,
@@ -317,7 +318,7 @@ class Monocular2D:
             image = video[image_idx, :, :, :]
             results = self.bbox2d_model.track(image,
                                               verbose=False,
-                                              device=self.device,
+                                              device='cuda:0' if self.device == 'cuda' else 'cpu',
                                               persist=image_idx != image_num - 1)
 
             for predictions in results:
@@ -337,8 +338,6 @@ class Monocular3D:
         self.weights_path = weights_path
         self.input_shape = input_shape
         self.base_arch = base_arch
-        self.base_model = None
-        self.model = None
 
         self.BIN, self.OVERLAP = 6, 0.1
         W = 1.
@@ -358,7 +357,10 @@ class Monocular3D:
                     'Person_sitting': np.array([1.28627907, 0.53976744, 0.96906977]),
                     'Cyclist': np.array([1.73456498, 0.58174006, 1.77485499]),
                     'Tram': np.array([3.56020305, 2.40172589, 18.60659898])}
-        self.load_model()
+
+        self.base_model: tf.keras.Model = self.load_model()
+        self.base_model.trainable = False
+
         self.global_average = tf.keras.layers.GlobalAveragePooling2D(data_format='channels_last')
         self.flatten = tf.keras.layers.Flatten()
 
@@ -390,12 +392,12 @@ class Monocular3D:
             model = Model(inputs=base_model.input, outputs=[dimension, orientation, confidence])
             model.load_weights(self.weights_path)
 
-            self.model = model
-
             # Extract the base model
-            self.base_model = Model(inputs=model.input, outputs=base_model.output)
+            base_model = Model(inputs=model.input, outputs=base_model.output)
         else:
             raise ValueError("Unsupported architecture")
+
+        return base_model
 
     def call(self,
              img, ):
