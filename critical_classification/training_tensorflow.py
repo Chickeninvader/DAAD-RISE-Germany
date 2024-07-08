@@ -182,11 +182,10 @@ def fine_tune_combined_model(fine_tuner: tf.keras.Model,
                 print(f'best fine tuner will be update later')
                 # best_fine_tuner = fine_tuner
 
-    if config.save_files:
-        best_fine_tuner = fine_tuner
-        tf.keras.models.save_model(best_fine_tuner,
-                                   f"save_models/{best_fine_tuner}_lr{config.lr}_{config.loss}_"
-                                   f"{config.num_epochs}_{config.additional_info}.h5")
+    if config.save_files and config.model_name == 'Monocular3D':
+        fine_tuner.save_binary_model_weights(
+            f"critical_classification/save_models/{config.model_name}_lr{config.lr}_{config.loss}_"
+            f"{config.num_epochs}_{config.additional_saving_info}")
 
     print('#' * 100)
 

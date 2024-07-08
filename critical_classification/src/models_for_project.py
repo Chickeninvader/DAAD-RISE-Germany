@@ -1,4 +1,3 @@
-import abc
 import os.path
 from collections import deque, defaultdict
 
@@ -412,7 +411,6 @@ class BinaryModel(tf.keras.Model):
         super(BinaryModel, self).__init__()
         # Define your RNN layer
         self.rnn_for_extract_feature_per_object = tf.keras.layers.LSTM(64, return_sequences=False)
-        # self.rnn_for_prediction = tf.keras.layers.LSTM(64, return_sequences=False)
         # Define the MLP layers
         self.global_average = tf.keras.layers.GlobalAveragePooling1D()
         self.dense1 = tf.keras.layers.Dense(16, activation='elu')
@@ -441,9 +439,11 @@ class CriticalClassification(tf.keras.Model):
         super(CriticalClassification, self).__init__()
         self.mono2d_model = Monocular2D(device=device)
         self.mono3d_model = Monocular3D(mono3d_weights_path)
-        self.binary_model = BinaryModel.load_weights(binary_model_weights_path) \
-            if os.path.exists(binary_model_weights_path) and 'binary' in binary_model_weights_path \
-            else BinaryModel()
+        self.binary_model = BinaryModel()
+
+        # Check if the weights file exists and load the weights
+        if os.path.exists(binary_model_weights_path):
+            self.binary_model.load_weights(binary_model_weights_path)
 
     def call(self, videos, training=None, mask=None):
         """
@@ -505,3 +505,6 @@ class CriticalClassification(tf.keras.Model):
                 predictions.append(tf.squeeze(self.binary_model.call(features)))
 
         return tf.stack(predictions, axis=0)
+
+    def save_binary_model_weights(self, file_path):
+        self.binary_model.save_weights(file_path)

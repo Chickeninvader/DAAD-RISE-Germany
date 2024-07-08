@@ -1,13 +1,13 @@
 import pandas as pd
 
 # Batch size for training
-batch_size = 4
+batch_size = 16
 
 # Loss function to use, here it's Binary Cross-Entropy (BCE)
 loss = 'BCE'
 
 # Number of epochs to train the model
-num_epochs = 2
+num_epochs = 10
 
 # Learning rate for the optimizer
 lr = 0.0001

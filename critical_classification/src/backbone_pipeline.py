@@ -38,6 +38,9 @@ def initiate(metadata: pd.DataFrame,
         model_name=model_name
     )
 
+    if pretrained_path is not None:
+        print(f'Loading pretrain weight model at {pretrained_path}')
+
     if model_name == 'VideoMAP':
         fine_tuner = models_for_project.VideoMAE()
     elif model_name == 'Monocular3D':
