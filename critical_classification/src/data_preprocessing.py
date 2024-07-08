@@ -221,7 +221,7 @@ class VideoDataset(Dataset):
                                                               model_name=self.model_name)
 
         if self.model_name == 'YOLOv1':
-            video = video.transpose((0, 1, 4, 2, 3))
+            video = video.transpose((0, 3, 1, 2))
 
         return video, label, (self.metadata['full_path'][idx], start_time)
 
