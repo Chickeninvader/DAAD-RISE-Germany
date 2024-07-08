@@ -193,7 +193,7 @@ class YOLOv1_binary(nn.Module):
 
         # Remove last layer (fc layer) and Add extra layer returning binary output only
         self.base_model.fc = nn.Sequential(
-            nn.Linear(1024 * self.split_size * self.split_size, 4096),
+            nn.Linear(int(1024 * self.split_size * self.split_size / 4), 4096),
             nn.Dropout(0.5),
             nn.LeakyReLU(0.1, inplace=True)
         )
@@ -219,9 +219,9 @@ class YOLOv1_binary(nn.Module):
         """
 
         x = self.base_model.darkNet(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.flatten(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.base_model.fc(x)
         x = self.binary_fc(x)
 
