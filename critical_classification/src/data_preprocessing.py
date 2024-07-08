@@ -61,8 +61,6 @@ def get_video_frames_as_tensor(train_or_test: str,
     for i in range(duration_in_ms // int(1000 / frame_rate)):
         ret, frame = cap.read()
         if ret:
-            # frame = cv2.resize(frame, (448, 448))
-            # frames.append(transform(frame))
             frames.append(frame)
         else:
             raise ValueError("Error: Frame not read!")
@@ -221,6 +219,9 @@ class VideoDataset(Dataset):
                                                               sample_duration=self.duration,
                                                               frame_rate=self.frame_rate,
                                                               model_name=self.model_name)
+
+        if self.model_name == 'YOLOv1':
+            video = video.transpose((0, 1, 4, 2, 3))
 
         return video, label, (self.metadata['full_path'][idx], start_time)
 
