@@ -28,9 +28,9 @@ category_color = [(255, 255, 0), (0, 0, 255), (255, 128, 0), (0, 255, 255), (255
 
 # Argparse to apply YOLO algorithm to a video file from the console
 ap = argparse.ArgumentParser()
-ap.add_argument("-w", "--weights", required=True, help="path to the modell weights")
+ap.add_argument("-w", "--weights", required=True, help="path to the model weights")
 ap.add_argument("-t", "--threshold", default=0.5,
-                help="threshold for the confidence score of the bouding box prediction")
+                help="threshold for the confidence score of the bounding box prediction")
 ap.add_argument("-ss", "--split_size", default=14,
                 help="split size of the grid which is applied to the image")
 ap.add_argument("-nb", "--num_boxes", default=2,
