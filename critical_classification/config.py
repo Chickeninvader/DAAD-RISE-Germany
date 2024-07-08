@@ -13,7 +13,7 @@ num_epochs = 10
 lr = 0.0001
 
 # Name of the model architecture being used, including Monocular3D, YOLOv1, ResNet3D
-model_name = 'ResNet3D'
+model_name = 'YOLOv1'
 
 # Additional information to be appended to the saving file name
 additional_saving_info = 'experiment_1'
