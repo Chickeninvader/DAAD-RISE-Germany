@@ -204,9 +204,6 @@ class YOLOv1_binary(nn.Module):
             nn.Sigmoid()
         )
 
-
-
-
     def forward(self, x):
         """
         Forwards the input tensor through the model to produce the predictions.
