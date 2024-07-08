@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import torch
 import torch.utils.data
+from torch.cuda.amp import autocast
 import typing
 from tqdm import tqdm
 import warnings
@@ -64,10 +65,11 @@ def batch_learning_and_evaluating(loaders,
             X, Y_true, video_name_with_time_batch = batch
             if X.shape[1] == 1:
                 X = torch.squeeze(X)
-            X = X.to(device)
+            X = X.to(device).float()
             Y_true = Y_true.to(device)
 
-            Y_pred = fine_tuner(X)
+            with autocast():
+                Y_pred = fine_tuner(X)
 
             # For debuging:
             # Y_pred = Y_true
@@ -80,7 +82,7 @@ def batch_learning_and_evaluating(loaders,
                                                          video_name_with_time_batch[1])])
             if evaluation:
                 del X, Y_pred, Y_true
-                break # for debuging
+                break  # for debuging
                 continue
 
             criterion = torch.nn.BCEWithLogitsLoss()
