@@ -184,33 +184,28 @@ class YOLOv1_binary(nn.Module):
                               "truck", "train", "other person", "bus", "car", "rider",
                               "motorcycle", "bicycle", "trailer"]
         self.device = device
-        self.model = self.load_model()
 
-    def load_model(self):
-        base_model = YOLOv1(self.split_size, self.num_boxes, self.num_classes).to(self.device)
+        self.base_model = YOLOv1(self.split_size, self.num_boxes, self.num_classes).to(self.device)
         weights = torch.load(self.pretrain_base_model_path, map_location=self.device)
-        base_model.load_state_dict(weights["state_dict"])
+        self.base_model.load_state_dict(weights["state_dict"])
+
+        self.flatten = nn.Flatten()
 
         # Remove last layer (fc layer) and Add extra layer returning binary output only
-        base_model.fc = nn.Sequential(
+        self.base_model.fc = nn.Sequential(
             nn.Linear(1024 * self.split_size * self.split_size, 4096),
             nn.Dropout(0.5),
             nn.LeakyReLU(0.1, inplace=True)
         )
 
         # Add new fully-connected layer for binary output
-        binary_fc = nn.Sequential(
+        self.binary_fc = nn.Sequential(
             nn.Linear(4096, 1),
             nn.Sigmoid()
         )
 
-        model = nn.Sequential(
-            base_model.darkNet,
-            nn.Flatten(),
-            base_model.fc,
-            binary_fc
-        )
-        return model
+
+
 
     def forward(self, x):
         """
@@ -226,7 +221,10 @@ class YOLOv1_binary(nn.Module):
             which contains the predicted bounding boxes.
         """
 
-        x = self.model(x)
+        x = self.base_model.darkNet(x)
+        x = self.flatten(x)
+        x = self.base_model.fc(x)
+        x = self.binary_fc(x)
 
         return x
 
