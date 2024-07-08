@@ -62,10 +62,14 @@ def batch_learning_and_evaluating(loaders,
     for batch_num, batch in batches:
         with context_handlers.ClearCache(device=device):
             X, Y_true, video_name_with_time_batch = batch
+            if X.shape[1] == 1:
+                X = torch.squeeze(X)
             X = X.to(device)
             Y_true = Y_true.to(device)
 
             Y_pred = fine_tuner(X)
+
+            # For debuging:
             # Y_pred = Y_true
             # evaluation = True
 
@@ -76,19 +80,21 @@ def batch_learning_and_evaluating(loaders,
                                                          video_name_with_time_batch[1])])
             if evaluation:
                 del X, Y_pred, Y_true
+                break # for debuging
                 continue
 
             criterion = torch.nn.BCEWithLogitsLoss()
             batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
             total_running_loss += batch_total_loss.item() / len(batches)
             # Update progress bar with informative text (without newline)
-            if batch_num % (int(num_batches / 3.0)) == 0:
+            if batch_num % (int(num_batches / 2.5)) == 0:
                 tqdm.write(f'Current total loss: {total_running_loss.item()}')
 
             batch_total_loss.backward()
             optimizer.step()
 
             del X, Y_pred, Y_true
+            break  # for debuging
 
     predictions[-1] = predictions[-1].unsqueeze(dim=0) if predictions[-1].ndim == 0 else predictions[-1]
     predictions = torch.cat(predictions)

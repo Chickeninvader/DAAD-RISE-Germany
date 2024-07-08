@@ -43,6 +43,8 @@ def initiate(metadata: pd.DataFrame,
 
     if model_name == 'VideoMAP':
         fine_tuner = models_for_project.VideoMAE()
+    elif model_name == 'YOLOv1':
+        fine_tuner = models_for_project.YOLOv1_binary(split_size=14, num_boxes=2, num_classes=13)
     elif model_name == 'Monocular3D':
         fine_tuner = models_for_project.CriticalClassification(
             mono3d_weights_path='critical_classification/save_models/mobilenetv2_weights.h5',

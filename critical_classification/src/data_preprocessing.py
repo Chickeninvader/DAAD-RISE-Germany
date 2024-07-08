@@ -8,14 +8,7 @@ import pandas as pd
 import torch
 import torch.utils.data
 import torchvision
-
 from torch.utils.data import Dataset
-from torchvision.transforms import (
-    Compose,
-    Lambda,
-    RandomCrop,
-    Resize,
-)
 from transformers import VideoMAEImageProcessor
 
 
@@ -308,16 +301,6 @@ def normalize(image, mean=None, std=None):
 
 def resize(image, height, width):
     return cv2.resize(image, (width, height))
-
-
-def train_transform(video, height, width):
-    transformed_video = []
-    for frame in video:
-        frame = random_short_side_scale(frame)
-        frame = random_crop(frame, height, width)
-        frame = normalize(frame)
-        transformed_video.append(frame)
-    return np.array(transformed_video)
 
 
 def train_transform(video, height, width, mean, std, min_size=256, max_size=320):

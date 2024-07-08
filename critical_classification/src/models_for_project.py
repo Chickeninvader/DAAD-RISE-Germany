@@ -154,6 +154,83 @@ class YOLOv1(nn.Module):
         return x
 
 
+class YOLOv1_binary(nn.Module):
+    """
+    This class contains the YOLOv1 model. It consists of 24 convolutional and
+    2 fully-connected layers which divide the input image into a
+    (split_size x split_size) grid and predict num_boxes bounding boxes per grid
+    cell.
+    """
+
+    def __init__(self, split_size, num_boxes, num_classes, device=torch.device('cpu')):
+        """
+        Initializes the neural-net with the parameter values to produce the
+        desired predictions.
+
+        Parameters:
+            split_size (int): Size of the grid which is applied to the image.
+            num_boxes (int): Amount of bounding boxes which are predicted per
+            grid cell.
+            num_classes (int): Amount of different classes which are being
+            predicted by the model.
+        """
+
+        super(YOLOv1_binary, self).__init__()
+        self.split_size = split_size
+        self.num_boxes = num_boxes
+        self.num_classes = num_classes
+        self.pretrain_base_model_path = 'critical_classification/save_models/YOLO_bdd100k.pt'
+        self.category_list = ["other vehicle", "pedestrian", "traffic light", "traffic sign",
+                              "truck", "train", "other person", "bus", "car", "rider",
+                              "motorcycle", "bicycle", "trailer"]
+        self.device = device
+        self.model = self.load_model()
+
+    def load_model(self):
+        base_model = YOLOv1(self.split_size, self.num_boxes, self.num_classes).to(self.device)
+        weights = torch.load(self.pretrain_base_model_path, map_location=self.device)
+        base_model.load_state_dict(weights["state_dict"])
+
+        # Remove last layer (fc layer) and Add extra layer returning binary output only
+        base_model.fc = nn.Sequential(
+            nn.Linear(1024 * self.split_size * self.split_size, 4096),
+            nn.Dropout(0.5),
+            nn.LeakyReLU(0.1, inplace=True)
+        )
+
+        # Add new fully-connected layer for binary output
+        binary_fc = nn.Sequential(
+            nn.Linear(4096, 1),
+            nn.Sigmoid()
+        )
+
+        model = nn.Sequential(
+            base_model.darkNet,
+            nn.Flatten(),
+            base_model.fc,
+            binary_fc
+        )
+        return model
+
+    def forward(self, x):
+        """
+        Forwards the input tensor through the model to produce the predictions.
+
+        Parameters:
+            x (tensor): A tensor of shape (batch_size, 3, 448, 448) which represents
+            a batch of input images.
+
+        Returns:
+            x (tensor): A tensor of shape
+            (batch_size, split_size, split_size, num_boxes*5 + num_classes)
+            which contains the predicted bounding boxes.
+        """
+
+        x = self.model(x)
+
+        return x
+
+
 def init_weights(m):
     if isinstance(m, nn.Linear):
         torch.nn.init.xavier_uniform(m.weight)
