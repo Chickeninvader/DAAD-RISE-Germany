@@ -82,7 +82,7 @@ def batch_learning_and_evaluating(loaders,
                                                          video_name_with_time_batch[1])])
             if evaluation:
                 del X, Y_pred, Y_true
-                break  # for debuging
+                # break  # for debuging
                 continue
 
             criterion = torch.nn.BCEWithLogitsLoss()
@@ -96,7 +96,7 @@ def batch_learning_and_evaluating(loaders,
             optimizer.step()
 
             del X, Y_pred, Y_true
-            break  # for debuging
+            # break  # for debuging
 
     predictions[-1] = predictions[-1].unsqueeze(dim=0) if predictions[-1].ndim == 0 else predictions[-1]
     predictions = torch.cat(predictions)

@@ -219,9 +219,7 @@ class YOLOv1_binary(nn.Module):
         """
 
         x = self.base_model.darkNet(x)
-        # print(x.shape)
         x = self.flatten(x)
-        # print(x.shape)
         x = self.base_model.fc(x)
         x = self.binary_fc(x)
 
