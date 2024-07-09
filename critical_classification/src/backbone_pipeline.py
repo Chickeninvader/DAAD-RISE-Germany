@@ -12,7 +12,7 @@ from critical_classification.src import utils, models_for_project, data_preproce
 
 def initiate(metadata: pd.DataFrame,
              batch_size: int,
-             model_name: str = 'resnet_3d',
+             model_name: str = None,
              pretrained_path: str = None,
              representation: str = 'original',
              sample_duration: float = 2
@@ -52,7 +52,8 @@ def initiate(metadata: pd.DataFrame,
             device=device_str)
         framework = 'tensorflow'
     else:
-        fine_tuner = models_for_project.ResNet3D()
+        print('No model mode, fine tuner not initiated')
+        fine_tuner = None
 
     loaders = data_preprocessing.get_loaders(datasets=datasets,
                                              batch_size=batch_size)

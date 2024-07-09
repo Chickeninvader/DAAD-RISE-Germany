@@ -47,6 +47,8 @@ def get_video_frames_as_tensor(train_or_test: str,
 
     critical_time = metadata['critical_driving_time'][index]
     video_duration = int(metadata['duration'][index])
+
+    # Randomly decide to return positive or negative label. If there is no critical time in metadata, default to 0
     label = 0 if random.random() < 0.5 or not isinstance(critical_time, str) else 1
     start_time = get_critical_mid_time(sample_time=video_duration,
                                        critical_driving_time=critical_time,
@@ -108,7 +110,7 @@ def get_critical_mid_time(critical_driving_time,
         return random.uniform(time_ranges[random_index][0], time_ranges[random_index][1])
 
     if random_index == len(time_ranges) - 1:
-        # Avoid loading video error at the end of the video
+        # Avoid getting video error at the end of the video
         return random.uniform(time_ranges[random_index][1], sample_time - 2)
 
     return random.uniform(time_ranges[random_index][1], time_ranges[random_index + 1][0])
@@ -275,23 +277,23 @@ def get_loaders(datasets: typing.Dict[str, torchvision.datasets.ImageFolder],
     return loaders
 
 
-def random_short_side_scale(image, min_size=256, max_size=320):
-    h, w = image.shape[:2]
-    short_side = random.randint(min_size, max_size)
-    if h < w:
-        new_h = short_side
-        new_w = int((short_side / h) * w)
-    else:
-        new_w = short_side
-        new_h = int((short_side / w) * h)
-    return cv2.resize(image, (new_w, new_h))
+# def random_short_side_scale(image, min_size=256, max_size=320):
+#     h, w = image.shape[:2]
+#     short_side = random.randint(min_size, max_size)
+#     if h < w:
+#         new_h = short_side
+#         new_w = int((short_side / h) * w)
+#     else:
+#         new_w = short_side
+#         new_h = int((short_side / w) * h)
+#     return cv2.resize(image, (new_w, new_h))
 
 
-def random_crop(image, height, width):
-    h, w = image.shape[:2]
-    top = random.randint(0, h - height)
-    left = random.randint(0, w - width)
-    return image[top:top + height, left:left + width]
+# def random_crop(image, height, width):
+#     h, w = image.shape[:2]
+#     top = random.randint(0, h - height)
+#     left = random.randint(0, w - width)
+#     return image[top:top + height, left:left + width]
 
 
 def normalize(image, mean=None, std=None):
@@ -308,8 +310,9 @@ def train_transform(video, height, width, mean, std, min_size=256, max_size=320)
     transformed_video = []
     for frame in video:
         frame = normalize(frame, mean, std)
-        frame = random_short_side_scale(frame, min_size, max_size)
-        frame = random_crop(frame, height, width)
+        frame = resize(frame, height, width)
+        # frame = random_short_side_scale(frame, min_size, max_size)
+        # frame = random_crop(frame, height, width)
         transformed_video.append(frame)
     return np.array(transformed_video)
 
