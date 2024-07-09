@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Batch size for training
-batch_size = 4
+batch_size = 32
 
 # Loss function to use, here it's Binary Cross-Entropy (BCE)
 loss = 'BCE'
