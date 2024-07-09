@@ -40,7 +40,7 @@ def print_info_for_debug(ground_truths,
         else:
             print(utils.blue_text(f'{video_name}{" " * (120 - len(video_name))} '
                                   f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
-        if idx > 10:
+        if idx > 20:
             break
     pass
 
@@ -50,7 +50,7 @@ def batch_learning_and_evaluating(loaders,
                                   optimizer: torch.optim,
                                   fine_tuner: torch.nn.Module,
                                   evaluation: bool = False,
-                                  print_info: bool = False):
+                                  print_info: bool = True):
     num_batches = len(loaders)
     batches = tqdm(enumerate(loaders, 0),
                    total=num_batches)
