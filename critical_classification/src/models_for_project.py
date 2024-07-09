@@ -187,7 +187,11 @@ class YOLOv1_binary(nn.Module):
 
         self.base_model = YOLOv1(self.split_size, self.num_boxes, self.num_classes).to(self.device)
         weights = torch.load(self.pretrain_base_model_path, map_location=self.device)
+
+        # Freeze base layer
         self.base_model.load_state_dict(weights["state_dict"])
+        for param in self.base_model.parameters():
+            param.requires_grad = False
 
         self.flatten = nn.Flatten()
 
@@ -200,7 +204,13 @@ class YOLOv1_binary(nn.Module):
 
         # Add new fully-connected layer for binary output
         self.binary_fc = nn.Sequential(
-            nn.Linear(4096, 1),
+            nn.Linear(4096, 256),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(256, 16),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(16, 1),
             nn.Sigmoid()
         )
 

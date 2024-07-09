@@ -59,7 +59,7 @@ if __name__ == '__main__':
         backbone_pipeline.initiate(metadata=config.metadata,
                                    batch_size=1,
                                    representation=config.representation,
-                                   sample_duration=2)
+                                   sample_duration=config.duration)
     )
 
     label = None

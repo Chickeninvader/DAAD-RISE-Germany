@@ -60,6 +60,11 @@ def batch_learning_and_evaluating(loaders,
     video_name_with_time = []
     total_running_loss = torch.Tensor([0.0]).to(device)
 
+    if evaluation:
+        fine_tuner.eval()
+    else:
+        fine_tuner.train()
+
     for batch_num, batch in batches:
         with context_handlers.ClearCache(device=device):
             X, Y_true, video_name_with_time_batch = batch
