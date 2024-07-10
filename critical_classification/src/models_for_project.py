@@ -9,11 +9,24 @@ import torch.nn.parallel
 import torch.optim
 import torch.utils.data.distributed
 import torchvision
-from keras.applications import MobileNetV2
-from keras.layers import GlobalAveragePooling2D, Dense, LeakyReLU, Dropout, Reshape, Lambda
-from keras.models import Model
 from transformers import VideoMAEForVideoClassification
 from ultralytics import YOLO
+from torch.autograd import Variable
+
+from critical_classification import config
+
+if config.framework == 'tensorflow':
+    try:
+        from keras.applications import MobileNetV2
+        from keras.layers import GlobalAveragePooling2D, Dense, LeakyReLU, Dropout, Reshape, Lambda
+        from keras.models import Model
+    except ModuleNotFoundError:
+        try:
+            from tensorflow.keras.applications import MobileNetV2
+            from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, LeakyReLU, Dropout, Reshape, Lambda
+            from tensorflow.keras.models import Model
+        except ModuleNotFoundError as e:
+            print('Tensorflow is not installed properly')
 
 
 class YOLOv1(nn.Module):
@@ -154,7 +167,7 @@ class YOLOv1(nn.Module):
         return x
 
 
-class YOLOv1_binary(nn.Module):
+class YOLOv1_image_binary(nn.Module):
     """
     This class contains the YOLOv1 model. It consists of 24 convolutional and
     2 fully-connected layers which divide the input image into a
@@ -175,7 +188,7 @@ class YOLOv1_binary(nn.Module):
             predicted by the model.
         """
 
-        super(YOLOv1_binary, self).__init__()
+        super(YOLOv1_image_binary, self).__init__()
         self.split_size = split_size
         self.num_boxes = num_boxes
         self.num_classes = num_classes
@@ -234,6 +247,87 @@ class YOLOv1_binary(nn.Module):
         x = self.binary_fc(x)
 
         return x
+
+
+class YOLOv1_video_binary(nn.Module):
+    """
+        This class contains the YOLOv1 model. It consists of 24 convolutional and
+        2 fully-connected layers which divide the input image into a
+        (split_size x split_size) grid and predict num_boxes bounding boxes per grid
+        cell.
+        """
+
+    def __init__(self, split_size, num_boxes, num_classes, device=torch.device('cpu')):
+        """
+        Initializes the neural-net with the parameter values to produce the
+        desired predictions.
+
+        Parameters:
+            split_size (int): Size of the grid which is applied to the image.
+            num_boxes (int): Amount of bounding boxes which are predicted per
+            grid cell.
+            num_classes (int): Amount of different classes which are being
+            predicted by the model.
+        """
+
+        super(YOLOv1_video_binary, self).__init__()
+        self.split_size = split_size
+        self.num_boxes = num_boxes
+        self.num_classes = num_classes
+        self.pretrain_base_model_path = 'critical_classification/save_models/YOLO_bdd100k.pt'
+        self.category_list = ["other vehicle", "pedestrian", "traffic light", "traffic sign",
+                              "truck", "train", "other person", "bus", "car", "rider",
+                              "motorcycle", "bicycle", "trailer"]
+        self.device = device
+
+        self.base_model = YOLOv1(self.split_size, self.num_boxes, self.num_classes).to(self.device)
+        weights = torch.load(self.pretrain_base_model_path, map_location=self.device)
+
+        # Freeze base layer
+        self.base_model.load_state_dict(weights["state_dict"])
+        for param in self.base_model.parameters():
+            param.requires_grad = False
+
+        # Add new LSTM layer for binary output
+        self.hidden_size = 128  # hidden size of lstm
+        self.num_layers = 2  # number of LSTM layers stacked
+
+        self.LSTM = torch.nn.LSTM(input_size=split_size * split_size * (num_classes + num_boxes * 5),
+                                  hidden_size=self.hidden_size,
+                                  num_layers=self.num_layers)
+
+        self.fc = nn.Sequential(
+            nn.Linear(self.hidden_size * self.num_layers, 32),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Linear(32, 8),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Linear(8, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        """
+        Forwards the input tensor through the model to produce the predictions.
+
+        Parameters:
+            x (tensor): A tensor of shape (num_frames, 3, 448, 448) which represents
+            a batch of input images.
+
+        Returns:
+            x (tensor): A tensor of shape () which contains the predicted critical value
+        """
+        # Since there is alway 1 video process only, the 'batch_size' is 1
+        h_0 = Variable(torch.zeros(self.num_layers, 1, self.hidden_size))  # hidden state
+        c_0 = Variable(torch.zeros(self.num_layers, 1, self.hidden_size))  # internal state
+
+        x = self.base_model.darkNet(x)
+        x = torch.flatten(x, start_dim=1)
+        x = self.base_model.fc(x)
+        x = x.unsqueeze(1)
+        output, (hn, cn) = self.LSTM(x, (h_0, c_0))
+        hn_last = hn.reshape(-1)
+        final_output = self.fc(hn_last)
+        return final_output
 
 
 def init_weights(m):

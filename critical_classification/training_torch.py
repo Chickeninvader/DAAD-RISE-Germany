@@ -70,13 +70,17 @@ def batch_learning_and_evaluating(loaders,
     for batch_num, batch in batches:
         with context_handlers.ClearCache(device=device):
             X, Y_true, video_name_with_time_batch = batch
-            if X.shape[1] == 1:
+            # If X is 1 video only, collapse the dimension
+            if X.shape[0] == 1:
                 X = torch.squeeze(X)
             X = X.to(device).float()
             Y_true = Y_true.to(device)
 
             with autocast():
                 Y_pred = fine_tuner(X)
+
+            if Y_pred.ndim == 1:
+                Y_pred = Y_pred.unsqueeze(dim=0)
 
             # For debuging:
             # Y_pred = Y_true
@@ -173,15 +177,15 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     return best_fine_tuner
 
 
-def run_combined_fine_tuning_pipeline(config,
-                                      debug: bool = utils.is_debug_mode()):
+def run_combined_fine_tuning_pipeline(config):
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(metadata=config.metadata,
                                    batch_size=config.batch_size,
                                    model_name=config.model_name,
                                    pretrained_path=config.pretrained_path,
-                                   representation=config.representation,
-                                   sample_duration=config.duration)
+                                   img_representation=config.img_representation,
+                                   sample_duration=config.duration,
+                                   img_size=config.img_size)
     )
 
     fine_tune_combined_model(

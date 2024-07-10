@@ -198,8 +198,9 @@ def run_combined_fine_tuning_pipeline(config):
                                    batch_size=config.batch_size,
                                    model_name=config.model_name,
                                    pretrained_path=config.pretrained_path,
-                                   representation=config.representation,
-                                   sample_duration=config.duration)
+                                   img_representation=config.img_representation,
+                                   sample_duration=config.duration,
+                                   img_size=config.img_size)
     )
 
     fine_tune_combined_model(
