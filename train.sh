@@ -19,7 +19,7 @@ echo Starting Train
 date
 ## < Here comes the command to be executed >
 #python critical_classification/training_tensorflow.py
-python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
 echo Training complete
 date
