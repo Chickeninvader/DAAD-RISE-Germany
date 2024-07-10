@@ -20,6 +20,7 @@ date
 ## < Here comes the command to be executed >
 #python critical_classification/training_tensorflow.py
 #python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+nvidia-smi
 python setup.py build develop
 
 echo Training complete
