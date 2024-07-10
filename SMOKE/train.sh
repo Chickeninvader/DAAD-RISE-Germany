@@ -14,12 +14,13 @@ echo $CUDA_VISIBLE_DEVICES
 PATH=/usr/local/bin:$PATH
 source ~/.bashrc
 eval "$(micromamba shell hook --shell bash)"
-micromamba activate daad2
+micromamba activate smoke
 echo Starting Train
 date
 ## < Here comes the command to be executed >
 #python critical_classification/training_tensorflow.py
-python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+#python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+python setup.py build develop
 
 echo Training complete
 date
