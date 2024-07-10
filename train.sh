@@ -14,7 +14,7 @@ echo $CUDA_VISIBLE_DEVICES
 PATH=/usr/local/bin:$PATH
 source ~/.bashrc
 eval "$(micromamba shell hook --shell bash)"
-micromamba activate daad
+micromamba activate daad2
 echo Starting Train
 date
 ## < Here comes the command to be executed >
