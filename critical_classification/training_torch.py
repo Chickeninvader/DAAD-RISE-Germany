@@ -76,6 +76,15 @@ def batch_learning_and_evaluating(loaders,
             X = X.to(device).float()
             Y_true = Y_true.to(device)
 
+            all_on_device = True
+            for name, param in fine_tuner.named_parameters():
+                if param.device != device:
+                    all_on_device = False
+                    print(f"Parameter '{name}' is on {param.device} instead of {device}")
+
+            if all_on_device:
+                print(f"All parameters are on {device}")
+
             with autocast():
                 Y_pred = fine_tuner(X)
 
