@@ -24,7 +24,7 @@ def get_video_frames_as_tensor(train_or_test: str,
                                model_name: str,
                                img_representation: str,
                                img_size: int,
-                               sample_duration: int = 2,
+                               sample_duration: float = 2.0,
                                frame_rate: int = 30,
                                ):
     """
@@ -175,7 +175,7 @@ def is_valid_time_format(critical_driving_time):
 class VideoDataset(Dataset):
     def __init__(self,
                  metadata: pd.DataFrame,
-                 duration: int,
+                 duration: float,
                  img_size: int,
                  test: bool,
                  img_representation: str,
@@ -222,18 +222,19 @@ class VideoDataset(Dataset):
         self.train_or_test = 'test' if test else 'train'
         self.model_name = model_name
         self.img_size = img_size
+        self.num_positive_class = sum(self.metadata['video_type'] == 'Dashcam')
+        self.num_negative_class = sum(self.metadata['video_type'] != 'Dashcam')
 
         invalid_rows = self.metadata['critical_driving_time'].apply(is_valid_time_format)
         if not invalid_rows.all():
             raise ValueError(f"Invalid time format found in rows with data:\n{self.metadata['path'][~invalid_rows]}")
 
         print(f'{self.train_or_test} dataset contain: ')
-        print(utils.green_text(f"{sum(self.metadata['video_type'] == 'Dashcam')} video contain critical data"))
-        print(utils.red_text(f"{sum(self.metadata['video_type'] != 'Dashcam')} video contain non critical data"))
+        print(utils.green_text(f"{self.num_positive_class} video contain critical data"))
+        print(utils.red_text(f"{self.num_negative_class} video contain non critical data"))
 
     def __len__(self):
-        # sample 100x data
-        return len(self.metadata) * 100
+        return len(self.metadata)
 
     def __getitem__(self, idx):
         idx = idx % len(self.metadata)
@@ -279,7 +280,7 @@ def get_datasets(metadata: pd.DataFrame,
     return datasets
 
 
-def get_loaders(datasets: typing.Dict[str, torchvision.datasets.ImageFolder],
+def get_loaders(datasets: typing.Dict[str, VideoDataset],
                 batch_size: int,
                 ) -> typing.Dict[str, torch.utils.data.DataLoader]:
     """
@@ -293,10 +294,20 @@ def get_loaders(datasets: typing.Dict[str, torchvision.datasets.ImageFolder],
     loaders = {}
 
     for split in ['train', 'test']:
+        weight = [0, 0]
+        weight[1] = 1 / datasets[split].num_positive_class
+        weight[0] = 1 / datasets[split].num_negative_class
+        samples_weight = np.array(
+            [weight[idx]
+             for idx in np.where(datasets[split].metadata['video_type'] == 'Dashcam', 1, 0)])
+        samples_weight = torch.from_numpy(samples_weight)
+        samples_weight = samples_weight.double()
+        sampler = torch.utils.data.sampler.WeightedRandomSampler(samples_weight, len(samples_weight))
+
         loaders[split] = torch.utils.data.DataLoader(
             dataset=datasets[split],
             batch_size=batch_size,
-            shuffle=split == 'train',
+            sampler=sampler if split == 'train' else None,
             num_workers=4,
         )
     return loaders

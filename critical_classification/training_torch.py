@@ -109,7 +109,7 @@ def batch_learning_and_evaluating(loaders,
             del X, Y_pred, Y_true
             # break  # for debuging
 
-    predictions[-1] = predictions[-1].unsqueeze(dim=0) if predictions[-1].ndim == 0 else predictions[-1]
+    predictions = [item.unsqueeze(dim=0) if item.ndim == 0 else item for item in predictions]
     predictions = torch.cat(predictions)
     ground_truths = torch.cat(ground_truths)
 
