@@ -67,15 +67,6 @@ def batch_learning_and_evaluating(loaders,
     else:
         fine_tuner.train()
 
-    all_on_device = True
-    for name, param in fine_tuner.named_parameters():
-        if param.device != device:
-            all_on_device = False
-            print(f"Parameter '{name}' is on {param.device} instead of {device}")
-
-    if all_on_device:
-        print(f"All parameters are on {device}")
-
     for batch_num, batch in batches:
         try:
             with context_handlers.ClearCache(device=device):
@@ -156,18 +147,27 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     #                                             gamma=scheduler_gamma)
     best_fine_tuner = copy.deepcopy(fine_tuner)
 
+    all_on_device = True
+    for name, param in fine_tuner.named_parameters():
+        if param.device != device:
+            all_on_device = False
+            print(f"Parameter '{name}' is on {param.device} instead of {device}")
+
+    if all_on_device:
+        print(f"All parameters are on {device}")
+
     print('#' * 100 + '\n')
 
     for epoch in range(config.num_epochs):
         with ((context_handlers.TimeWrapper())):
-
+            print('#' * 50 + f'train epoch {epoch}' + '#' * 50)
             optimizer, fine_tuner, train_accuracy, train_f1 = \
                 batch_learning_and_evaluating(loaders=loaders['train'],
                                               device=device,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner)
-
             # Testing
+            print('#' * 50 + f'test epoch {epoch}' + '#' * 50)
             optimizer, fine_tuner, test_accuracy, test_f1 = \
                 batch_learning_and_evaluating(loaders=loaders['test'],
                                               device=device,
