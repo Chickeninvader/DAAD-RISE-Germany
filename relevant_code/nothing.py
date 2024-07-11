@@ -1,4 +1,21 @@
+import os
 from moviepy.editor import VideoFileClip
+
+def convert_mov_files(input_folder, output_folder):
+    # Ensure the output folder exists
+    os.makedirs(output_folder, exist_ok=True)
+
+    # List all files in the input folder
+    files = os.listdir(input_folder)
+
+    for file in files:
+        if file.endswith(".mov"):
+            # Generate input and output file paths
+            input_path = os.path.join(input_folder, file)
+            output_path = os.path.join(output_folder, file.replace(".mov", ".mp4"))
+
+            # Convert .mov to .mp4
+            convert_mov_to_mp4(input_path, output_path)
 
 def convert_mov_to_mp4(input_path, output_path):
     # Load the video file
@@ -11,9 +28,9 @@ def convert_mov_to_mp4(input_path, output_path):
     clip.close()
 
 if __name__ == "__main__":
-    # Replace with your input and output file paths
-    input_path = 'critical_classification/dashcam_video/original_video/cc7b0a4d-e8dfd84a.mov'
-    output_path = 'critical_classification/dashcam_video/original_video/cc7b0a4d-e8dfd84a.mp4'
+    # Specify input and output folders
+    input_folder = 'critical_classification/dashcam_video/original_video/'
+    output_folder = 'critical_classification/dashcam_video/original_video/'
 
-    # Convert .mov to .mp4
-    convert_mov_to_mp4(input_path, output_path)
+    # Convert all .mov files in input_folder to .mp4 in output_folder
+    convert_mov_files(input_folder, output_folder)
