@@ -17,7 +17,7 @@ from tqdm import tqdm
 
 sys.path.append(os.getcwd())
 
-from critical_classification.src.models_for_project import YOLOv1
+from critical_classification.src.models_for_project_torch import YOLOv1
 from critical_classification.src.dataset.bounding_box_representation import draw_gaussian, draw_rectangle
 
 # All BDD100K (dataset) classes and the corresponding class colors for drawing

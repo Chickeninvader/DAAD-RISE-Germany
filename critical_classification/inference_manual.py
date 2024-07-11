@@ -7,7 +7,7 @@
 # do inference on some videos
 
 from torchvision import transforms
-from src.models_for_project import YOLOv1
+from src.models_for_project_torch import YOLOv1
 from PIL import Image
 import argparse
 import time

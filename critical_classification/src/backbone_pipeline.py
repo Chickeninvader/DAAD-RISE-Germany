@@ -8,11 +8,11 @@ sys.path.append(os.getcwd())
 
 from critical_classification.src import utils, data_preprocessing
 from critical_classification import config
-from critical_classification.src.models_for_project import YOLOv1_video_binary, YOLOv1_image_binary, VideoMAE
+from critical_classification.src.models_for_project_torch import YOLOv1_video_binary, YOLOv1_image_binary, VideoMAE
 
 if config.framework == 'tensorflow':
     import tensorflow as tf
-    from critical_classification.src.models_for_project import CriticalClassification
+    from critical_classification.src.models_for_project_tensorflow import CriticalClassification
 
 
 def initiate(metadata: pd.DataFrame,
