@@ -41,7 +41,7 @@ def initiate(metadata: pd.DataFrame,
             - devices (list): A list of torch.device objects for model placement.
     """
     device_str = 'mps' if utils.is_local() and torch.backends.mps.is_available() \
-        else ("cuda" if torch.cuda.is_available() else 'cpu')
+        else ("cuda:0" if torch.cuda.is_available() else 'cpu')
     if config.framework == 'torch':
         device = torch.device(device_str)
         print(f'Using {device}')
