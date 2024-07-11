@@ -104,8 +104,10 @@ def get_critical_mid_time(critical_driving_time,
     float: A random time within the specified conditions.
     """
 
-    if not isinstance(critical_driving_time, str) and label == 0:
+    if not isinstance(critical_driving_time, str) or label == 0:
+        # Avoid getting video error at the end of the video
         return random.uniform(0, sample_time - 2)
+
     time_ranges = []
     for start_end_time in critical_driving_time.split(","):
         start_time, end_time = start_end_time.split('-')
@@ -116,15 +118,15 @@ def get_critical_mid_time(critical_driving_time,
     # Pick a random index from the list
     random_index = random.randint(0, len(time_ranges) - 1)
 
-    if label == 1:
-        # Generate a random float number within the chosen range
-        return random.uniform(time_ranges[random_index][0], time_ranges[random_index][1])
+    # if label == 1:
+    #     # Generate a random float number within the chosen range
+    #     return random.uniform(time_ranges[random_index][0], time_ranges[random_index][1])
 
     if random_index == len(time_ranges) - 1:
         # Avoid getting video error at the end of the video
         return random.uniform(time_ranges[random_index][1], sample_time - 2)
 
-    return random.uniform(time_ranges[random_index][1], time_ranges[random_index + 1][0])
+    return random.uniform(time_ranges[random_index][0], time_ranges[random_index][1])
 
 
 def get_video_duration_opencv(video_path):
