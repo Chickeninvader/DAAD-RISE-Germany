@@ -59,18 +59,20 @@ def get_video_frames_as_tensor(train_or_test: str,
                                        label=label)
 
     start_time_in_ms = int(start_time * 1000) - sample_duration * 500
-    duration_in_ms = int(1000 * sample_duration)
+    sample_duration_in_ms = int(1000 * sample_duration)
 
     cap.set(cv2.CAP_PROP_POS_MSEC, start_time_in_ms)
 
     frames = []
-    for i in range(duration_in_ms // int(1000 / frame_rate)):
+    for i in range(sample_duration_in_ms // int(1000 / frame_rate)):
         ret, frame = cap.read()
         if ret:
             frames.append(frame)
         else:
             raise ValueError(f"Error: Frame not read!. "
-                             f"{video_path} sample at time: {start_time_in_ms * 1000}, duration {video_duration}")
+                             f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
+                             f"duration {video_duration}, "
+                             f"with sample duration {sample_duration_in_ms / 1000} second")
 
     cap.release()
 
