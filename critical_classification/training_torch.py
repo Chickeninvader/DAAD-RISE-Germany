@@ -77,46 +77,49 @@ def batch_learning_and_evaluating(loaders,
         print(f"All parameters are on {device}")
 
     for batch_num, batch in batches:
-        with context_handlers.ClearCache(device=device):
-            X, Y_true, video_name_with_time_batch = batch
-            # If X is 1 video only, collapse the dimension
-            if X.shape[0] == 1:
-                X = torch.squeeze(X)
-            X = X.to(device).float()
-            Y_true = Y_true.to(device)
+        try:
+            with context_handlers.ClearCache(device=device):
+                X, Y_true, video_name_with_time_batch = batch
+                # If X is 1 video only, collapse the dimension
+                if X.shape[0] == 1:
+                    X = torch.squeeze(X)
+                X = X.to(device).float()
+                Y_true = Y_true.to(device)
 
-            with autocast():
-                Y_pred = fine_tuner(X)
+                with autocast():
+                    Y_pred = fine_tuner(X)
 
-            if Y_pred.ndim == 1:
-                Y_pred = Y_pred.unsqueeze(dim=0)
+                if Y_pred.ndim == 1:
+                    Y_pred = Y_pred.unsqueeze(dim=0)
 
-            # For debuging:
-            # Y_pred = Y_true
-            # evaluation = True
+                # For debuging:
+                # Y_pred = Y_true
+                # evaluation = True
 
-            predictions.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)).detach().to('cpu'))
-            ground_truths.append(Y_true.detach().to('cpu'))
-            video_name_with_time.extend([(os.path.basename(item[0]), item[1])
-                                         for item in zip(video_name_with_time_batch[0],
-                                                         video_name_with_time_batch[1])])
-            if evaluation:
+                predictions.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)).detach().to('cpu'))
+                ground_truths.append(Y_true.detach().to('cpu'))
+                video_name_with_time.extend([(os.path.basename(item[0]), item[1])
+                                             for item in zip(video_name_with_time_batch[0],
+                                                             video_name_with_time_batch[1])])
+                if evaluation:
+                    del X, Y_pred, Y_true
+                    # break  # for debuging
+                    continue
+
+                criterion = torch.nn.BCEWithLogitsLoss()
+                batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
+                total_running_loss += batch_total_loss.item() / len(batches)
+                # Update progress bar with informative text (without newline)
+                if batch_num % (int(num_batches / 2.5)) == 0:
+                    tqdm.write(f'Current total loss: {total_running_loss.item()}')
+
+                batch_total_loss.backward()
+                optimizer.step()
+
                 del X, Y_pred, Y_true
                 # break  # for debuging
-                continue
-
-            criterion = torch.nn.BCEWithLogitsLoss()
-            batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
-            total_running_loss += batch_total_loss.item() / len(batches)
-            # Update progress bar with informative text (without newline)
-            if batch_num % (int(num_batches / 2.5)) == 0:
-                tqdm.write(f'Current total loss: {total_running_loss.item()}')
-
-            batch_total_loss.backward()
-            optimizer.step()
-
-            del X, Y_pred, Y_true
-            # break  # for debuging
+        except RuntimeError as e:
+            print(e)
 
     predictions = [item.unsqueeze(dim=0) if item.ndim == 0 else item for item in predictions]
     predictions = torch.cat(predictions)
