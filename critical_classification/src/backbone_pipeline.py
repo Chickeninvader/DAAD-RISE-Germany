@@ -6,11 +6,13 @@ import torch.utils.data
 
 sys.path.append(os.getcwd())
 
-from critical_classification.src import utils, models_for_project, data_preprocessing
+from critical_classification.src import utils, data_preprocessing
 from critical_classification import config
+from critical_classification.src.models_for_project import YOLOv1_video_binary, YOLOv1_image_binary, VideoMAE
 
 if config.framework == 'tensorflow':
     import tensorflow as tf
+    from critical_classification.src.models_for_project import CriticalClassification
 
 
 def initiate(metadata: pd.DataFrame,
@@ -59,14 +61,14 @@ def initiate(metadata: pd.DataFrame,
         print(f'Loading pretrain weight model at {pretrained_path}')
 
     if model_name == 'VideoMAP':
-        fine_tuner = models_for_project.VideoMAE()
+        fine_tuner = VideoMAE()
     elif model_name == 'YOLOv1_image':
-        fine_tuner = models_for_project.YOLOv1_image_binary(split_size=14, num_boxes=2, num_classes=13, device=device)
+        fine_tuner = YOLOv1_image_binary(split_size=14, num_boxes=2, num_classes=13, device=device)
     elif model_name == 'YOLOv1_video':
-        fine_tuner = models_for_project.YOLOv1_video_binary(split_size=14, num_boxes=2, num_classes=13, device=device)
+        fine_tuner = YOLOv1_video_binary(split_size=14, num_boxes=2, num_classes=13, device=device)
 
     elif model_name == 'Monocular3D':
-        fine_tuner = models_for_project.CriticalClassification(
+        fine_tuner = CriticalClassification(
             mono3d_weights_path='critical_classification/save_models/mobilenetv2_weights.h5',
             binary_model_weights_path=pretrained_path,
             device=device_str)
