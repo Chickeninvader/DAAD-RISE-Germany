@@ -69,8 +69,8 @@ def get_video_frames_as_tensor(train_or_test: str,
         if ret:
             frames.append(frame)
         else:
-            print(f'{video_path} sample at time: {start_time_in_ms * 1000}, duration {video_duration} ')
-            raise ValueError("Error: Frame not read!")
+            raise ValueError(f"Error: Frame not read!. "
+                             f"{video_path} sample at time: {start_time_in_ms * 1000}, duration {video_duration}")
 
     cap.release()
 
