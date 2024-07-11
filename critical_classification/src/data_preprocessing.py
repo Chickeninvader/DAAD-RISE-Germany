@@ -69,6 +69,7 @@ def get_video_frames_as_tensor(train_or_test: str,
         if ret:
             frames.append(frame)
         else:
+            print(f'{video_path} sample at time: {start_time_in_ms * 1000}, duration {video_duration} ')
             raise ValueError("Error: Frame not read!")
 
     cap.release()
@@ -104,7 +105,7 @@ def get_critical_mid_time(critical_driving_time,
     """
 
     if not isinstance(critical_driving_time, str) and label == 0:
-        return random.uniform(0, sample_time)
+        return random.uniform(0, sample_time - 2)
     time_ranges = []
     for start_end_time in critical_driving_time.split(","):
         start_time, end_time = start_end_time.split('-')
