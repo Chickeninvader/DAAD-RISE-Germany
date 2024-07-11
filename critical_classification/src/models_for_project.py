@@ -2,7 +2,6 @@ import os.path
 from collections import deque, defaultdict
 
 import numpy as np
-import tensorflow as tf
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -17,11 +16,13 @@ from critical_classification import config
 
 if config.framework == 'tensorflow':
     try:
+        import tensorflow as tf
         from keras.applications import MobileNetV2
         from keras.layers import GlobalAveragePooling2D, Dense, LeakyReLU, Dropout, Reshape, Lambda
         from keras.models import Model
     except ModuleNotFoundError:
         try:
+            import tensorflow as tf
             from tensorflow.keras.applications import MobileNetV2
             from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, LeakyReLU, Dropout, Reshape, Lambda
             from tensorflow.keras.models import Model
