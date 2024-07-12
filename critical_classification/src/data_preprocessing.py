@@ -142,7 +142,9 @@ def get_video_duration_opencv(video_path):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
-        raise ValueError(f"Error opening video file at {video_path}!")
+        print(video_path)
+        return 0
+        # raise ValueError(f"Error opening video file at {video_path}!")
 
     # Get frame rate
     frame_rate = cap.get(cv2.CAP_PROP_FPS)
