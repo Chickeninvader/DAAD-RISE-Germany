@@ -145,7 +145,7 @@ def get_critical_mid_time(critical_driving_time,
 
     if not isinstance(critical_driving_time, str) or label == 0:
         # Avoid getting video error at the end of the video
-        return random.uniform(0, sample_time - 2)
+        return random.uniform(2, sample_time - 2)
 
     time_ranges = []
     for start_end_time in critical_driving_time.split(","):
