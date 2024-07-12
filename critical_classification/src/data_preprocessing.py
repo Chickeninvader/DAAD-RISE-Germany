@@ -285,7 +285,7 @@ class VideoDataset(Dataset):
         # Loop until we get the video that is not error
         video, start_time, label = None, None, None
         attempt = 0
-        while video is not None:
+        while video is None:
             video, start_time, label = get_video_frames_as_tensor(train_or_test=self.train_or_test,
                                                                   index=idx,
                                                                   metadata=self.metadata,
