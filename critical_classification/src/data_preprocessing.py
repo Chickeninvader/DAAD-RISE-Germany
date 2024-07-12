@@ -93,9 +93,9 @@ def get_video_frames_as_tensor(train_or_test: str,
 
     start_time_in_ms = int(start_time * 1000 - sample_duration * 500)
     sample_duration_in_ms = int(1000 * sample_duration)
+    video_path = metadata['full_path'][index]
 
     try:
-        video_path = metadata['full_path'][index]
         if video_path.lower().endswith('.mp4'):
             frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration)
         elif video_path.lower().endswith('.mov'):
