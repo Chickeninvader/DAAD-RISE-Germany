@@ -4,7 +4,7 @@ import pandas as pd
 framework = 'tensorflow'
 
 # Batch size for training. Set to 1 to get 1 video at the time
-batch_size = 1
+batch_size = 2
 
 # Loss function to use, here it's Binary Cross-Entropy (BCE)
 loss = 'BCE'
