@@ -109,23 +109,24 @@ def get_video_frames_as_tensor(train_or_test: str,
     else:
         raise FileNotFoundError(f'file not support: {video_path}')
 
-    frames_array = np.stack(frames, axis=0)
-    frames_array = dataset_transforms(video_array=frames_array,
-                                      train_or_test=train_or_test,
-                                      img_size=img_size,
-                                      model_name=model_name)
-    if img_representation == 'HWC':
-        # Final shape: (num_frames, height, width, channel)
-        assert frames_array.shape[3] == 3, (f'output representation not match, shape {frames_array.shape}, '
-                                            f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
-                                            f"duration {video_duration}, "
-                                            f"with sample duration {sample_duration_in_ms / 1000} second,")
-    else:
-        # Final shape: (num_frames, channel, height, width)
-        assert frames_array.shape[1] == 3, (f'output representation not match, shape {frames_array.shape}, '
-                                            f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
-                                            f"duration {video_duration}, "
-                                            f"with sample duration {sample_duration_in_ms / 1000} second,")
+    try:
+        frames_array = np.stack(frames, axis=0)
+        frames_array = dataset_transforms(video_array=frames_array,
+                                          train_or_test=train_or_test,
+                                          img_size=img_size,
+                                          model_name=model_name)
+        if img_representation == 'HWC':
+            # Final shape: (num_frames, height, width, channel)
+            assert frames_array.shape[3] == 3, f'output representation not match, shape {frames_array.shape}, '
+        else:
+            # Final shape: (num_frames, channel, height, width)
+            assert frames_array.shape[1] == 3
+
+    except ValueError or AssertionError:
+        raise RuntimeError(f'output representation not match, or not found '
+              f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
+              f"duration {video_duration}, "
+              f"with sample duration {sample_duration_in_ms / 1000} second,")
     return frames_array, start_time, label
 
 
