@@ -254,7 +254,7 @@ class CriticalClassification(tf.keras.Model):
         self.binary_model = BinaryModel()
 
         # Check if the weights file exists and load the weights
-        if os.path.exists(binary_model_weights_path):
+        if binary_model_weights_path is not None and os.path.exists(binary_model_weights_path):
             self.binary_model.load_weights(binary_model_weights_path)
 
     def call(self, videos, training=None, mask=None):

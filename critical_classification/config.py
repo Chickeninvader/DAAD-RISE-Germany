@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Framework to use, tensorflow or torch
-framework = 'torch'
+framework = 'tensorflow'
 
 # Batch size for training. Set to 1 to get 1 video at the time
 batch_size = 1
@@ -22,7 +22,7 @@ model_name = 'Monocular3D'
 img_representation = 'CHW'
 
 # image size of input. Also depend on model
-img_size = 448  # For YOLOv1_image, YOLOv1_video
+# img_size = 448  # For YOLOv1_image, YOLOv1_video
 img_size = 224  # For Monocular3D
 
 # Additional information to be appended to the saving file name
