@@ -68,6 +68,8 @@ def batch_learning_and_evaluating(loaders,
         # Y_pred = fine_tuner(X, training=evaluation)
         with tf.GradientTape() as tape:
             Y_pred = fine_tuner(X, training=evaluation)
+            assert Y_true.shape == Y_pred.shape, (f"Shape does not match, "
+                                                  f"pred shape {Y_pred.shape}, true shape {Y_true.shape}")
             batch_total_loss = criterion(Y_pred, Y_true)
 
         # Y_pred = Y_true
