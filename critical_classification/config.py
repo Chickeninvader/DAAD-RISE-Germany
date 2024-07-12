@@ -4,7 +4,7 @@ import pandas as pd
 framework = 'tensorflow'
 
 # Batch size for training. Set to 1 to get 1 video at the time
-batch_size = 2
+batch_size = 1
 
 # Loss function to use, here it's Binary Cross-Entropy (BCE)
 loss = 'BCE'
@@ -19,12 +19,12 @@ lr = 0.000001
 model_name = 'Monocular3D'
 
 # Input image representation, depend on model
-# img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video
-img_representation = 'HWC'  # for Monocular3D
+img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video
+# img_representation = 'HWC'  # for Monocular3D
 
 # image size of input. Also depend on model
-# img_size = 448  # For YOLOv1_image, YOLOv1_video
-img_size = 224  # For Monocular3D
+img_size = 448  # For YOLOv1_image, YOLOv1_video
+# img_size = 224  # For Monocular3D
 
 # Additional information to be appended to the saving file name
 additional_saving_info = 'experiment_1'
