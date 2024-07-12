@@ -120,13 +120,13 @@ def get_video_frames_as_tensor(train_or_test: str,
             assert frames_array.shape[3] == 3, f'output representation not match, shape {frames_array.shape}, '
         else:
             # Final shape: (num_frames, channel, height, width)
-            assert frames_array.shape[1] == 3
+            assert frames_array.shape[1] == 3, f'output representation not match, shape {frames_array.shape}, '
 
     except ValueError or AssertionError:
-        raise RuntimeError(f'output representation not match, or not found '
-              f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
-              f"duration {video_duration}, "
-              f"with sample duration {sample_duration_in_ms / 1000} second,")
+        raise RuntimeError(
+            f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
+            f"duration {video_duration}, "
+            f"with sample duration {sample_duration_in_ms / 1000} second, has some errors")
     return frames_array, start_time, label
 
 
