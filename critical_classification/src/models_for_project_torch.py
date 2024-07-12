@@ -304,7 +304,7 @@ class YOLOv1_video_binary(nn.Module):
         x = torch.flatten(x, start_dim=1)
         x = self.base_model.fc(x)
         x = x.unsqueeze(1)
-        output, (hn, cn) = self.LSTM(x, (h_0, c_0))
+        output, (hn, cn) = self.LSTM(x, (h_0.detach(), c_0.detach()))
         hn_last = hn.reshape(-1)
         final_output = self.fc(hn_last)
         return final_output

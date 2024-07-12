@@ -8,7 +8,9 @@ import pandas as pd
 import torch
 import torch.utils.data
 import torchvision
+from PIL import Image
 from torch.utils.data import Dataset
+from torchvision import transforms
 from transformers import VideoMAEImageProcessor
 
 from critical_classification.src import utils
@@ -68,6 +70,7 @@ def get_video_frames_as_tensor(train_or_test: str,
         ret, frame = cap.read()
         if ret:
             frames.append(frame)
+
         else:
             raise ValueError(f"Error: Frame not read!. "
                              f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
@@ -78,18 +81,19 @@ def get_video_frames_as_tensor(train_or_test: str,
 
     cap.release()
 
-    frames_tensor = np.stack(frames, axis=0)
-    frames_tensor = dataset_transforms(video_tensor=frames_tensor,
-                                       train_or_test=train_or_test,
-                                       img_size=img_size,
-                                       model_name=model_name)
+    frames_array = np.stack(frames, axis=0)
+    frames_array = dataset_transforms(video_array=frames_array,
+                                      train_or_test=train_or_test,
+                                      img_size=img_size,
+                                      model_name=model_name)
     if img_representation == 'HWC':
         # Final shape: (num_frames, height, width, channel)
-        return frames_tensor, start_time, label
+        assert frames_array.shape[3] == 3
+        return frames_array, start_time, label
     else:
         # Final shape: (num_frames, channel, height, width)
-
-        return frames_tensor.transpose((0, 3, 1, 2)), start_time, label
+        assert frames_array.shape[1] == 3
+        return frames_array, start_time, label
 
 
 def get_critical_mid_time(critical_driving_time,
@@ -340,7 +344,7 @@ def get_loaders(datasets: typing.Dict[str, VideoDataset],
 
 
 def normalize(image, mean=None, std=None):
-    if mean and std is not None:
+    if mean is not None and std is not None:
         return (image - mean) / std
     return image / 255.0
 
@@ -369,13 +373,25 @@ def test_transform(video, height, width, mean, std):
     return np.array(transformed_video)
 
 
-def dataset_transforms(video_tensor: np.array,
+def dataset_transforms(video_array: np.array,
                        train_or_test: str,
                        img_size: int,
                        model_name: str = 'VideoMAE') -> torch.tensor:
     """
     Returns the transforms required for the VIT for training or test datasets
     """
+    if model_name == 'YOLOv1_video':
+        frames = []
+        transform = transforms.Compose([
+            transforms.Resize((img_size, img_size), Image.NEAREST),
+            transforms.ToTensor(),
+        ])
+        for frame in video_array:
+            img = Image.fromarray(frame)
+            img_tensor = transform(img)
+            frames.append(img_tensor)
+        return torch.stack(frames)
+
     mean, std = None, None
     if model_name == 'VideoMAE':
         model_ckpt = "MCG-NJU/videomae-base"
@@ -391,6 +407,6 @@ def dataset_transforms(video_tensor: np.array,
         height, width = img_size, img_size
 
     if train_or_test == 'train':
-        return train_transform(video_tensor, height, width, mean, std)
+        return train_transform(video_array, height, width, mean, std)
     else:
-        return test_transform(video_tensor, height, width, mean, std)
+        return test_transform(video_array, height, width, mean, std)
