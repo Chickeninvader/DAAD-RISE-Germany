@@ -39,9 +39,6 @@ def get_frames_from_cv2(video_path: str,
             continue
 
         raise ValueError(f"Error: Frame not read!. "
-                         f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
-                         f"duration {video_duration}, "
-                         f"with sample duration {sample_duration_in_ms / 1000} second,"
                          f"already read {i} frames "
                          f"current frames: {frame}")
     cap.release()
@@ -55,10 +52,7 @@ def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms,
         end_time = start_time + (sample_duration_in_ms / 1000)
         frames = [frame for frame in clip.subclip(start_time, end_time).iter_frames(fps=frame_rate)]
     except ValueError:
-        raise ValueError(f"Error: Frame not read!. "
-                         f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
-                         f"duration {video_duration}, "
-                         f"with sample duration {sample_duration_in_ms / 1000} second,")
+        raise ValueError(f"Error: Frame not read!. ")
     return frames
 
 
@@ -100,16 +94,16 @@ def get_video_frames_as_tensor(train_or_test: str,
     start_time_in_ms = int(start_time * 1000 - sample_duration * 500)
     sample_duration_in_ms = int(1000 * sample_duration)
 
-    video_path = metadata['full_path'][index]
-    if video_path.lower().endswith('.mp4'):
-        frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration)
-    elif video_path.lower().endswith('.mov'):
-        frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate,
-                                         video_duration)
-    else:
-        raise FileNotFoundError(f'file not support: {video_path}')
-
     try:
+        video_path = metadata['full_path'][index]
+        if video_path.lower().endswith('.mp4'):
+            frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration)
+        elif video_path.lower().endswith('.mov'):
+            frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate,
+                                             video_duration)
+        else:
+            raise FileNotFoundError(f'file not support: {video_path}')
+
         frames_array = np.stack(frames, axis=0)
         frames_array = dataset_transforms(video_array=frames_array,
                                           train_or_test=train_or_test,
@@ -122,7 +116,7 @@ def get_video_frames_as_tensor(train_or_test: str,
             # Final shape: (num_frames, channel, height, width)
             assert frames_array.shape[1] == 3, f'output representation not match, shape {frames_array.shape}, '
 
-    except ValueError or AssertionError:
+    except ValueError or AssertionError or FileNotFoundError:
         raise RuntimeError(
             f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
             f"duration {video_duration}, "
