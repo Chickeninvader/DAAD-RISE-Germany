@@ -144,7 +144,7 @@ def get_critical_mid_time(critical_driving_time,
     """
 
     if not isinstance(critical_driving_time, str) or label == 0:
-        # Avoid getting video error at the end of the video
+        # Avoid getting video error at the start and end of the video
         return random.uniform(2, sample_time - 2)
 
     time_ranges = []
@@ -294,7 +294,7 @@ class VideoDataset(Dataset):
                                                                   model_name=self.model_name,
                                                                   img_representation=self.img_representation,
                                                                   img_size=self.img_size)
-            idx += 1
+            idx  = (idx + 1) % len(self.metadata)
             attempt += 1
             if attempt > 3:
                 raise RuntimeError(f'try to read data 3 times but still got error, stop training')
