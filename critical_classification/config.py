@@ -16,7 +16,8 @@ num_epochs = 10
 lr = 0.000001
 
 # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D
-model_name = 'Monocular3D'
+# model_name = 'Monocular3D'
+model_name = 'YOLOv1_video'
 
 # Input image representation, depend on model
 img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video
