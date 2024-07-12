@@ -16,13 +16,14 @@ num_epochs = 10
 lr = 0.000001
 
 # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D
-model_name = 'YOLOv1_video'
+model_name = 'Monocular3D'
 
 # Input image representation, depend on model
 img_representation = 'CHW'
 
 # image size of input. Also depend on model
-img_size = 448
+img_size = 448  # For YOLOv1_image, YOLOv1_video
+img_size = 224  # For Monocular3D
 
 # Additional information to be appended to the saving file name
 additional_saving_info = 'experiment_1'
