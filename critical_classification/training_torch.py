@@ -182,7 +182,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     if config.save_files:
         torch.save(best_fine_tuner.state_dict(),
                    f"save_models/{best_fine_tuner}_lr{config.lr}_{config.loss}_"
-                   f"{config.num_epochs}_{config.additional_info}.pth")
+                   f"{config.num_epochs}_{config.additional_saving_info}.pth")
 
     print('#' * 100)
 
