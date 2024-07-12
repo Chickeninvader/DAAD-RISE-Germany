@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.utils.data
-import torchvision
+from moviepy.editor import VideoFileClip
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
@@ -18,6 +18,47 @@ from critical_classification.src import utils
 
 # random.seed(42)
 # np.random.seed(42)
+
+def get_frames_from_cv2(video_path: str,
+                        start_time_in_ms: int,
+                        sample_duration_in_ms: int,
+                        frame_rate: int,
+                        video_duration: int):
+    cap = cv2.VideoCapture(video_path)
+
+    if not cap.isOpened():
+        raise ValueError("Error opening video file!")
+
+    cap.set(cv2.CAP_PROP_POS_MSEC, start_time_in_ms)
+
+    frames = []
+    for i in range(sample_duration_in_ms // int(1000 / frame_rate)):
+        ret, frame = cap.read()
+        if ret:
+            frames.append(frame)
+            continue
+
+        raise ValueError(f"Error: Frame not read!. "
+                         f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
+                         f"duration {video_duration}, "
+                         f"with sample duration {sample_duration_in_ms / 1000} second,"
+                         f"already read {i} frames "
+                         f"current frames: {frame}")
+    cap.release()
+    return frames
+
+def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration):
+    try:
+        clip = VideoFileClip(video_path)
+        start_time = start_time_in_ms / 1000
+        end_time = start_time + (sample_duration_in_ms / 1000)
+        frames = [frame for frame in clip.subclip(start_time, end_time).iter_frames(fps=frame_rate)]
+    except ValueError:
+        raise ValueError(f"Error: Frame not read!. "
+                         f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
+                         f"duration {video_duration}, "
+                         f"with sample duration {sample_duration_in_ms / 1000} second,")
+    return frames
 
 
 def get_video_frames_as_tensor(train_or_test: str,
@@ -45,11 +86,6 @@ def get_video_frames_as_tensor(train_or_test: str,
     Raises:
       ValueError: If video cannot be opened or frame is not read successfully.
     """
-    video_path = metadata['full_path'][index]
-    cap = cv2.VideoCapture(video_path)
-
-    if not cap.isOpened():
-        raise ValueError("Error opening video file!")
 
     critical_time = metadata['critical_driving_time'][index]
     video_duration = int(metadata['duration'][index])
@@ -60,26 +96,16 @@ def get_video_frames_as_tensor(train_or_test: str,
                                        critical_driving_time=critical_time,
                                        label=label)
 
-    start_time_in_ms = int(start_time * 1000) - sample_duration * 500
+    start_time_in_ms = int(start_time * 1000 - sample_duration * 500)
     sample_duration_in_ms = int(1000 * sample_duration)
 
-    cap.set(cv2.CAP_PROP_POS_MSEC, start_time_in_ms)
-
-    frames = []
-    for i in range(sample_duration_in_ms // int(1000 / frame_rate)):
-        ret, frame = cap.read()
-        if ret:
-            frames.append(frame)
-
-        else:
-            raise ValueError(f"Error: Frame not read!. "
-                             f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
-                             f"duration {video_duration}, "
-                             f"with sample duration {sample_duration_in_ms / 1000} second,"
-                             f"already read {i} frames "
-                             f"current frames: {frame}")
-
-    cap.release()
+    video_path = metadata['full_path'][index]
+    if video_path.lower().endswith('.mp4'):
+        frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration)
+    elif video_path.lower().endswith('.mov'):
+        frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration)
+    else:
+        raise FileNotFoundError(f'file not support: {video_path}')
 
     frames_array = np.stack(frames, axis=0)
     frames_array = dataset_transforms(video_array=frames_array,
