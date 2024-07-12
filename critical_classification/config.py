@@ -1,48 +1,55 @@
 import pandas as pd
 
-# Framework to use, tensorflow or torch
-framework = 'torch'
 
-# Batch size for training. Set to 1 to get 1 video at the time
-batch_size = 1
+class Config:
+    def __init__(self):
+        # Framework to use, tensorflow or torch
+        self.framework = 'torch'
 
-# Loss function to use, here it's Binary Cross-Entropy (BCE)
-loss = 'BCE'
+        # Batch size for training. Set to 1 to get 1 video at the time
+        self.batch_size = 1
 
-# Number of epochs to train the model
-num_epochs = 10
+        # Loss function to use, here it's Binary Cross-Entropy (BCE)
+        self.loss = 'BCE'
 
-# Learning rate for the optimizer
-lr = 0.000001
+        # Number of epochs to train the model
+        self.num_epochs = 10
 
-# Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D
-# model_name = 'Monocular3D'
-model_name = 'YOLOv1_video'
+        # Learning rate for the optimizer
+        self.lr = 0.000001
 
-# Input image representation, depend on model
-img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video
-# img_representation = 'HWC'  # for Monocular3D
+        # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D
+        # model_name = 'Monocular3D'
+        self.model_name = 'YOLOv1_video'
 
-# image size of input. Also depend on model
-img_size = 448  # For YOLOv1_image, YOLOv1_video
-# img_size = 224  # For Monocular3D
+        # Input image representation, depend on model
+        self.img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video
+        # self.img_representation = 'HWC'  # for Monocular3D
 
-# Additional information to be appended to the saving file name
-additional_saving_info = 'experiment_1'
+        # image size of input. Also depend on model
+        self.img_size = 448  # For YOLOv1_image, YOLOv1_video
+        # self.img_size = 224  # For Monocular3D
 
-# Path to pretrained model weights, if any
-pretrained_path = None
-# pretrained_path = 'critical_classification/save_models/file_name'
+        # Additional information to be appended to the saving file name
+        self.additional_saving_info = 'experiment_1'
 
-# Flag to indicate whether to save the trained model
-save_files = True
+        # Path to pretrained model weights, if any
+        self.pretrained_path = None
+        # self.pretrained_path = 'critical_classification/save_models/file_name'
 
-# Type of data representation being used (e.g., 'original', 'gaussian', etc.)
-representation = 'original'
+        # Flag to indicate whether to save the trained model
+        self.save_files = True
 
-# Duration of video segments to be processed, in seconds
-duration = 0.5
-# duration = 0.5/15  # take 1 image only
+        # Type of data representation being used (e.g., 'original', 'gaussian', etc.)
+        self.representation = 'original'
 
-# Load metadata from an Excel file, which contains information about the dataset
-metadata = pd.read_excel('critical_classification/dashcam_video/metadata.xlsx')
+        # Duration of video segments to be processed, in seconds
+        self.sample_duration = 0.5
+        # self.duration = 0.5/15  # take 1 image only
+
+        # Load metadata from an Excel file, which contains information about the dataset
+        self.metadata = pd.read_excel('critical_classification/dashcam_video/metadata.xlsx')
+
+        # Data_location
+        self.data_location = None
+

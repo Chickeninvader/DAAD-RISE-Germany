@@ -1,38 +1,21 @@
 import os
 import sys
 
-import pandas as pd
 import torch.utils.data
 
 sys.path.append(os.getcwd())
 
 from critical_classification.src import utils, data_preprocessing
-from critical_classification import config
+from critical_classification.config import Config
 from critical_classification.src.models_for_project_torch import YOLOv1_video_binary, YOLOv1_image_binary, VideoMAE
 
-if config.framework == 'tensorflow':
-    import tensorflow as tf
-    from critical_classification.src.models_for_project_tensorflow import CriticalClassification
 
-
-def initiate(metadata: pd.DataFrame,
-             batch_size: int,
-             img_representation: str,
-             img_size: int,
-             model_name: str = None,
-             pretrained_path: str = None,
-             sample_duration: float = 2
-             ):
+def initiate(config: Config):
     """
     Initializes and prepares the models, datasets, and devices for training.
 
     Args:
-        metadata (pd.DataFrame): Metadata containing information about the dataset.
-        batch_size (int): The size of batches for data loading.
-        model_name (str, optional): The name of the model to use. Defaults to None.
-        pretrained_path (str, optional): Path to a pretrained model (if any). Defaults to None.
-        representation (str, optional): The representation format of the data. Defaults to 'original'.
-        sample_duration (float, optional): The duration of each sample in seconds. Defaults to 2.
+        config: Config object
 
     Returns:
         tuple: A tuple containing:
@@ -40,21 +23,26 @@ def initiate(metadata: pd.DataFrame,
             - loaders (dict): A dictionary of data loaders for training, validation, and testing.
             - devices (list): A list of torch.device objects for model placement.
     """
+    batch_size = config.batch_size
+    model_name = config.model_name
+    pretrained_path = config.pretrained_path
+    sample_duration = config.sample_duration
+
     device_str = 'mps' if utils.is_local() and torch.backends.mps.is_available() \
         else ("cuda:0" if torch.cuda.is_available() else 'cpu')
     if config.framework == 'torch':
         device = torch.device(device_str)
         print(f'Using {device}')
-    else:
-        device = None
+    elif config.framework == 'tensorflow':
+        import tensorflow as tf
+        from critical_classification.src.models_for_project_tensorflow import CriticalClassification
         print(f"Tensorflow is using GPU: {tf.config.list_physical_devices('GPU')}")
+        device = None
+    else:
+        raise ValueError('Not support framework')
 
     datasets = data_preprocessing.get_datasets(
-        metadata=metadata,
-        img_representation=img_representation,
-        sample_duration=sample_duration,
-        model_name=model_name,
-        img_size=img_size,
+        config=config
     )
 
     if pretrained_path is not None:

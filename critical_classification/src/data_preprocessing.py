@@ -14,6 +14,7 @@ from torchvision import transforms
 from transformers import VideoMAEImageProcessor
 
 from critical_classification.src import utils
+from critical_classification.config import Config
 
 
 # random.seed(42)
@@ -218,17 +219,12 @@ def is_valid_time_format(critical_driving_time):
 
 class VideoDataset(Dataset):
     def __init__(self,
-                 metadata: pd.DataFrame,
-                 duration: float,
-                 img_size: int,
-                 test: bool,
-                 img_representation: str,
-                 model_name: str):
+                 config: Config,
+                 test: bool,):
         """
         Arguments:
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
+            test:
+            config:
         """
         # if representation == 'rectangle':
         #     folder_path = 'bounding_box_mask_video'
@@ -239,6 +235,13 @@ class VideoDataset(Dataset):
         #     mask_str = '_mask'
         #     print('use gaussian representation')
         # else:
+
+        metadata = config.metadata
+        img_representation = config.img_representation
+        duration = config.sample_duration
+        model_name = config.model_name
+        img_size = config.img_size
+        data_location = config.data_location
 
         frame_rate = 30
         folder_path = 'original_video'
@@ -251,7 +254,7 @@ class VideoDataset(Dataset):
 
         self.metadata['full_path'] = [
             os.path.join(os.getcwd(),
-                         f"critical_classification/dashcam_video/{folder_path}", f'{filename}')
+                         f"{data_location}{folder_path}", f'{filename}')
             for filename in self.metadata['path']
         ]
 
@@ -294,7 +297,7 @@ class VideoDataset(Dataset):
                                                                   model_name=self.model_name,
                                                                   img_representation=self.img_representation,
                                                                   img_size=self.img_size)
-            idx  = (idx + 1) % len(self.metadata)
+            idx = (idx + 1) % len(self.metadata)
             attempt += 1
             if attempt > 3:
                 raise RuntimeError(f'try to read data 3 times but still got error, stop training')
@@ -302,11 +305,7 @@ class VideoDataset(Dataset):
         return video, label, (self.metadata['full_path'][idx], start_time)
 
 
-def get_datasets(metadata: pd.DataFrame,
-                 img_representation: str,
-                 sample_duration: float,
-                 model_name: str,
-                 img_size: int = 224):
+def get_datasets(config: Config):
     """
     Instantiates and returns train and test datasets
 
@@ -318,12 +317,8 @@ def get_datasets(metadata: pd.DataFrame,
     for train_or_test in ['train', 'test']:
         print(f'get error detector loader for {train_or_test}')
         datasets[train_or_test] = VideoDataset(
-            metadata=metadata,
-            duration=sample_duration,
-            img_representation=img_representation,
-            test=train_or_test == 'test',
-            model_name=model_name,
-            img_size=img_size
+            config=config,
+            test=train_or_test == 'test'
         )
 
     return datasets

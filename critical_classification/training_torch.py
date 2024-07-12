@@ -1,3 +1,4 @@
+import argparse
 import copy
 import os
 import sys
@@ -11,10 +12,12 @@ import typing
 from tqdm import tqdm
 import warnings
 
+from critical_classification.config import Config
+
 sys.path.append(os.getcwd())
 
 from critical_classification.src import utils, context_handlers, backbone_pipeline
-from critical_classification import config
+from critical_classification.config import Config
 
 warnings.filterwarnings("ignore")
 
@@ -188,13 +191,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
 
 def run_combined_fine_tuning_pipeline(config):
     fine_tuner, loaders, device = (
-        backbone_pipeline.initiate(metadata=config.metadata,
-                                   batch_size=config.batch_size,
-                                   model_name=config.model_name,
-                                   pretrained_path=config.pretrained_path,
-                                   img_representation=config.img_representation,
-                                   sample_duration=config.duration,
-                                   img_size=config.img_size)
+        backbone_pipeline.initiate(config)
     )
 
     fine_tune_combined_model(
@@ -207,4 +204,12 @@ def run_combined_fine_tuning_pipeline(config):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Fine-tuning pipeline")
+    parser.add_argument('--data_location', type=str, help='Path to the data location',
+                        default='critical_classification/dashcam_video/original_video/')
+    # Add more arguments as needed
+
+    args = parser.parse_args()
+    config = Config()
+    config.data_location = args.data_location
     run_combined_fine_tuning_pipeline(config)
