@@ -127,6 +127,9 @@ def get_video_frames_as_tensor(train_or_test: str,
             f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
             f"duration {video_duration}, "
             f"with sample duration {sample_duration_in_ms / 1000} second, has some errors")
+    except OSError as e:
+        frames_array = None
+        print(e)
     return frames_array, start_time, label
 
 
@@ -285,17 +288,22 @@ class VideoDataset(Dataset):
 
     def __getitem__(self, idx):
         idx = idx % len(self.metadata)
-        video, start_time, label = get_video_frames_as_tensor(train_or_test=self.train_or_test,
-                                                              index=idx,
-                                                              metadata=self.metadata,
-                                                              sample_duration=self.duration,
-                                                              frame_rate=self.frame_rate,
-                                                              model_name=self.model_name,
-                                                              img_representation=self.img_representation,
-                                                              img_size=self.img_size)
-
-        if self.model_name == 'YOLOv1':
-            video = video.transpose((0, 3, 1, 2))
+        # Loop until we get the video that is not error
+        video, start_time, label = None, None, None
+        attempt = 0
+        while video is not None:
+            video, start_time, label = get_video_frames_as_tensor(train_or_test=self.train_or_test,
+                                                                  index=idx,
+                                                                  metadata=self.metadata,
+                                                                  sample_duration=self.duration,
+                                                                  frame_rate=self.frame_rate,
+                                                                  model_name=self.model_name,
+                                                                  img_representation=self.img_representation,
+                                                                  img_size=self.img_size)
+            idx += 1
+            attempt += 1
+            if attempt > 3:
+                raise RuntimeError(f'try to read data 3 times but still got error, stop training')
 
         return video, label, (self.metadata['full_path'][idx], start_time)
 
