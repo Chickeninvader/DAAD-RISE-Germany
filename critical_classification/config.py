@@ -19,7 +19,8 @@ lr = 0.000001
 model_name = 'Monocular3D'
 
 # Input image representation, depend on model
-img_representation = 'CHW'
+# img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video
+img_representation = 'HWC'  # for Monocular3D
 
 # image size of input. Also depend on model
 # img_size = 448  # For YOLOv1_image, YOLOv1_video
