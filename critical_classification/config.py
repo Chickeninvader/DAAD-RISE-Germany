@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Framework to use, tensorflow or torch
-framework = 'tensorflow'
+framework = 'torch'
 
 # Batch size for training. Set to 1 to get 1 video at the time
 batch_size = 1
