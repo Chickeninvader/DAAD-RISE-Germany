@@ -47,6 +47,7 @@ def get_frames_from_cv2(video_path: str,
     cap.release()
     return frames
 
+
 def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration):
     try:
         clip = VideoFileClip(video_path)
@@ -103,7 +104,8 @@ def get_video_frames_as_tensor(train_or_test: str,
     if video_path.lower().endswith('.mp4'):
         frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration)
     elif video_path.lower().endswith('.mov'):
-        frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration)
+        frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate,
+                                         video_duration)
     else:
         raise FileNotFoundError(f'file not support: {video_path}')
 
@@ -114,12 +116,17 @@ def get_video_frames_as_tensor(train_or_test: str,
                                       model_name=model_name)
     if img_representation == 'HWC':
         # Final shape: (num_frames, height, width, channel)
-        assert frames_array.shape[3] == 3
-        return frames_array, start_time, label
+        assert frames_array.shape[3] == 3, (f'output representation not match, shape {frames_array.shape}, '
+                                            f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
+                                            f"duration {video_duration}, "
+                                            f"with sample duration {sample_duration_in_ms / 1000} second,")
     else:
         # Final shape: (num_frames, channel, height, width)
-        assert frames_array.shape[1] == 3
-        return frames_array, start_time, label
+        assert frames_array.shape[1] == 3, (f'output representation not match, shape {frames_array.shape}, '
+                                            f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
+                                            f"duration {video_duration}, "
+                                            f"with sample duration {sample_duration_in_ms / 1000} second,")
+    return frames_array, start_time, label
 
 
 def get_critical_mid_time(critical_driving_time,
