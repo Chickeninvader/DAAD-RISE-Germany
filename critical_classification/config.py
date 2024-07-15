@@ -14,8 +14,8 @@ class Config:
         self.loss = 'BCE'
 
         # Number of epochs to train the model
-        self.num_epochs = 1  # for debugging
-        # self.num_epochs = 20
+        # self.num_epochs = 1  # for debugging
+        self.num_epochs = 20
 
         # Learning rate for the optimizer
         self.lr = 0.0001
