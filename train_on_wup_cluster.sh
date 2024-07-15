@@ -3,9 +3,9 @@
 #SBATCH --nodes=1  # number of nodes
 #SBATCH --tasks-per-node=1  # number of tasks per node
 #SBATCH --cpus-per-task 1  # number of cpus per task
-#SBATCH --gres=gpu:0 # number of gpus (4 out of 8)
+#SBATCH --gres=gpu:1 # number of gpus (4 out of 8)
 #SBATCH --mem=10000  # memory pool for all cores (in megabytes, if w/o suffix)
-#SBATCH -t 0-03:00  # time (D-HH:MM)
+#SBATCH -t 0-10:00  # time (D-HH:MM)
 #SBATCH -o /home/nvo/slurm_logs/slurm.%N.%j.out  # STDOUT
 #SBATCH -e /home/nvo/slurm_logs/slurm.%N.%j.err  # STDERR
 # show visible gpus
@@ -18,7 +18,7 @@ micromamba activate daad_torch_2
 echo Starting Train
 date
 ## < Here comes the command to be executed >
-python critical_classification/training_torch.py
+python critical_classification/training_torch.py --data_location /data/nvo/original_video/
 #python relevant_code/nothing.py
 echo Training complete
 date

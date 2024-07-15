@@ -13,10 +13,10 @@ class Config:
         self.loss = 'BCE'
 
         # Number of epochs to train the model
-        self.num_epochs = 150
+        self.num_epochs = 50
 
         # Learning rate for the optimizer
-        self.lr = 0.0001
+        self.lr = 0.00001
 
         # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D
         # self.model_name = 'Monocular3D'
