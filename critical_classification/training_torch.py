@@ -23,6 +23,11 @@ if utils.is_local():
     os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
 
 
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
+
+
 def print_info_for_debug(ground_truths,
                          predictions,
                          video_name_with_time):
@@ -104,7 +109,6 @@ def batch_learning_and_evaluating(loaders,
             total_running_loss += batch_total_loss.item()
             # Update progress bar with informative text (without newline)
 
-
             batch_total_loss.backward()
             optimizer.step()
 
@@ -131,7 +135,7 @@ def batch_learning_and_evaluating(loaders,
 
     print(f'accuracy: {accuracy}, f1: {f1}, precision: {precision}, recall: {recall}')
 
-    return optimizer, fine_tuner, accuracy, f1, total_running_loss.item(), optimizer
+    return optimizer, fine_tuner, accuracy, f1, total_running_loss.item(), get_lr(optimizer)
 
 
 def fine_tune_combined_model(fine_tuner: torch.nn.Module,
@@ -141,8 +145,9 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     fine_tuner.to(device)
     fine_tuner.train()
 
-    save_fig_path = (f"critical_classification/output/loss_visualization/{config.model_name}_lr{config.lr}_{config.loss}_"
-                     f"{config.num_epochs}_{config.additional_saving_info}.png")
+    save_fig_path = (
+        f"critical_classification/output/loss_visualization/{config.model_name}_lr{config.lr}_{config.loss}_"
+        f"{config.num_epochs}_{config.additional_saving_info}.png")
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
     if config.scheduler == 'cosine':
