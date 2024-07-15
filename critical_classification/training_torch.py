@@ -145,8 +145,8 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     fine_tuner.to(device)
     fine_tuner.train()
 
-    file_name = (f"{config.model_name}_lr{config.lr}_{config.loss}_"
-                 f"{config.num_epochs}_{config.scheduler}_{config.additional_saving_info}")
+    file_name = (f"M{config.model_name}_lr{config.lr}_loss{config.loss}_e"
+                 f"{config.num_epochs}_s{config.scheduler}_A{config.additional_saving_info}")
     save_fig_path = f"critical_classification/output/loss_visualization/{file_name}.png"
     save_model_path = f"critical_classification/save_models/{file_name}.pth"
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
