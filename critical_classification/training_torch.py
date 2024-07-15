@@ -52,7 +52,7 @@ def batch_learning_and_evaluating(loaders,
                                   device: torch.device,
                                   fine_tuner: torch.nn.Module,
                                   scheduler: torch.optim.lr_scheduler,
-                                  optimizer: torch.optim,
+                                  optimizer: torch.optim.Optimizer,
                                   evaluation: bool = False):
     num_batches = len(loaders)
     batches = tqdm(enumerate(loaders, 0),
@@ -131,7 +131,7 @@ def batch_learning_and_evaluating(loaders,
 
     print(f'accuracy: {accuracy}, f1: {f1}, precision: {precision}, recall: {recall}')
 
-    return optimizer, fine_tuner, accuracy, f1, total_running_loss.item()
+    return optimizer, fine_tuner, accuracy, f1, total_running_loss.item(), optimizer
 
 
 def fine_tune_combined_model(fine_tuner: torch.nn.Module,
@@ -145,8 +145,12 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                      f"{config.num_epochs}_{config.additional_saving_info}.png")
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
-
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=int(config.num_epochs / 4))
+    if config.scheduler == 'cosine':
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=int(config.num_epochs / 4))
+    elif config.scheduler == 'step':
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=2, gamma=0.05)
+    elif config.scheduler == 'exponential':
+        scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.7943)
     best_fine_tuner = copy.deepcopy(fine_tuner)
 
     all_on_device = True
@@ -158,14 +162,14 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     if all_on_device:
         print(f"All parameters are on {device}")
 
-    train_result_dict = {'acc': [], 'f1': [], 'loss': []}
-    test_result_dict = {'acc': [], 'f1': [], 'loss': []}
+    train_result_dict = {'acc': [], 'f1': [], 'loss': [], 'lr': []}
+    test_result_dict = {'acc': [], 'f1': [], 'loss': [], 'lr': []}
     max_f1_score = 0
 
     for epoch in range(config.num_epochs):
         with ((context_handlers.TimeWrapper())):
             print('#' * 50 + f'train epoch {epoch}' + '#' * 50)
-            optimizer, fine_tuner, train_accuracy, train_f1, train_total_loss = \
+            optimizer, fine_tuner, train_accuracy, train_f1, train_total_loss, train_lr = \
                 batch_learning_and_evaluating(loaders=loaders['train'],
                                               device=device,
                                               optimizer=optimizer,
@@ -177,7 +181,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             utils.plot_figure(train_result_dict, save_fig_path)
             # Testing
             print('#' * 50 + f'test epoch {epoch}' + '#' * 50)
-            optimizer, fine_tuner, test_accuracy, test_f1, test_total_loss = \
+            optimizer, fine_tuner, test_accuracy, test_f1, test_total_loss, test_lr = \
                 batch_learning_and_evaluating(loaders=loaders['test'],
                                               device=device,
                                               optimizer=optimizer,

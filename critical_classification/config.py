@@ -39,6 +39,9 @@ class Config:
         self.pretrained_path = None
         # self.pretrained_path = 'critical_classification/save_models/file_name'
 
+        # Scheduler
+        self.scheduler = 'exponential'
+
         # Flag to indicate whether to save the trained model
         self.save_files = True
 
