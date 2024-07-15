@@ -125,7 +125,6 @@ def get_video_frames_as_tensor(train_or_test: str,
             f"with sample duration {sample_duration_in_ms / 1000} second, has some errors"
         )
 
-    print(f'{video_path} has shape {frames_array.shape}')
     return frames_array, start_time, label
 
 
