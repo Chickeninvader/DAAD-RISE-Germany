@@ -18,7 +18,7 @@ micromamba activate daad_torch_2
 echo Starting Train
 date
 ## < Here comes the command to be executed >
-#python critical_classification/training_torch.py
-python relevant_code/nothing.py
+python critical_classification/training_torch.py
+#python relevant_code/nothing.py
 echo Training complete
 date
