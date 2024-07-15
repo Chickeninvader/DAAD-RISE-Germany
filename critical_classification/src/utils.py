@@ -5,6 +5,8 @@ import datetime
 import math
 import typing
 
+from matplotlib import pyplot as plt
+
 
 def format_seconds(seconds: int):
     # Create a timedelta object with the given seconds
@@ -93,3 +95,25 @@ def format_integer(n):
     else:
         return f"{sign}{a} * 10^{b}"
 
+
+def plot_figure(data_dict, save_path: str):
+    """
+    Plots and saves a graph of multiple values over epochs.
+
+    Args:
+    data_dict (dict of list of float): Dictionary containing lists of values to plot, keyed by the result type (e.g., 'train_acc', 'train_loss').
+    save_path (str): Path to save the plot image.
+    """
+    plt.figure(figsize=(10, 6))
+
+    for key, values in data_dict.items():
+        epochs = list(range(1, len(values) + 1))
+        plt.plot(epochs, values, marker='o', linestyle='-', label=key)
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Value')
+    plt.title('Metrics over Epochs')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(save_path)
+    plt.close()

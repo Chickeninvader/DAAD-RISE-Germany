@@ -101,10 +101,9 @@ def batch_learning_and_evaluating(loaders,
 
             criterion = torch.nn.BCEWithLogitsLoss()
             batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
-            total_running_loss += batch_total_loss.item() / len(batches)
+            total_running_loss += batch_total_loss.item()
             # Update progress bar with informative text (without newline)
-            if batch_num % (int(num_batches / 2.5)) == 0:
-                tqdm.write(f'Current total loss: {total_running_loss.item()}')
+
 
             batch_total_loss.backward()
             optimizer.step()
@@ -114,6 +113,8 @@ def batch_learning_and_evaluating(loaders,
 
     if not evaluation:
         scheduler.step()
+
+    print(utils.blue_text(f'Current total loss: {total_running_loss.item()}'))
 
     predictions = [item.unsqueeze(dim=0) if item.ndim == 0 else item for item in predictions]
     predictions = torch.cat(predictions)
@@ -130,21 +131,22 @@ def batch_learning_and_evaluating(loaders,
 
     print(f'accuracy: {accuracy}, f1: {f1}, precision: {precision}, recall: {recall}')
 
-    return optimizer, fine_tuner, accuracy, f1
+    return optimizer, fine_tuner, accuracy, f1, total_running_loss.item()
 
 
 def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                              device: torch.device,
                              loaders: typing.Dict[str, torch.utils.data.DataLoader],
-                             config):
+                             config: Config):
     fine_tuner.to(device)
     fine_tuner.train()
 
-    max_f1_score = 0
+    save_fig_path = (f"critical_classification/output/loss_visualization/{fine_tuner}_lr{config.lr}_{config.loss}_"
+                     f"{config.num_epochs}_{config.additional_saving_info}.png")
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
 
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=20)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=int(config.num_epochs / 4))
     best_fine_tuner = copy.deepcopy(fine_tuner)
 
     all_on_device = True
@@ -156,34 +158,44 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     if all_on_device:
         print(f"All parameters are on {device}")
 
-    print('#' * 100 + '\n')
+    train_result_dict = {'acc': [], 'f1': [], 'loss': []}
+    test_result_dict = {'acc': [], 'f1': [], 'loss': []}
+    max_f1_score = 0
 
     for epoch in range(config.num_epochs):
         with ((context_handlers.TimeWrapper())):
             print('#' * 50 + f'train epoch {epoch}' + '#' * 50)
-            optimizer, fine_tuner, train_accuracy, train_f1 = \
+            optimizer, fine_tuner, train_accuracy, train_f1, train_total_loss = \
                 batch_learning_and_evaluating(loaders=loaders['train'],
                                               device=device,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner,
                                               scheduler=scheduler)
+            train_result_dict['acc'].append(train_accuracy)
+            train_result_dict['f1'].append(train_f1)
+            train_result_dict['loss'].append(train_total_loss)
+            utils.plot_figure(train_result_dict, save_fig_path)
             # Testing
             print('#' * 50 + f'test epoch {epoch}' + '#' * 50)
-            optimizer, fine_tuner, test_accuracy, test_f1 = \
+            optimizer, fine_tuner, test_accuracy, test_f1, test_total_loss = \
                 batch_learning_and_evaluating(loaders=loaders['test'],
                                               device=device,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner,
                                               scheduler=scheduler,
                                               evaluation=True)
+            test_result_dict['acc'].append(test_accuracy)
+            test_result_dict['f1'].append(test_f1)
+            test_result_dict['loss'].append(test_total_loss)
+            utils.plot_figure(test_result_dict, save_fig_path)
 
             if max_f1_score < test_f1:
                 max_f1_score = test_f1
-                best_fine_tuner = fine_tuner
+                best_fine_tuner = copy.deepcopy(fine_tuner)
 
     if config.save_files:
         torch.save(best_fine_tuner.state_dict(),
-                   f"save_models/{best_fine_tuner}_lr{config.lr}_{config.loss}_"
+                   f"critical_classification/save_models/{best_fine_tuner}_lr{config.lr}_{config.loss}_"
                    f"{config.num_epochs}_{config.additional_saving_info}.pth")
 
     print('#' * 100)
@@ -191,7 +203,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     return best_fine_tuner
 
 
-def run_combined_fine_tuning_pipeline(config):
+def run_combined_fine_tuning_pipeline(config: Config):
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
     )
