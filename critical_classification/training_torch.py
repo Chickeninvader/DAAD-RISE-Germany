@@ -118,6 +118,8 @@ def batch_learning_and_evaluating(loaders,
     if not evaluation:
         scheduler.step()
 
+    average_loss = total_running_loss.item() / num_batches
+
     print(utils.blue_text(f'Current total loss: {total_running_loss.item()}'))
 
     predictions = [item.unsqueeze(dim=0) if item.ndim == 0 else item for item in predictions]
@@ -135,7 +137,7 @@ def batch_learning_and_evaluating(loaders,
 
     print(f'accuracy: {accuracy}, f1: {f1}, precision: {precision}, recall: {recall}')
 
-    return optimizer, fine_tuner, accuracy, f1, total_running_loss.item(), get_lr(optimizer)
+    return optimizer, fine_tuner, accuracy, f1, average_loss, get_lr(optimizer)
 
 
 def fine_tune_combined_model(fine_tuner: torch.nn.Module,
