@@ -42,7 +42,7 @@ def save_output(data_tensor, std=None, mean=None,
     frames = create_gif(data_tensor, std, mean)
 
     if data_tensor.shape[0] == 1:
-        cv2.imwrite(f'{base_folder}nothing.jpg', frames[0])
+        cv2.imwrite(f'{base_folder}nothing{idx}.jpg', frames[0])
         return
     # Create a video stream to display frames using OpenCV
     height, width, _ = frames[0].shape
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     config = Config()
     config.data_location = args.data_location
-    config.model_name = None
+    # config.model_name = None
 
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     metadata = None
 
     for idx, (video_tensor, label, metadata) in enumerate(loaders['train']):
-        if metadata[0].endswith('.mov'):
+        if metadata[0][0].endswith('.mov'):
             print(f'image has label {label}')
-            print(metadata)
+            print(metadata[0])
             save_output(video_tensor, idx)

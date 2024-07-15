@@ -409,11 +409,12 @@ def test_transform(video, height, width, mean, std):
 def dataset_transforms(video_array: np.array,
                        train_or_test: str,
                        img_size: int,
-                       model_name: str = 'VideoMAE') -> torch.tensor:
+                       model_name: str) -> torch.tensor:
     """
     Returns the transforms required for the VIT for training or test datasets
     """
-    if model_name == 'YOLOv1_video':
+    mean, std = None, None
+    if model_name == 'YOLOv1_video' or None:
         frames = []
         transform = transforms.Compose([
             transforms.Resize((img_size, img_size), Image.NEAREST),
@@ -425,7 +426,6 @@ def dataset_transforms(video_array: np.array,
             frames.append(img_tensor)
         return torch.stack(frames)
 
-    mean, std = None, None
     if model_name == 'VideoMAE':
         model_ckpt = "MCG-NJU/videomae-base"
         image_processor = VideoMAEImageProcessor.from_pretrained(model_ckpt)
