@@ -141,7 +141,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     fine_tuner.to(device)
     fine_tuner.train()
 
-    save_fig_path = (f"critical_classification/output/loss_visualization/{fine_tuner}_lr{config.lr}_{config.loss}_"
+    save_fig_path = (f"critical_classification/output/loss_visualization/{config.model_name}_lr{config.lr}_{config.loss}_"
                      f"{config.num_epochs}_{config.additional_saving_info}.png")
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
@@ -180,6 +180,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             train_result_dict['acc'].append(train_accuracy)
             train_result_dict['f1'].append(train_f1)
             train_result_dict['loss'].append(train_total_loss)
+            train_result_dict['lr'].append(train_lr)
             utils.plot_figure(train_result_dict, save_fig_path)
             # Testing
             print('#' * 50 + f'test epoch {epoch}' + '#' * 50)
@@ -193,6 +194,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             test_result_dict['acc'].append(test_accuracy)
             test_result_dict['f1'].append(test_f1)
             test_result_dict['loss'].append(test_total_loss)
+            test_result_dict['lr'].append(test_lr)
             utils.plot_figure(test_result_dict, save_fig_path)
 
             if max_f1_score < test_f1:
