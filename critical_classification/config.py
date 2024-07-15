@@ -54,3 +54,6 @@ class Config:
         # Data_location
         self.data_location = 'critical_classification/dashcam_video/original_video/'
 
+    def print_config(self):
+        for key, value in self.__dict__.items():
+            print(f"{key}: {value}")
