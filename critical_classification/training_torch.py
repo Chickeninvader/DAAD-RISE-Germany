@@ -50,10 +50,10 @@ def print_info_for_debug(ground_truths,
 
 def batch_learning_and_evaluating(loaders,
                                   device: torch.device,
-                                  optimizer: torch.optim,
                                   fine_tuner: torch.nn.Module,
-                                  evaluation: bool = False,
-                                  print_info: bool = True):
+                                  scheduler: torch.optim.lr_scheduler,
+                                  optimizer: torch.optim,
+                                  evaluation: bool = False):
     num_batches = len(loaders)
     batches = tqdm(enumerate(loaders, 0),
                    total=num_batches)
@@ -70,6 +70,8 @@ def batch_learning_and_evaluating(loaders,
 
     for batch_num, batch in batches:
         with context_handlers.ClearCache(device=device):
+            optimizer.zero_grad()
+
             X, Y_true, video_name_with_time_batch = batch
             # If X is 1 video only, collapse the dimension
             if X.shape[0] == 1:
@@ -110,14 +112,16 @@ def batch_learning_and_evaluating(loaders,
             del X, Y_pred, Y_true
             # break  # for debuging
 
+    if not evaluation:
+        scheduler.step()
+
     predictions = [item.unsqueeze(dim=0) if item.ndim == 0 else item for item in predictions]
     predictions = torch.cat(predictions)
     ground_truths = torch.cat(ground_truths)
 
-    if print_info:
-        print_info_for_debug(ground_truths,
-                             predictions,
-                             video_name_with_time)
+    print_info_for_debug(ground_truths,
+                         predictions,
+                         video_name_with_time)
 
     accuracy = accuracy_score(ground_truths, predictions)
     f1 = f1_score(ground_truths, predictions)
@@ -140,9 +144,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
 
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer,
-    #                                             step_size=scheduler_step_size,
-    #                                             gamma=scheduler_gamma)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=20)
     best_fine_tuner = copy.deepcopy(fine_tuner)
 
     all_on_device = True
@@ -163,7 +165,8 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                 batch_learning_and_evaluating(loaders=loaders['train'],
                                               device=device,
                                               optimizer=optimizer,
-                                              fine_tuner=fine_tuner)
+                                              fine_tuner=fine_tuner,
+                                              scheduler=scheduler)
             # Testing
             print('#' * 50 + f'test epoch {epoch}' + '#' * 50)
             optimizer, fine_tuner, test_accuracy, test_f1 = \
@@ -171,6 +174,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                                               device=device,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner,
+                                              scheduler=scheduler,
                                               evaluation=True)
 
             if max_f1_score < test_f1:

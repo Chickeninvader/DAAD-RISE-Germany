@@ -32,7 +32,7 @@ class Config:
         # self.img_size = 224  # For Monocular3D
 
         # Additional information to be appended to the saving file name
-        self.additional_saving_info = 'experiment_1'
+        self.additional_saving_info = f'experiment_1'
 
         # Path to pretrained model weights, if any
         self.pretrained_path = None
