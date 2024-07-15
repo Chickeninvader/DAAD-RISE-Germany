@@ -145,9 +145,10 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     fine_tuner.to(device)
     fine_tuner.train()
 
-    save_fig_path = (
-        f"critical_classification/output/loss_visualization/{config.model_name}_lr{config.lr}_{config.loss}_"
-        f"{config.num_epochs}_{config.additional_saving_info}.png")
+    file_name = (f"{config.model_name}_lr{config.lr}_{config.loss}_"
+                 f"{config.num_epochs}_{config.scheduler}_{config.additional_saving_info}")
+    save_fig_path = f"critical_classification/output/loss_visualization/{file_name}.png"
+    save_model_path = f"critical_classification/save_models/{file_name}.[th]"
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
     if config.scheduler == 'cosine':
@@ -208,8 +209,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
 
     if config.save_files:
         torch.save(best_fine_tuner.state_dict(),
-                   f"critical_classification/save_models/{config.model_name}_lr{config.lr}_{config.loss}_"
-                   f"{config.num_epochs}_{config.additional_saving_info}.pth")
+                   save_model_path)
 
     print('#' * 100)
 
