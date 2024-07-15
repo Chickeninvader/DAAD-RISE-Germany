@@ -67,6 +67,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     config = Config()
     config.data_location = args.data_location
+    config.model_name = None
 
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
