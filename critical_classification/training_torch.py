@@ -124,9 +124,9 @@ def batch_learning_and_evaluating(loaders,
     predictions = torch.cat(predictions)
     ground_truths = torch.cat(ground_truths)
 
-    print_info_for_debug(ground_truths,
-                         predictions,
-                         video_name_with_time)
+    # print_info_for_debug(ground_truths,
+    #                      predictions,
+    #                      video_name_with_time)
 
     accuracy = accuracy_score(ground_truths, predictions)
     f1 = f1_score(ground_truths, predictions)
