@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime
 
+
 class Config:
     def __init__(self):
         # Framework to use, tensorflow or torch
@@ -39,7 +40,7 @@ class Config:
         self.pretrained_path = None
         # self.pretrained_path = 'critical_classification/save_models/file_name'
 
-        # Scheduler
+        # Scheduler: step, exponential or cosine
         self.scheduler = 'exponential'
 
         # Flag to indicate whether to save the trained model

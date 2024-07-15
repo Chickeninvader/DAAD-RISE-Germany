@@ -151,6 +151,8 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=2, gamma=0.05)
     elif config.scheduler == 'exponential':
         scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.7943)
+    else:
+        raise NotImplementedError('scheduler not implemented!')
     best_fine_tuner = copy.deepcopy(fine_tuner)
 
     all_on_device = True
