@@ -148,7 +148,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     if config.scheduler == 'cosine':
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=int(config.num_epochs / 4))
     elif config.scheduler == 'step':
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=2, gamma=0.05)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=2, gamma=0.5)
     elif config.scheduler == 'exponential':
         scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.7943)
     else:
