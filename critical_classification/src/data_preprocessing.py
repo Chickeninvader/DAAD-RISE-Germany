@@ -23,8 +23,7 @@ from critical_classification.config import Config
 def get_frames_from_cv2(video_path: str,
                         start_time_in_ms: int,
                         sample_duration_in_ms: int,
-                        frame_rate: int,
-                        video_duration: int):
+                        frame_rate: int):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
@@ -98,7 +97,7 @@ def get_video_frames_as_tensor(train_or_test: str,
 
     try:
         if video_path.lower().endswith('.mp4'):
-            frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration)
+            frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate)
         elif video_path.lower().endswith('.mov'):
             frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate)
         else:
