@@ -19,8 +19,9 @@ class Config:
         self.lr = 0.000001
 
         # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D
-        # model_name = 'Monocular3D'
+        # self.model_name = 'Monocular3D'
         self.model_name = 'YOLOv1_video'
+        # self.model_name = None
 
         # Input image representation, depend on model
         self.img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video
@@ -51,5 +52,5 @@ class Config:
         self.metadata = pd.read_excel('critical_classification/dashcam_video/metadata.xlsx')
 
         # Data_location
-        self.data_location = None
+        self.data_location = 'critical_classification/dashcam_video/original_video/'
 

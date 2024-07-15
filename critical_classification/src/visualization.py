@@ -1,6 +1,9 @@
+import argparse
+
 import cv2
+
 from critical_classification.src import backbone_pipeline
-from critical_classification import config
+from critical_classification.config import Config
 import numpy as np
 
 
@@ -30,7 +33,8 @@ def create_gif(video_tensor, std, mean):
 
 
 def save_output(data_tensor, std=None, mean=None,
-               base_folder: str = 'critical_classification/dashcam_video/temp_video/'):
+                base_folder: str = 'critical_classification/dashcam_video/temp_video/',
+                idx: int = 0):
     """Prepares and displays a GIF from a video tensor."""
     data_tensor = data_tensor[0]
     if data_tensor.shape[1] != 3:
@@ -42,7 +46,7 @@ def save_output(data_tensor, std=None, mean=None,
         return
     # Create a video stream to display frames using OpenCV
     height, width, _ = frames[0].shape
-    video_stream = cv2.VideoWriter(f'{base_folder}nothing.mp4', cv2.VideoWriter_fourcc(*"mp4v"), 30,
+    video_stream = cv2.VideoWriter(f'{base_folder}nothing_{idx}.mp4', cv2.VideoWriter_fourcc(*"mp4v"), 30,
                                    (width, height))
     for frame in frames:
         # video_stream.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
@@ -55,21 +59,25 @@ if __name__ == '__main__':
     # mean = image_processor.image_mean
     # std = image_processor.image_std
 
+    parser = argparse.ArgumentParser(description="Fine-tuning pipeline")
+    parser.add_argument('--data_location', type=str, help='Path to the data location',
+                        default='critical_classification/dashcam_video/original_video/')
+    # Add more arguments as needed
+
+    args = parser.parse_args()
+    config = Config()
+    config.data_location = args.data_location
+
     fine_tuner, loaders, device = (
-        backbone_pipeline.initiate(metadata=config.metadata,
-                                   batch_size=1,
-                                   representation=config.representation,
-                                   sample_duration=config.duration)
+        backbone_pipeline.initiate(config)
     )
 
     label = None
     video_tensor = None
     metadata = None
 
-    for video_tensor, label, metadata in loaders['train']:
-        if label == 1:
-            break
-
-    print(f'image has label {label}')
-    print(metadata)
-    save_output(video_tensor)
+    for idx, (video_tensor, label, metadata) in enumerate(loaders['train']):
+        if metadata[0].endswith('.mov'):
+            print(f'image has label {label}')
+            print(metadata)
+            save_output(video_tensor, idx)

@@ -46,7 +46,7 @@ def get_frames_from_cv2(video_path: str,
     return frames
 
 
-def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration):
+def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate):
     try:
         clip = VideoFileClip(video_path)
         start_time = start_time_in_ms / 1000
@@ -100,8 +100,7 @@ def get_video_frames_as_tensor(train_or_test: str,
         if video_path.lower().endswith('.mp4'):
             frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate, video_duration)
         elif video_path.lower().endswith('.mov'):
-            frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate,
-                                             video_duration)
+            frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate)
         else:
             raise FileNotFoundError(f'file not support: {video_path}')
 
@@ -112,19 +111,21 @@ def get_video_frames_as_tensor(train_or_test: str,
                                           model_name=model_name)
         if img_representation == 'HWC':
             # Final shape: (num_frames, height, width, channel)
-            assert frames_array.shape[3] == 3, f'output representation not match, shape {frames_array.shape}, '
+            assert frames_array.shape[3] == 3, (f'output representation not match with HWC, shape {frames_array.shape},'
+                                                f'video path: {video_path}')
         else:
             # Final shape: (num_frames, channel, height, width)
-            assert frames_array.shape[1] == 3, f'output representation not match, shape {frames_array.shape}, '
+            assert frames_array.shape[1] == 3, (f'output representation not match with CHW, shape {frames_array.shape},'
+                                                f'video path: {video_path}')
 
     except ValueError or AssertionError or FileNotFoundError:
         raise RuntimeError(
             f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
             f"duration {video_duration}, "
-            f"with sample duration {sample_duration_in_ms / 1000} second, has some errors")
-    except OSError as e:
-        frames_array = None
-        print(e)
+            f"with sample duration {sample_duration_in_ms / 1000} second, has some errors"
+        )
+
+    print(f'{video_path} has shape {frames_array.shape}')
     return frames_array, start_time, label
 
 
@@ -244,7 +245,7 @@ class VideoDataset(Dataset):
         data_location = config.data_location
 
         frame_rate = 30
-        folder_path = 'original_video'
+        folder_path = ''
         print('use original representation')
 
         self.metadata = metadata[metadata['train_or_test'] == 'test'] if test \

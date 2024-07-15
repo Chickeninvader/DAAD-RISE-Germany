@@ -12,8 +12,6 @@ import typing
 from tqdm import tqdm
 import warnings
 
-from critical_classification.config import Config
-
 sys.path.append(os.getcwd())
 
 from critical_classification.src import utils, context_handlers, backbone_pipeline
