@@ -99,14 +99,17 @@ def batch_learning_and_evaluating(loaders,
             video_name_with_time.extend([(os.path.basename(item[0]), item[1])
                                          for item in zip(video_name_with_time_batch[0],
                                                          video_name_with_time_batch[1])])
+
+            criterion = torch.nn.BCEWithLogitsLoss()
+            batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
+            total_running_loss += batch_total_loss.item()
+
             if evaluation:
                 del X, Y_pred, Y_true
                 # break  # for debuging
                 continue
 
-            criterion = torch.nn.BCEWithLogitsLoss()
-            batch_total_loss = criterion(Y_pred, torch.unsqueeze(Y_true, dim=1).float())
-            total_running_loss += batch_total_loss.item()
+
             # Update progress bar with informative text (without newline)
 
             batch_total_loss.backward()
