@@ -45,9 +45,9 @@ def print_info_for_debug(ground_truths,
         if ground_truths[idx] == 1:
             print(utils.red_text(f'{video_name}{" " * (120 - len(video_name))} '
                                  f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
-        else:
-            print(utils.blue_text(f'{video_name}{" " * (120 - len(video_name))} '
-                                  f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
+        # else:
+        #     print(utils.blue_text(f'{video_name}{" " * (120 - len(video_name))} '
+        #                           f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
 
 
 def batch_learning_and_evaluating(loaders,
