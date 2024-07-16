@@ -342,8 +342,8 @@ class YOLOv1_video_binary(nn.Module):
         final_output_list = []
 
         # The original model is train with num_frames = 15
-        for i in range(x.size(1) - 15):
-            hn_last = hidden_states[:, i + 15, :].reshape(-1)
+        for i in range(x.size(0) - 15):
+            hn_last = hidden_states[i + 15, :, :].reshape(-1)
             final_output_list.append(self.fc(hn_last))
         print(f'number of prediction: {len(final_output_list)}')
         return final_output_list
