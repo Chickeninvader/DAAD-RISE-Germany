@@ -333,10 +333,11 @@ class YOLOv1_video_binary(nn.Module):
         h_n, c_n = h_0, c_0
         hidden_states = []
 
-        for t in range(x.size(1)):
-            h_n, c_n = self.LSTM(x[:, t, :], (h_n, c_n))
+        for t in range(x.size(0)):
+            h_n, c_n = self.LSTM(x[t, :, :], (h_n, c_n))
             hidden_states.append(h_n)
 
+        print(f'hidden state at each step shape: {h_n.shape}')
         hidden_states = torch.stack(hidden_states, dim=1)
         print(f'hidden state shape is {hidden_states.shape}')
         final_output_list = []
