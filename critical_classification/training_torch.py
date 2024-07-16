@@ -48,9 +48,6 @@ def print_info_for_debug(ground_truths,
         else:
             print(utils.blue_text(f'{video_name}{" " * (120 - len(video_name))} '
                                   f'at time {int(int(time) / 60)}:{int(time) - 60 * int(int(time) / 60)}'))
-        if idx > 20:
-            break
-    pass
 
 
 def batch_learning_and_evaluating(loaders,
@@ -129,9 +126,9 @@ def batch_learning_and_evaluating(loaders,
     predictions = torch.cat(predictions)
     ground_truths = torch.cat(ground_truths)
 
-    # print_info_for_debug(ground_truths,
-    #                      predictions,
-    #                      video_name_with_time)
+    print_info_for_debug(ground_truths,
+                         predictions,
+                         video_name_with_time)
 
     accuracy = accuracy_score(ground_truths, predictions)
     f1 = f1_score(ground_truths, predictions)
