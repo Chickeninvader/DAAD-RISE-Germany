@@ -321,13 +321,14 @@ class YOLOv1_video_binary(nn.Module):
             final_output (tensor): A tensor of shape () which contains the predicted critical value
         """
         # Since there is alway 1 video process only, the 'batch_size' is 1
-        h_0 = Variable(torch.zeros(self.num_layers, 1, self.hidden_size)).to(self.device)  # hidden state
-        c_0 = Variable(torch.zeros(self.num_layers, 1, self.hidden_size)).to(self.device)  # internal state
+        h_0 = Variable(torch.zeros(self.num_layers, self.hidden_size)).to(self.device)  # hidden state
+        c_0 = Variable(torch.zeros(self.num_layers, self.hidden_size)).to(self.device)  # internal state
 
         x = self.base_model.darkNet(x)
         x = torch.flatten(x, start_dim=1)
         x = self.base_model.fc(x)
         x = x.unsqueeze(1)
+        print(f'Yolo feature shape: {x.shape}')
 
         h_n, c_n = h_0, c_0
         hidden_states = []
@@ -337,6 +338,7 @@ class YOLOv1_video_binary(nn.Module):
             hidden_states.append(h_n)
 
         hidden_states = torch.stack(hidden_states, dim=1)
+        print(f'hidden state shape is {hidden_states.shape}')
         final_output_list = []
 
         # The original model is train with num_frames = 15
