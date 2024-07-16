@@ -37,6 +37,8 @@ def save_output(video_tensor,
                 config,
                 base_folder: str = 'critical_classification/dashcam_video/temp_video/', ):
     """Prepares and displays a GIF from a video tensor."""
+    if not os.path.exists(base_folder):
+        os.makedirs(base_folder)
 
     frames = create_gif(video_tensor)
 
