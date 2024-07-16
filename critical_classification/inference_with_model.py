@@ -84,7 +84,11 @@ def main():
             break
         video_tensor = video_tensor_batch[0].to(device)
         file_name, start_time = metadata
-        prediction_list = fine_tuner.infer_from_video(video_tensor)
+        num_frame = video_tensor.shape[0]
+        prediction_list = []
+        for video_tensor_frame_idx in range(num_frame - 15):
+            prediction_list.append(fine_tuner(video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15]))
+            print(f'finish infer video frame {video_tensor_frame_idx}')
 
         video_tensor = video_tensor.detach().to('cpu')
         prediction_list = [item.detach.to('cpu') for item in prediction_list]
