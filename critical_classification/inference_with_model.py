@@ -53,11 +53,11 @@ def save_output(video_tensor,
         # since the model is trained with num_frame = 15, only after 15 frames we get the prediction
         frame = frame.copy()
         cv2.putText(frame,
-                    text='Critical' if idx >= 15 and prediction_list[idx - 15].item() == 1 else 'Non critical',
+                    text='Critical' if idx >= 15 and prediction_list[idx - 15]== 1 else 'Non critical',
                     org=(100, 100),
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
                     fontScale=1,
-                    color=(0, 0, 255) if idx >= 15 and prediction_list[idx - 15].item() == 1 else (0, 255, 0),
+                    color=(0, 0, 255) if idx >= 15 and prediction_list[idx - 15] == 1 else (0, 255, 0),
                     thickness=2)
         video_stream.write(frame)
 
