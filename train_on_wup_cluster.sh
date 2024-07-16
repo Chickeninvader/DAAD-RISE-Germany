@@ -20,7 +20,7 @@ date
 ## < Here comes the command to be executed >
 
 # For training the model
-python critical_classification/training_torch.py --data_location /data/nvo/original_video/
+#python critical_classification/training_torch.py --data_location /data/nvo/original_video/
 
 # For visualization
 python critical_classification/inference_with_model.py --data_location /data/nvo/original_video/
