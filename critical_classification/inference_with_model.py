@@ -85,6 +85,9 @@ def main():
         video_tensor = video_tensor_batch[0].to(device)
         file_name, start_time = metadata
         prediction_list = fine_tuner.infer_from_video(video_tensor)
+
+        video_tensor = video_tensor.detach().to('cpu')
+        prediction_list = [item.detach.to('cpu') for item in prediction_list]
         save_output(video_tensor, prediction_list, file_name, start_time, config)
 
 
