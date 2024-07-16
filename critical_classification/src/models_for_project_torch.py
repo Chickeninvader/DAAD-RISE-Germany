@@ -309,6 +309,43 @@ class YOLOv1_video_binary(nn.Module):
         final_output = self.fc(hn_last)
         return final_output
 
+    def infer_from_video(self, x):
+        """
+        Forwards the input tensor through the model to produce the predictions.
+
+        Parameters:
+            x (tensor): A tensor of shape (num_frames, 3, 448, 448) which represents
+            multiple batch of input images.
+
+        Returns:
+            final_output (tensor): A tensor of shape () which contains the predicted critical value
+        """
+        # Since there is alway 1 video process only, the 'batch_size' is 1
+        h_0 = Variable(torch.zeros(self.num_layers, 1, self.hidden_size)).to(self.device)  # hidden state
+        c_0 = Variable(torch.zeros(self.num_layers, 1, self.hidden_size)).to(self.device)  # internal state
+
+        x = self.base_model.darkNet(x)
+        x = torch.flatten(x, start_dim=1)
+        x = self.base_model.fc(x)
+        x = x.unsqueeze(1)
+
+        h_n, c_n = h_0, c_0
+        hidden_states = []
+
+        for t in range(x.size(1)):
+            h_n, c_n = self.LSTM(x[:, t, :], (h_n, c_n))
+            hidden_states.append(h_n)
+
+        hidden_states = torch.stack(hidden_states, dim=1)
+        final_output_list = []
+
+        # The original model is train with num_frames = 15
+        for i in range(x.size(1) - 15):
+            hn_last = hidden_states[:, i + 15, :].reshape(-1)
+            final_output_list.append(self.fc(hn_last))
+
+        return final_output_list
+
 
 def init_weights(m):
     if isinstance(m, nn.Linear):

@@ -54,6 +54,8 @@ class Config:
         self.sample_duration = 0.5
         # self.duration = 0.5/15  # take 1 image only
 
+        self.FRAME_RATE = 30
+
         # Load metadata from an Excel file, which contains information about the dataset
         self.metadata = pd.read_excel('critical_classification/dashcam_video/metadata.xlsx')
 

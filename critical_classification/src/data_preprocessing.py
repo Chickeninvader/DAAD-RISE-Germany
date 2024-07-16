@@ -242,7 +242,7 @@ class VideoDataset(Dataset):
         img_size = config.img_size
         data_location = config.data_location
 
-        frame_rate = 30
+        frame_rate = config.FRAME_RATE
         folder_path = ''
         print('use original representation')
 
@@ -301,7 +301,7 @@ class VideoDataset(Dataset):
             if attempt > 3:
                 raise RuntimeError(f'try to read data 3 times but still got error, stop training')
 
-        return video, label, (self.metadata['full_path'][idx], start_time)
+        return video, label, (self.metadata['path'][idx], start_time)
 
 
 def get_datasets(config: Config):
