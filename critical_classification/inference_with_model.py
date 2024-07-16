@@ -90,11 +90,11 @@ def main():
         num_frame = video_tensor.shape[0]
         prediction_list = []
 
-        print(f'video tensor has shape {video_tensor.shape}')
         for video_tensor_frame_idx in range(num_frame - 15):
             with torch.no_grad():
-                prediction_list.append(
-                    fine_tuner(video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15].to(device)))
+                video_tensor_frame = video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15].to(device)
+                prediction_list.append(fine_tuner(video_tensor_frame))
+                del video_tensor_frame
 
         video_tensor = video_tensor.detach().to('cpu')
         prediction_list = [0 if float(item.detach().to('cpu')) < 0.5 else 1 for item in prediction_list]
