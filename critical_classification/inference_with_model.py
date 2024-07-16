@@ -80,6 +80,7 @@ def main():
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
     )
+    device = torch.device('cpu')
     fine_tuner.to(device)
     fine_tuner.eval()
 
@@ -89,7 +90,7 @@ def main():
         file_name = file_name[0]
         num_frame = video_tensor.shape[0]
         prediction_list = []
-        print(f'star doing inference for {file_name}')
+        print(f'start doing inference for {file_name}')
 
         for video_tensor_frame_idx in range(num_frame - 15):
             print(f'frame {video_tensor_frame_idx}')
