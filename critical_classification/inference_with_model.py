@@ -89,8 +89,10 @@ def main():
         file_name = file_name[0]
         num_frame = video_tensor.shape[0]
         prediction_list = []
+        print(f'star doing inference for {file_name}')
 
         for video_tensor_frame_idx in range(num_frame - 15):
+            print(f'frame {video_tensor_frame_idx}')
             with torch.no_grad():
                 video_tensor_frame = video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15].to(device)
                 prediction_list.append(0 if float(fine_tuner(video_tensor_frame)) < 0.5 else 1)
