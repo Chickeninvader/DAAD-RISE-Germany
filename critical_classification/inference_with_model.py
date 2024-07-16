@@ -87,6 +87,7 @@ def main():
             break
         video_tensor = video_tensor_batch[0].to(device)
         file_name, start_time = metadata
+        file_name = file_name[0]
         print(file_name)
         print(start_time)
         num_frame = video_tensor.shape[0]
