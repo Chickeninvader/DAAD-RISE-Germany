@@ -1,7 +1,10 @@
 import argparse
+import os, sys
 
 import cv2
 import numpy as np
+
+sys.path.append(os.getcwd())
 
 from critical_classification.src import backbone_pipeline
 from critical_classification.config import Config
