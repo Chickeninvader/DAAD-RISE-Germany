@@ -51,8 +51,7 @@ def save_output(video_tensor,
                                    (width, height))
     for idx, frame in enumerate(frames):
         # since the model is trained with num_frame = 15, only after 15 frames we get the prediction
-        print(type(frame))
-        cv2.putText(frame,
+        cv2.putText(np.array(frame),
                     text='Critical' if idx >= 15 and prediction_list[idx - 15].item() == 1 else 'Non critical',
                     org=(50, 50),
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
