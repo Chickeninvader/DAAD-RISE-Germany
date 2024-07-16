@@ -44,7 +44,7 @@ def save_output(video_tensor,
 
     # Create a video stream to display frames using OpenCV
     height, width, _ = frames[0].shape
-    video_stream = cv2.VideoWriter(f'{base_folder}{file_name}_{start_time}.mp4',
+    video_stream = cv2.VideoWriter(f'{base_folder}{str(file_name)}_{int(start_time)}.mp4',
                                    cv2.VideoWriter_fourcc(*"mp4v"),
                                    config.FRAME_RATE,
                                    (width, height))
@@ -87,6 +87,8 @@ def main():
             break
         video_tensor = video_tensor_batch[0].to(device)
         file_name, start_time = metadata
+        print(file_name)
+        print(start_time)
         num_frame = video_tensor.shape[0]
         prediction_list = []
 
