@@ -45,21 +45,19 @@ def save_output(video_tensor,
     # Create a video stream to display frames using OpenCV
     height, width, _ = frames[0].shape
     save_video_file_name = f'{base_folder}{str(file_name[:-4])}_{int(start_time)}.mp4'
-    if not os.path.exists(save_video_file_name):
-        video_stream = cv2.VideoWriter(save_video_file_name,
-                                       cv2.VideoWriter_fourcc(*"mp4v"),
-                                       config.FRAME_RATE,
-                                       (width, height))
+    video_stream = cv2.VideoWriter(save_video_file_name,
+                                   cv2.VideoWriter_fourcc(*"mp4v"),
+                                   config.FRAME_RATE,
+                                   (width, height))
     for idx, frame in enumerate(frames):
         # since the model is trained with num_frame = 15, only after 15 frames we get the prediction
-        if idx >= 15 and prediction_list[idx - 15].item() == 1:
-            cv2.putText(frame,
-                        text='Critical',
-                        org=(50, 50),
-                        fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=1,
-                        color=(0, 0, 255),
-                        thickness=2)
+        cv2.putText(frame,
+                    text='Critical' if idx >= 15 and prediction_list[idx - 15].item() == 1 else 'Non critical',
+                    org=(50, 50),
+                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                    fontScale=1,
+                    color=(0, 0, 255) if idx >= 15 and prediction_list[idx - 15].item() == 1 else (0, 255, 0),
+                    thickness=2)
         video_stream.write(frame)
 
 
@@ -85,8 +83,6 @@ def main():
     fine_tuner.eval()
 
     for idx, (video_tensor_batch, label, metadata) in enumerate(loaders['train']):
-        if idx > 5:
-            break
         video_tensor = video_tensor_batch[0].to(device)
         file_name, start_time = metadata
         file_name = file_name[0]
@@ -99,7 +95,7 @@ def main():
                 prediction_list.append(fine_tuner(video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15]))
 
         video_tensor = video_tensor.detach().to('cpu')
-        prediction_list = [item.detach().to('cpu') for item in prediction_list]
+        prediction_list = [0 if float(item.detach().to('cpu')) < 0.5 else 1 for item in prediction_list]
         print(f'{file_name} has prediction: {prediction_list}')
         save_output(video_tensor, prediction_list, file_name, start_time, config)
 
