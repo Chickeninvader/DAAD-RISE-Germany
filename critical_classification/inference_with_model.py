@@ -44,10 +44,12 @@ def save_output(video_tensor,
 
     # Create a video stream to display frames using OpenCV
     height, width, _ = frames[0].shape
-    video_stream = cv2.VideoWriter(f'{base_folder}{str(file_name)}_{int(start_time)}.mp4',
-                                   cv2.VideoWriter_fourcc(*"mp4v"),
-                                   config.FRAME_RATE,
-                                   (width, height))
+    save_video_file_name = f'{base_folder}{str(file_name[:-4])}_{int(start_time)}.mp4'
+    if not os.path.exists(save_video_file_name):
+        video_stream = cv2.VideoWriter(save_video_file_name,
+                                       cv2.VideoWriter_fourcc(*"mp4v"),
+                                       config.FRAME_RATE,
+                                       (width, height))
     for idx, frame in enumerate(frames):
         # since the model is trained with num_frame = 15, only after 15 frames we get the prediction
         if idx >= 15 and prediction_list[idx - 15].item() == 1:
@@ -88,8 +90,6 @@ def main():
         video_tensor = video_tensor_batch[0].to(device)
         file_name, start_time = metadata
         file_name = file_name[0]
-        print(file_name)
-        print(start_time)
         num_frame = video_tensor.shape[0]
         prediction_list = []
 
@@ -100,6 +100,7 @@ def main():
 
         video_tensor = video_tensor.detach().to('cpu')
         prediction_list = [item.detach().to('cpu') for item in prediction_list]
+        print(f'{file_name} has prediction: {prediction_list}')
         save_output(video_tensor, prediction_list, file_name, start_time, config)
 
 
