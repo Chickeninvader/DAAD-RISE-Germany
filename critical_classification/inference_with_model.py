@@ -92,10 +92,9 @@ def main():
         for video_tensor_frame_idx in range(num_frame - 15):
             with torch.no_grad():
                 prediction_list.append(fine_tuner(video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15]))
-                print(f'finish infer video frame {video_tensor_frame_idx}')
 
         video_tensor = video_tensor.detach().to('cpu')
-        prediction_list = [item.detach.to('cpu') for item in prediction_list]
+        prediction_list = [item.detach().to('cpu') for item in prediction_list]
         save_output(video_tensor, prediction_list, file_name, start_time, config)
 
 
