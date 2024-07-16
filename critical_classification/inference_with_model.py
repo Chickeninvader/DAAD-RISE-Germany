@@ -71,6 +71,7 @@ def main():
     config.data_location = args.data_location
     config.pretrained_path = args.pretrained_path
     config.sample_duration = 4
+    config.print_config()
 
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
@@ -82,8 +83,7 @@ def main():
         if idx > 5:
             break
         video_tensor = video_tensor_batch[0]
-        print(metadata)
-        file_name, start_time = metadata[0]
+        file_name, start_time = metadata
         prediction_list = fine_tuner.infer_from_video(video_tensor)
         save_output(video_tensor, prediction_list, file_name, start_time, config)
 
