@@ -83,7 +83,7 @@ def main():
     fine_tuner.eval()
 
     for idx, (video_tensor_batch, label, metadata) in enumerate(loaders['train']):
-        video_tensor = video_tensor_batch[0].to(device)
+        video_tensor = video_tensor_batch[0]
         file_name, start_time = metadata
         file_name = file_name[0]
         num_frame = video_tensor.shape[0]
@@ -92,7 +92,8 @@ def main():
         print(f'video tensor has shape {video_tensor.shape}')
         for video_tensor_frame_idx in range(num_frame - 15):
             with torch.no_grad():
-                prediction_list.append(fine_tuner(video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15]))
+                prediction_list.append(
+                    fine_tuner(video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15].to(device)))
 
         video_tensor = video_tensor.detach().to('cpu')
         prediction_list = [0 if float(item.detach().to('cpu')) < 0.5 else 1 for item in prediction_list]
