@@ -7,8 +7,6 @@ import torchvision
 from transformers import VideoMAEForVideoClassification
 from torch.autograd import Variable
 
-from critical_classification import config
-
 class YOLOv1(nn.Module):
     """
     This class contains the YOLOv1 model. It consists of 24 convolutional and

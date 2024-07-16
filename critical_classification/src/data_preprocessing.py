@@ -17,9 +17,6 @@ from critical_classification.src import utils
 from critical_classification.config import Config
 
 
-# random.seed(42)
-# np.random.seed(42)
-
 def get_frames_from_cv2(video_path: str,
                         start_time_in_ms: int,
                         sample_duration_in_ms: int,
