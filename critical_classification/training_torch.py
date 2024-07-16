@@ -214,6 +214,14 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                 max_f1_score = test_f1
                 best_fine_tuner = copy.deepcopy(fine_tuner)
 
+    # Final model
+    print('#' * 50 + f'test best fine_tuner' + '#' * 50)
+    batch_learning_and_evaluating(loaders=loaders['test'],
+                                  device=device,
+                                  optimizer=optimizer,
+                                  fine_tuner=best_fine_tuner,
+                                  scheduler=scheduler,
+                                  evaluation=True)
     if config.save_files:
         torch.save(best_fine_tuner.state_dict(),
                    save_model_path)
