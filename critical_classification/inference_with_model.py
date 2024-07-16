@@ -76,13 +76,13 @@ def main():
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
     )
-
+    fine_tuner.to(device)
     fine_tuner.eval()
 
     for idx, (video_tensor_batch, label, metadata) in enumerate(loaders['train']):
         if idx > 5:
             break
-        video_tensor = video_tensor_batch[0]
+        video_tensor = video_tensor_batch[0].to(device)
         file_name, start_time = metadata
         prediction_list = fine_tuner.infer_from_video(video_tensor)
         save_output(video_tensor, prediction_list, file_name, start_time, config)
