@@ -99,6 +99,8 @@ def main():
         print(f'{file_name} has prediction: {prediction_list}')
         save_output(video_tensor, prediction_list, file_name, start_time, config)
 
+        del video_tensor, video_tensor_batch, prediction_list
+
 
 if __name__ == '__main__':
     main()
