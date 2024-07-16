@@ -27,7 +27,10 @@ def initiate(config: Config):
     model_name = config.model_name
     pretrained_path = config.pretrained_path
     sample_duration = config.sample_duration
-    device_str = config.device_str
+    if config.device_str == 'cuda:0' and torch.cuda.is_available():
+        device_str = config.device_str
+    else:
+        device_str = 'cpu'
     # device_str = 'mps' if utils.is_local() and torch.backends.mps.is_available() \
     #     else ("cuda:0" if torch.cuda.is_available() else 'cpu')
 
