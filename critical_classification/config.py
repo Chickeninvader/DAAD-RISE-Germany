@@ -5,7 +5,7 @@ from datetime import datetime
 class Config:
     def __init__(self):
         # Device to use: cuda:0 or cpu
-        self.device_str = 'cpu'
+        self.device_str = 'cuda:0'
 
         # Framework to use, tensorflow or torch
         self.framework = 'torch'
@@ -45,7 +45,7 @@ class Config:
         # self.pretrained_path = 'critical_classification/save_models/file_name'
 
         # Scheduler: step, exponential or cosine
-        self.scheduler = 'exponential'
+        self.scheduler = 'cosine'
 
         # Flag to indicate whether to save the trained model
         self.save_files = True

@@ -5,7 +5,7 @@ import torch.utils.data
 
 sys.path.append(os.getcwd())
 
-from critical_classification.src import utils, data_preprocessing
+from critical_classification.src import data_preprocessing
 from critical_classification.config import Config
 from critical_classification.src.models_for_project_torch import YOLOv1_video_binary, YOLOv1_image_binary, VideoMAE
 

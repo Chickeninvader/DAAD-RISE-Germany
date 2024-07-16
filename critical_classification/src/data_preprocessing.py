@@ -46,13 +46,13 @@ def get_frames_from_cv2(video_path: str,
 
 
 def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate):
-    try:
-        clip = VideoFileClip(video_path)
-        start_time = start_time_in_ms / 1000
-        end_time = start_time + (sample_duration_in_ms / 1000)
-        frames = [frame for frame in clip.subclip(start_time, end_time).iter_frames(fps=frame_rate)]
-    except ValueError:
-        raise ValueError(f"Error: Frame not read!. ")
+    # try:
+    clip = VideoFileClip(video_path)
+    start_time = start_time_in_ms / 1000
+    end_time = start_time + (sample_duration_in_ms / 1000)
+    frames = [frame for frame in clip.subclip(start_time, end_time).iter_frames(fps=frame_rate)]
+    # except ValueError:
+    #     raise ValueError(f"Error: Frame not read!. ")
     return frames
 
 
@@ -86,7 +86,7 @@ def get_video_frames_as_tensor(train_or_test: str,
     video_duration = int(metadata['duration'][index])
 
     # Decide to return positive or negative label: if the video is dashcam, label set to 1
-    label = 0 if metadata['video_type'][index] != 'Dashcam' or not isinstance(critical_time, str) else 1
+    label = 0 if metadata['video_type'][index] != 'Dashcam' else 1
     start_time = get_critical_mid_time(sample_time=video_duration,
                                        critical_driving_time=critical_time,
                                        label=label)
@@ -95,34 +95,34 @@ def get_video_frames_as_tensor(train_or_test: str,
     sample_duration_in_ms = int(1000 * sample_duration)
     video_path = metadata['full_path'][index]
 
-    try:
-        if video_path.lower().endswith('.mp4'):
-            frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate)
-        elif video_path.lower().endswith('.mov'):
-            frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate)
-        else:
-            raise FileNotFoundError(f'file not support: {video_path}')
+    # try:
+    if video_path.lower().endswith('.mp4'):
+        frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate)
+    elif video_path.lower().endswith('.mov'):
+        frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate)
+    else:
+        raise FileNotFoundError(f'file not support: {video_path}')
 
-        frames_array = np.stack(frames, axis=0)
-        frames_array = dataset_transforms(video_array=frames_array,
-                                          train_or_test=train_or_test,
-                                          img_size=img_size,
-                                          model_name=model_name)
-        if img_representation == 'HWC':
-            # Final shape: (num_frames, height, width, channel)
-            assert frames_array.shape[3] == 3, (f'output representation not match with HWC, shape {frames_array.shape},'
-                                                f'video path: {video_path}')
-        else:
-            # Final shape: (num_frames, channel, height, width)
-            assert frames_array.shape[1] == 3, (f'output representation not match with CHW, shape {frames_array.shape},'
-                                                f'video path: {video_path}')
+    frames_array = np.stack(frames, axis=0)
+    frames_array = dataset_transforms(video_array=frames_array,
+                                      train_or_test=train_or_test,
+                                      img_size=img_size,
+                                      model_name=model_name)
+    if img_representation == 'HWC':
+        # Final shape: (num_frames, height, width, channel)
+        assert frames_array.shape[3] == 3, (f'output representation not match with HWC, shape {frames_array.shape},'
+                                            f'video path: {video_path}')
+    else:
+        # Final shape: (num_frames, channel, height, width)
+        assert frames_array.shape[1] == 3, (f'output representation not match with CHW, shape {frames_array.shape},'
+                                            f'video path: {video_path}')
 
-    except ValueError or AssertionError or FileNotFoundError:
-        raise RuntimeError(
-            f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
-            f"duration {video_duration}, "
-            f"with sample duration {sample_duration_in_ms / 1000} second, has some errors"
-        )
+    # except ValueError or AssertionError or FileNotFoundError:
+    #     raise RuntimeError(
+    #         f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
+    #         f"duration {video_duration}, "
+    #         f"with sample duration {sample_duration_in_ms / 1000} second, has some errors"
+    #     )
 
     return frames_array, start_time, label
 
@@ -156,16 +156,13 @@ def get_critical_mid_time(critical_driving_time,
 
     # Pick a random index from the list
     random_index = random.randint(0, len(time_ranges) - 1)
+    random_time = random.uniform(time_ranges[random_index][0], time_ranges[random_index][1])
 
-    # if label == 1:
-    #     # Generate a random float number within the chosen range
-    #     return random.uniform(time_ranges[random_index][0], time_ranges[random_index][1])
+    # Assertion to ensure the returned value is within the time range
+    assert any(start <= random_time <= end for start, end in
+               time_ranges), "Random time is not within the specified time ranges"
 
-    if random_index == len(time_ranges) - 1:
-        # Avoid getting video error at the end of the video
-        return random.uniform(time_ranges[random_index][1], sample_time - 2)
-
-    return random.uniform(time_ranges[random_index][0], time_ranges[random_index][1])
+    return random_time
 
 
 def get_video_duration_opencv(video_path):
@@ -288,14 +285,17 @@ class VideoDataset(Dataset):
         video, start_time, label = None, None, None
         attempt = 0
         while video is None:
-            video, start_time, label = get_video_frames_as_tensor(train_or_test=self.train_or_test,
-                                                                  index=idx,
-                                                                  metadata=self.metadata,
-                                                                  sample_duration=self.duration,
-                                                                  frame_rate=self.frame_rate,
-                                                                  model_name=self.model_name,
-                                                                  img_representation=self.img_representation,
-                                                                  img_size=self.img_size)
+            try:
+                video, start_time, label = get_video_frames_as_tensor(train_or_test=self.train_or_test,
+                                                                      index=idx,
+                                                                      metadata=self.metadata,
+                                                                      sample_duration=self.duration,
+                                                                      frame_rate=self.frame_rate,
+                                                                      model_name=self.model_name,
+                                                                      img_representation=self.img_representation,
+                                                                      img_size=self.img_size)
+            except AssertionError or ValueError as e:
+                print(e)
             idx = (idx + 1) % len(self.metadata)
             attempt += 1
             if attempt > 3:
