@@ -4,6 +4,9 @@ from datetime import datetime
 
 class Config:
     def __init__(self):
+        # Device to use: cuda:0 or cpu
+        self.device_str = 'cpu'
+
         # Framework to use, tensorflow or torch
         self.framework = 'torch'
 

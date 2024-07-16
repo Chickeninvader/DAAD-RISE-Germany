@@ -80,7 +80,6 @@ def main():
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
     )
-    device = torch.device('cpu')
     fine_tuner.to(device)
     fine_tuner.eval()
 
