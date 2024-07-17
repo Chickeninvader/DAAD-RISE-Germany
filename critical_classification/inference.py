@@ -6,6 +6,7 @@ from collections import deque
 import cv2
 import numpy as np
 import torch
+from tqdm import tqdm
 
 sys.path.append(os.getcwd())
 
@@ -70,14 +71,20 @@ class FullVideoDataset:
         if not cap.isOpened():
             raise ValueError("Error opening video file!")
 
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))  # Get the total number of frames
+        pbar = tqdm(total=total_frames, desc='Processing Video', unit='frame')  # Initialize progress bar
+
         cap.set(cv2.CAP_PROP_POS_MSEC, 0)
 
         frames = deque(maxlen=15)
-        ret = True
 
         # Create a video stream to display frames using OpenCV
-        height, width, _ = frames[0].shape
-        save_video_file_name = f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}'
+        ret, first_frame = cap.read()
+        if not ret:
+            raise ValueError("Error reading the first frame of the video!")
+
+        height, width, _ = first_frame.shape
+        save_video_file_name = f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.mp4'
         video_stream = cv2.VideoWriter(save_video_file_name,
                                        cv2.VideoWriter_fourcc(*"mp4v"),
                                        config.FRAME_RATE,
@@ -88,10 +95,11 @@ class FullVideoDataset:
             if not ret:
                 break
 
+            frames.append(frame)
+
             if len(frames) != 15:
                 continue
 
-            frames.append(frame)
             video_tensor_frame = np.stack(frames, axis=0)
             video_tensor_frame = data_preprocessing.dataset_transforms(video_array=video_tensor_frame,
                                                                        train_or_test='test',
@@ -101,16 +109,19 @@ class FullVideoDataset:
                 prediction = 0 if float(fine_tuner(video_tensor_frame)) < 0.5 else 1
 
             cv2.putText(frame,
-                        text='Critical' if idx >= 15 and prediction == 1 else 'Non critical',
+                        text='Critical' if prediction == 1 else 'Non critical',
                         org=(100, 100),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
                         fontScale=1,
-                        color=(0, 0, 255) if idx >= 15 and prediction == 1 else (0, 255, 0),
+                        color=(0, 0, 255) if prediction == 1 else (0, 255, 0),
                         thickness=2)
 
             video_stream.write(frame)
+            pbar.update(1)  # Update the progress bar
 
         cap.release()
+        video_stream.release()
+        pbar.close()  # Close the progress bar
 
 
 def unnormalize_img(img):
