@@ -1,4 +1,4 @@
-from pytube import YouTube
+from pytubefix import YouTube
 import os
 import pandas as pd
 
@@ -30,7 +30,7 @@ def download_videos_from_file(file_path, output_dir, df):
                 # Assign the path to the last row using df.loc
                 if not df['path'].isin([filename]).any():
                     print(f'add {filename} to metadata')
-                    df.at[df.shape[1] + video_number, 'path'] = filename
+                    df.at[df.shape[0] + video_number, 'path'] = filename
 
                 if os.path.exists(downloaded_path):
                     print(f'video {url} already exist')

@@ -1,5 +1,7 @@
 import argparse
-import os, sys
+import os
+import sys
+from collections import deque
 
 import cv2
 import numpy as np
@@ -7,8 +9,104 @@ import torch
 
 sys.path.append(os.getcwd())
 
-from critical_classification.src import backbone_pipeline
+from critical_classification.src import backbone_pipeline, data_preprocessing, utils
 from critical_classification.config import Config
+
+
+class FullVideoDataset:
+    def __init__(self, config):
+        metadata = config.metadata
+        img_representation = config.img_representation
+        duration = config.sample_duration
+        model_name = config.model_name
+        img_size = config.img_size
+        data_location = config.data_location
+        frame_rate = config.FRAME_RATE
+        folder_path = ''
+        print('use original representation')
+
+        self.metadata = metadata[metadata['train_or_test'] == 'infer']
+        self.img_representation = img_representation
+
+        self.metadata['full_path'] = [
+            os.path.join(os.getcwd(), f"{data_location}{folder_path}", f'{filename}')
+            for filename in self.metadata['path']
+        ]
+
+        # Filter metadata based on path existence
+        valid_indices = [i for i, path in enumerate(self.metadata['full_path']) if os.path.exists(path)]
+        self.metadata = self.metadata.iloc[valid_indices]
+
+        self.metadata = self.metadata.reset_index(drop=True)
+        self.duration = duration
+        self.frame_rate = frame_rate
+        self.model_name = model_name
+        self.img_size = img_size
+
+        print(f'Infer dataset contain: ')
+        print(utils.blue_text(f"{len(self.metadata)} videos contain critical data"))
+
+        self.current_idx = 0
+        self.cap = None
+
+    def __len__(self):
+        return len(self.metadata)
+
+    def infer_and_save_video(self,
+                             fine_tuner: torch.nn.Module,
+                             idx: int,
+                             config: Config,
+                             base_folder: str = 'critical_classification/dashcam_video/temp_video/',
+                             ):
+        video_path = self.metadata['full_path'][idx]
+        file_name = self.metadata['path'][idx]
+
+        cap = cv2.VideoCapture(video_path)
+
+        if not cap.isOpened():
+            raise ValueError("Error opening video file!")
+
+        cap.set(cv2.CAP_PROP_POS_MSEC, 0)
+
+        frames = deque(maxlen=15)
+        ret = True
+
+        # Create a video stream to display frames using OpenCV
+        height, width, _ = frames[0].shape
+        save_video_file_name = f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}'
+        video_stream = cv2.VideoWriter(save_video_file_name,
+                                       cv2.VideoWriter_fourcc(*"mp4v"),
+                                       config.FRAME_RATE,
+                                       (width, height))
+
+        while ret:
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            if len(frames) != 15:
+                continue
+
+            frames.append(frame)
+            video_tensor_frame = np.stack(frames, axis=0)
+            video_tensor_frame = data_preprocessing.dataset_transforms(video_array=video_tensor_frame,
+                                                                       train_or_test='test',
+                                                                       img_size=self.img_size,
+                                                                       model_name=self.model_name)
+            with torch.no_grad():
+                prediction = 0 if float(fine_tuner(video_tensor_frame)) < 0.5 else 1
+
+            cv2.putText(frame,
+                        text='Critical' if idx >= 15 and prediction == 1 else 'Non critical',
+                        org=(100, 100),
+                        fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                        fontScale=1,
+                        color=(0, 0, 255) if idx >= 15 and prediction == 1 else (0, 255, 0),
+                        thickness=2)
+
+            video_stream.write(frame)
+
+        cap.release()
 
 
 def unnormalize_img(img):
@@ -98,6 +196,15 @@ def main():
     if config.model_name is not None:
         fine_tuner.to(device)
         fine_tuner.eval()
+
+    if config.infer_all_video:
+        video_dataset = FullVideoDataset(config)
+        for idx in range(len(video_dataset)):
+            video_dataset.infer_and_save_video(fine_tuner=fine_tuner,
+                                               idx=idx,
+                                               config=config)
+            break
+        return
 
     for idx, (video_tensor_batch, label, metadata) in enumerate(loaders['test']):
         video_tensor = video_tensor_batch[0]

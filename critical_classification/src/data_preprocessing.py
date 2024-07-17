@@ -213,7 +213,7 @@ def is_valid_time_format(critical_driving_time):
 class VideoDataset(Dataset):
     def __init__(self,
                  config: Config,
-                 test: bool,):
+                 test: bool, ):
         """
         Arguments:
             test:

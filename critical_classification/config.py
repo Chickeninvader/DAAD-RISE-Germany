@@ -65,6 +65,9 @@ class Config:
         # Data_location
         self.data_location = 'critical_classification/dashcam_video/original_video/'
 
+        # Infer from all video flag
+        self.infer_all_video = False
+
     def print_config(self):
         for key, value in self.__dict__.items():
             print(f"{key}: {value}")
