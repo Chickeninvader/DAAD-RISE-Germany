@@ -56,13 +56,13 @@ class FullVideoDataset:
     def __len__(self):
         return len(self.metadata)
 
-    def infer_and_save_video(self,
-                             fine_tuner: torch.nn.Module,
-                             idx: int,
-                             config: Config,
-                             device: torch.device,
-                             base_folder: str = 'critical_classification/dashcam_video/temp_video/',
-                             ):
+    def infer_and_save_result(self,
+                              fine_tuner: torch.nn.Module,
+                              idx: int,
+                              config: Config,
+                              device: torch.device,
+                              base_folder: str = 'critical_classification/output/',
+                              ):
         video_path = self.metadata['full_path'][idx]
         file_name = self.metadata['path'][idx]
 
@@ -114,8 +114,7 @@ class FullVideoDataset:
             plt.title('Critical prediction over time')
             plt.xlabel('Time (s)')
             plt.ylabel('Prediction')
-            plt.savefig(f'critical_classification/output/inference_results/'
-                        f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.png')
+            plt.savefig(f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.png')
 
             # Clear the plot to avoid overlap in the next iteration
             plt.close()
@@ -220,10 +219,10 @@ def main():
     if config.infer_all_video:
         video_dataset = FullVideoDataset(config)
         for idx in range(len(video_dataset)):
-            video_dataset.infer_and_save_video(fine_tuner=fine_tuner,
-                                               idx=idx,
-                                               config=config,
-                                               device=device)
+            video_dataset.infer_and_save_result(fine_tuner=fine_tuner,
+                                                idx=idx,
+                                                config=config,
+                                                device=device)
             break
         return
 
