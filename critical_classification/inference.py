@@ -59,6 +59,7 @@ class FullVideoDataset:
                              fine_tuner: torch.nn.Module,
                              idx: int,
                              config: Config,
+                             device: torch.device,
                              base_folder: str = 'critical_classification/dashcam_video/temp_video/',
                              ):
         video_path = self.metadata['full_path'][idx]
@@ -106,7 +107,7 @@ class FullVideoDataset:
                                                                        img_size=self.img_size,
                                                                        model_name=self.model_name)
             with torch.no_grad():
-                prediction = 0 if float(fine_tuner(video_tensor_frame)) < 0.5 else 1
+                prediction = 0 if float(fine_tuner(video_tensor_frame.to(device))) < 0.5 else 1
 
             cv2.putText(frame,
                         text='Critical' if prediction == 1 else 'Non critical',
@@ -220,7 +221,8 @@ def main():
         for idx in range(len(video_dataset)):
             video_dataset.infer_and_save_video(fine_tuner=fine_tuner,
                                                idx=idx,
-                                               config=config)
+                                               config=config,
+                                               device=device)
             break
         return
 
