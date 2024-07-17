@@ -115,7 +115,7 @@ class FullVideoDataset:
             plt.xlabel('Time (s)')
             plt.ylabel('Prediction')
             plt.savefig(f'critical_classification/output/inference_results/'
-                        f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.mp4')
+                        f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.png')
 
             # Clear the plot to avoid overlap in the next iteration
             plt.close()
