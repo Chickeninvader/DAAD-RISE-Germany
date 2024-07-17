@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import torch
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 sys.path.append(os.getcwd())
 
@@ -84,13 +85,9 @@ class FullVideoDataset:
         if not ret:
             raise ValueError("Error reading the first frame of the video!")
 
-        height, width, _ = first_frame.shape
-        save_video_file_name = f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.mp4'
-        video_stream = cv2.VideoWriter(save_video_file_name,
-                                       cv2.VideoWriter_fourcc(*"mp4v"),
-                                       config.FRAME_RATE,
-                                       (width, height))
-
+        frame_idx = 0
+        prediction_list = []
+        current_time_list = []
         while ret:
             ret, frame = cap.read()
             if not ret:
@@ -107,21 +104,25 @@ class FullVideoDataset:
                                                                        img_size=self.img_size,
                                                                        model_name=self.model_name)
             with torch.no_grad():
-                prediction = 0 if float(fine_tuner(video_tensor_frame.to(device))) < 0.5 else 1
+                prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
-            cv2.putText(frame,
-                        text='Critical' if prediction == 1 else 'Non critical',
-                        org=(100, 100),
-                        fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=1,
-                        color=(0, 0, 255) if prediction == 1 else (0, 255, 0),
-                        thickness=2)
+            current_time_list.append(frame_idx / config.FRAME_RATE)
+            # Plot and save the figure
+            plt.figure()
+            plt.plot(current_time_list, prediction_list)
+            plt.axhline(y=0.5, color='r', linestyle='--')
+            plt.title('Critical prediction over time')
+            plt.xlabel('Time (s)')
+            plt.ylabel('Prediction')
+            plt.savefig(f'critical_classification/output/inference_results/'
+                        f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.mp4')
 
-            video_stream.write(frame)
+            # Clear the plot to avoid overlap in the next iteration
+            plt.close()
+            frame_idx += 1
             pbar.update(1)  # Update the progress bar
 
         cap.release()
-        video_stream.release()
         pbar.close()  # Close the progress bar
 
 
