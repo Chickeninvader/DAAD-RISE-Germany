@@ -1,3 +1,5 @@
+import time
+
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -298,13 +300,27 @@ class YOLOv1_video_binary(nn.Module):
         h_0 = Variable(torch.zeros(self.num_layers, 1, self.hidden_size)).to(self.device)  # hidden state
         c_0 = Variable(torch.zeros(self.num_layers, 1, self.hidden_size)).to(self.device)  # internal state
 
+        start_time = time.time()  # Record the start time
+
         x = self.base_model.darkNet(x)
         x = torch.flatten(x, start_dim=1)
         x = self.base_model.fc(x)
+
+        mid_time = time.time()  # Record the end time
+        elapsed_time = mid_time - start_time  # Calculate the elapsed time
+        print(f'time to get prediction from Yolo: {elapsed_time}')
+
         x = x.unsqueeze(1)
+
+        start_time = time.time()  # Record the start time
         output, (hn, cn) = self.LSTM(x, (h_0.detach(), c_0.detach()))
         hn_last = hn.reshape(-1)
         final_output = self.fc(hn_last)
+
+        mid_time = time.time()  # Record the end time
+        elapsed_time = mid_time - start_time  # Calculate the elapsed time
+        print(f'time to get prediction from Lstm and fc: {elapsed_time}')
+
         return final_output
 
     # def infer_from_video(self, x):
