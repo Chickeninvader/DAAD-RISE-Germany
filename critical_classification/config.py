@@ -45,7 +45,7 @@ class Config:
         # self.pretrained_path = 'critical_classification/save_models/file_name'
 
         # Scheduler: step, exponential or cosine
-        self.scheduler = 'cosine'
+        self.scheduler = 'exponential'
 
         # Flag to indicate whether to save the trained model
         self.save_files = True
