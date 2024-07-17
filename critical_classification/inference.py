@@ -109,6 +109,7 @@ class FullVideoDataset:
             start_time = time.time()  # Record the start time
 
             video_tensor_frame = torch.tensor(np.stack(frames, axis=0))
+            print(video_tensor_frame.shape)
             video_tensor_frame = data_preprocessing.dataset_transforms(video_array=video_tensor_frame,
                                                                        train_or_test='test',
                                                                        img_size=self.img_size,
