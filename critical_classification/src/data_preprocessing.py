@@ -278,25 +278,14 @@ class VideoDataset(Dataset):
 
     def __getitem__(self, idx):
         idx = idx % len(self.metadata)
-        # Loop until we get the video that is not error
-        video, start_time, label = None, None, None
-        attempt = 0
-        while video is None:
-            try:
-                video, start_time, label = get_video_frames_as_tensor(train_or_test=self.train_or_test,
-                                                                      index=idx,
-                                                                      metadata=self.metadata,
-                                                                      sample_duration=self.duration,
-                                                                      frame_rate=self.frame_rate,
-                                                                      model_name=self.model_name,
-                                                                      img_representation=self.img_representation,
-                                                                      img_size=self.img_size)
-            except AssertionError or ValueError as e:
-                print(e)
-            idx = (idx + 1) % len(self.metadata)
-            attempt += 1
-            if attempt > 3:
-                raise RuntimeError(f'try to read data 3 times but still got error, stop training')
+        video, start_time, label = get_video_frames_as_tensor(train_or_test=self.train_or_test,
+                                                              index=idx,
+                                                              metadata=self.metadata,
+                                                              sample_duration=self.duration,
+                                                              frame_rate=self.frame_rate,
+                                                              model_name=self.model_name,
+                                                              img_representation=self.img_representation,
+                                                              img_size=self.img_size)
 
         return video, label, (self.metadata['path'][idx], start_time)
 

@@ -210,6 +210,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             if max_f1_score < test_f1:
                 max_f1_score = test_f1
                 best_fine_tuner = copy.deepcopy(fine_tuner)
+                print(utils.green_text(f'save best fine tuner!'))
 
     # Final model
     print('#' * 50 + f'test best fine_tuner' + '#' * 50)

@@ -31,10 +31,10 @@ def create_gif(video_tensor):
 
 
 def save_output(video_tensor,
-                prediction_list,
                 file_name,
                 start_time,
                 config,
+                prediction_list=None,
                 base_folder: str = 'critical_classification/dashcam_video/temp_video/', ):
     """Prepares and displays a GIF from a video tensor."""
     if not os.path.exists(base_folder):
@@ -52,14 +52,30 @@ def save_output(video_tensor,
     for idx, frame in enumerate(frames):
         # since the model is trained with num_frame = 15, only after 15 frames we get the prediction
         frame = frame.copy()
-        cv2.putText(frame,
-                    text='Critical' if idx >= 15 and prediction_list[idx - 15] == 1 else 'Non critical',
-                    org=(100, 100),
-                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                    fontScale=1,
-                    color=(0, 0, 255) if idx >= 15 and prediction_list[idx - 15] == 1 else (0, 255, 0),
-                    thickness=2)
+        if prediction_list is not None:
+            cv2.putText(frame,
+                        text='Critical' if idx >= 15 and prediction_list[idx - 15] == 1 else 'Non critical',
+                        org=(100, 100),
+                        fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                        fontScale=1,
+                        color=(0, 0, 255) if idx >= 15 and prediction_list[idx - 15] == 1 else (0, 255, 0),
+                        thickness=2)
         video_stream.write(frame)
+
+
+def inference_with_model(num_frame,
+                         video_tensor,
+                         fine_tuner,
+                         device):
+    prediction_list = []
+    for video_tensor_frame_idx in range(num_frame - 15):
+        print(f'frame {video_tensor_frame_idx}')
+        with torch.no_grad():
+            video_tensor_frame = video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15].to(device)
+            prediction_list.append(0 if float(fine_tuner(video_tensor_frame)) < 0.5 else 1)
+
+            del video_tensor_frame
+    return prediction_list
 
 
 def main():
@@ -88,19 +104,19 @@ def main():
         file_name, start_time = metadata
         file_name = file_name[0]
         num_frame = video_tensor.shape[0]
-        prediction_list = []
         print(f'start doing inference for {file_name}')
 
-        for video_tensor_frame_idx in range(num_frame - 15):
-            print(f'frame {video_tensor_frame_idx}')
-            with torch.no_grad():
-                video_tensor_frame = video_tensor[video_tensor_frame_idx:video_tensor_frame_idx + 15].to(device)
-                prediction_list.append(0 if float(fine_tuner(video_tensor_frame)) < 0.5 else 1)
+        if config.inference_with_model:
+            prediction_list = inference_with_model(num_frame=num_frame,
+                                                   video_tensor=video_tensor,
+                                                   fine_tuner=fine_tuner,
+                                                   device=device)
 
-                del video_tensor_frame
+            print(f'{file_name} has prediction: {prediction_list}')
+            save_output(video_tensor, file_name, start_time, config, prediction_list)
 
-        print(f'{file_name} has prediction: {prediction_list}')
-        save_output(video_tensor, prediction_list, file_name, start_time, config)
+        else:
+            save_output(video_tensor, file_name, start_time, config)
 
         del video_tensor, video_tensor_batch, prediction_list
 

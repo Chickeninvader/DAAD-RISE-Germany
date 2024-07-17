@@ -49,9 +49,6 @@ def initiate(config: Config):
         config=config
     )
 
-    if pretrained_path is not None:
-        print(f'Loading pretrain weight model at {pretrained_path}')
-
     if model_name == 'VideoMAP':
         fine_tuner = VideoMAE()
     elif model_name == 'YOLOv1_image':
@@ -67,6 +64,12 @@ def initiate(config: Config):
     else:
         print('No model mode, fine tuner not initiated')
         fine_tuner = None
+
+    if pretrained_path is not None:
+        print(f'Loading pretrain weight model at {pretrained_path}')
+        state_dict = torch.load(pretrained_path, map_location=device)
+        fine_tuner.load_state_dict(state_dict)
+        print('Pretrained weights loaded successfully.')
 
     loaders = data_preprocessing.get_loaders(datasets=datasets,
                                              batch_size=batch_size)
