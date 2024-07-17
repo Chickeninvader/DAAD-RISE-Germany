@@ -83,8 +83,7 @@ def main():
     parser.add_argument('--data_location', type=str, help='Path to the data location',
                         default='critical_classification/dashcam_video/original_video/')
     parser.add_argument('--pretrained_path', type=str, help='Path to model location',
-                        default='critical_classification/save_models/'
-                                'MYOLOv1_video_lr1e-05_lossBCE_e20_scosine_Aexperiment_20240715_165949.pth')
+                        default=None)
     args = parser.parse_args()
 
     config = Config()
@@ -96,8 +95,9 @@ def main():
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
     )
-    fine_tuner.to(device)
-    fine_tuner.eval()
+    if config.model_name is not None:
+        fine_tuner.to(device)
+        fine_tuner.eval()
 
     for idx, (video_tensor_batch, label, metadata) in enumerate(loaders['test']):
         video_tensor = video_tensor_batch[0]
@@ -106,7 +106,7 @@ def main():
         num_frame = video_tensor.shape[0]
         print(f'start doing inference for {file_name}')
 
-        if config.inference_with_model:
+        if config.model_name is not None:
             prediction_list = inference_with_model(num_frame=num_frame,
                                                    video_tensor=video_tensor,
                                                    fine_tuner=fine_tuner,
@@ -114,11 +114,10 @@ def main():
 
             print(f'{file_name} has prediction: {prediction_list}')
             save_output(video_tensor, file_name, start_time, config, prediction_list)
+            del video_tensor, video_tensor_batch, prediction_list
 
         else:
             save_output(video_tensor, file_name, start_time, config)
-
-        del video_tensor, video_tensor_batch, prediction_list
 
 
 if __name__ == '__main__':

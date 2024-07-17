@@ -399,7 +399,7 @@ def dataset_transforms(video_array: np.array,
     Returns the transforms required for the VIT for training or test datasets
     """
     mean, std = None, None
-    if model_name == 'YOLOv1_video' or None:
+    if model_name == 'YOLOv1_video' or model_name is None:
         frames = []
         transform = transforms.Compose([
             transforms.Resize((img_size, img_size), Image.NEAREST),
