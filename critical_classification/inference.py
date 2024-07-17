@@ -95,12 +95,13 @@ class FullVideoDataset:
                                                           img_size=self.img_size,
                                                           model_name=self.model_name)
             frames.append(frame)
+            print(frame.shape)
 
             if len(frames) != 15 or frame_idx % 4 != 0:
                 continue
 
             video_tensor_frame = torch.tensor(np.stack(frames, axis=0))
-
+            print(video_tensor_frame.shape)
             with torch.no_grad():
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
