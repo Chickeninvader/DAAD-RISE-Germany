@@ -90,13 +90,11 @@ class FullVideoDataset:
             ret, frame = cap.read()
             if not ret:
                 break
-            print(frame.shape)
-            frame = data_preprocessing.dataset_transforms(video_array=torch.tensor(frame),
+            frame = data_preprocessing.dataset_transforms(video_array=torch.Tensor(frame).permute(2, 0, 1),
                                                           train_or_test='test',
                                                           img_size=self.img_size,
                                                           model_name=self.model_name)
             frames.append(frame)
-            print(frame.shape)
 
             if len(frames) != 15 or frame_idx % 4 != 0:
                 continue
