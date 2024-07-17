@@ -91,7 +91,7 @@ class FullVideoDataset:
             if not ret:
                 break
             print(frame.shape)
-            frame = data_preprocessing.dataset_transforms(video_array=frame,
+            frame = data_preprocessing.dataset_transforms(video_array=torch.tensor(frame),
                                                           train_or_test='test',
                                                           img_size=self.img_size,
                                                           model_name=self.model_name)
