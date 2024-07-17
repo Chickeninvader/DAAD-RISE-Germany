@@ -1,6 +1,10 @@
-from pytubefix import YouTube
 import os
+import sys
+
+from pytubefix import YouTube
 import pandas as pd
+
+sys.path.append(os.getcwd())
 
 
 def download_videos_from_file(file_path, output_dir, df):
@@ -45,8 +49,8 @@ def download_videos_from_file(file_path, output_dir, df):
 
 if __name__ == '__main__':
     file_path = 'critical_driving_scenario_video_urls.txt'  # Replace with the actual path to your file
-    output_dir = '/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/dashcam_video/original_video'  # Replace with your desired output directory
-    df = pd.read_excel('/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/dashcam_video/metadata.xlsx')
+    output_dir = 'critical_classification/dashcam_video/original_video'  # Replace with your desired output directory
+    df = pd.read_excel('critical_classification/dashcam_video/metadata.xlsx')
 
     update_df = download_videos_from_file(file_path, output_dir, df)
-    update_df.to_excel('/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/dashcam_video/metadata.xlsx', index=False)
+    # update_df.to_excel('critical_classification/dashcam_video/metadata.xlsx', index=False)
