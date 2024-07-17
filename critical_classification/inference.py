@@ -8,6 +8,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import time
 
 sys.path.append(os.getcwd())
 
@@ -88,6 +89,9 @@ class FullVideoDataset:
         frame_idx = 0
         prediction_list = []
         current_time_list = []
+
+        start_time = time.time()  # Record the start time
+
         while ret:
             ret, frame = cap.read()
             if not ret:
@@ -98,6 +102,12 @@ class FullVideoDataset:
             if len(frames) != 15:
                 continue
 
+            mid_time = time.time()  # Record the end time
+            elapsed_time = mid_time - start_time  # Calculate the elapsed time
+            print(f'time to load 15 frame: {elapsed_time}')
+
+            start_time = time.time()  # Record the start time
+
             video_tensor_frame = np.stack(frames, axis=0)
             video_tensor_frame = data_preprocessing.dataset_transforms(video_array=video_tensor_frame,
                                                                        train_or_test='test',
@@ -106,6 +116,10 @@ class FullVideoDataset:
             with torch.no_grad():
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
+            elapsed_time = mid_time - start_time  # Calculate the elapsed time
+            print(f'time to get 1 prediction: {elapsed_time}')
+
+            start_time = time.time()  # Record the start time
             current_time_list.append(frame_idx / config.FRAME_RATE)
             # Plot and save the figure
             plt.figure()
@@ -118,8 +132,12 @@ class FullVideoDataset:
 
             # Clear the plot to avoid overlap in the next iteration
             plt.close()
+            elapsed_time = mid_time - start_time  # Calculate the elapsed time
+            print(f'time to get the prediction to plt: {elapsed_time}')
             frame_idx += 1
             pbar.update(1)  # Update the progress bar
+
+            break  # for debuging purpose
 
         cap.release()
         pbar.close()  # Close the progress bar
