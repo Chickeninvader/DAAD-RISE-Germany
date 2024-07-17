@@ -90,6 +90,7 @@ class FullVideoDataset:
             ret, frame = cap.read()
             if not ret:
                 break
+            print(frame.shape)
             frame = data_preprocessing.dataset_transforms(video_array=frame,
                                                           train_or_test='test',
                                                           img_size=self.img_size,
