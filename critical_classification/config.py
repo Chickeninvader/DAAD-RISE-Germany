@@ -18,7 +18,7 @@ class Config:
 
         # Number of epochs to train the model
         # self.num_epochs = 1  # for debugging
-        self.num_epochs = 20
+        self.num_epochs = 40
 
         # Learning rate for the optimizer
         self.lr = 0.00001
