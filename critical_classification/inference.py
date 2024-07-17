@@ -116,6 +116,7 @@ class FullVideoDataset:
             with torch.no_grad():
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
+            mid_time = time.time()  # Record the end time
             elapsed_time = mid_time - start_time  # Calculate the elapsed time
             print(f'time to get 1 prediction: {elapsed_time}')
 
@@ -132,6 +133,7 @@ class FullVideoDataset:
 
             # Clear the plot to avoid overlap in the next iteration
             plt.close()
+            mid_time = time.time()  # Record the end time
             elapsed_time = mid_time - start_time  # Calculate the elapsed time
             print(f'time to get the prediction to plt: {elapsed_time}')
             frame_idx += 1
