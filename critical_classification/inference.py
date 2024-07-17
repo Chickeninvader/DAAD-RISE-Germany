@@ -36,6 +36,8 @@ class FullVideoDataset:
         # Filter metadata based on path existence
         valid_indices = [i for i, path in enumerate(self.metadata['full_path']) if os.path.exists(path)]
         self.metadata = self.metadata.iloc[valid_indices]
+        self.metadata['duration'] = [data_preprocessing.get_video_duration_opencv(path)
+                                     for path in self.metadata['full_path']]
 
         self.metadata = self.metadata.reset_index(drop=True)
         self.duration = duration
@@ -60,6 +62,8 @@ class FullVideoDataset:
                              ):
         video_path = self.metadata['full_path'][idx]
         file_name = self.metadata['path'][idx]
+
+        print(f'do inference on {video_path}')
 
         cap = cv2.VideoCapture(video_path)
 
