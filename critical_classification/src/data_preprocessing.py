@@ -10,7 +10,8 @@ import torch.utils.data
 from moviepy.editor import VideoFileClip
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision import transforms
+from torchvision.transforms import v2
+# from torchvision import transforms
 from transformers import VideoMAEImageProcessor
 
 from critical_classification.src import utils
@@ -400,16 +401,16 @@ def dataset_transforms(video_array: np.array,
     """
     mean, std = None, None
     if model_name == 'YOLOv1_video' or model_name is None:
-        frames = []
-        transform = transforms.Compose([
-            transforms.Resize((img_size, img_size), Image.NEAREST),
-            transforms.ToTensor(),
+        # frames = []
+        transform = v2.Compose([
+            v2.Resize((img_size, img_size), Image.NEAREST),
+            v2.ToTensor(),
         ])
-        for frame in video_array:
-            img = Image.fromarray(frame)
-            img_tensor = transform(img)
-            frames.append(img_tensor)
-        return torch.stack(frames)
+        # for frame in video_array:
+        #     img = Image.fromarray(frame)
+        #     img_tensor = transform(img)
+        #     frames.append(img_tensor)
+        return transform(video_array)
 
     if model_name == 'VideoMAE':
         model_ckpt = "MCG-NJU/videomae-base"

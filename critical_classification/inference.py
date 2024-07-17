@@ -125,22 +125,7 @@ class FullVideoDataset:
             elapsed_time = mid_time - start_time  # Calculate the elapsed time
             print(f'time to get 1 prediction: {elapsed_time}')
 
-            start_time = time.time()  # Record the start time
             current_time_list.append(frame_idx / config.FRAME_RATE)
-            # Plot and save the figure
-            plt.figure()
-            plt.plot(current_time_list, prediction_list)
-            plt.axhline(y=0.5, color='r', linestyle='--')
-            plt.title('Critical prediction over time')
-            plt.xlabel('Time (s)')
-            plt.ylabel('Prediction')
-            plt.savefig(f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.png')
-
-            # Clear the plot to avoid overlap in the next iteration
-            plt.close()
-            mid_time = time.time()  # Record the end time
-            elapsed_time = mid_time - start_time  # Calculate the elapsed time
-            print(f'time to get the prediction to plt: {elapsed_time}')
             frame_idx += 1
             pbar.update(1)  # Update the progress bar
 
@@ -148,6 +133,16 @@ class FullVideoDataset:
 
         cap.release()
         pbar.close()  # Close the progress bar
+        # Plot and save the figure
+
+        # plt.figure()
+        # plt.plot(current_time_list, prediction_list)
+        # plt.axhline(y=0.5, color='r', linestyle='--')
+        # plt.title('Critical prediction over time')
+        # plt.xlabel('Time (s)')
+        # plt.ylabel('Prediction')
+        # plt.savefig(f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.png')
+
 
 
 def unnormalize_img(img):
