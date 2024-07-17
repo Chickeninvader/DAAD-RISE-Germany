@@ -80,70 +80,44 @@ class FullVideoDataset:
         cap.set(cv2.CAP_PROP_POS_MSEC, 0)
 
         frames = deque(maxlen=15)
-
-        # Create a video stream to display frames using OpenCV
-        ret, first_frame = cap.read()
-        if not ret:
-            raise ValueError("Error reading the first frame of the video!")
-
+        ret = True
         frame_idx = 0
         prediction_list = []
         current_time_list = []
 
-        start_time = time.time()  # Record the start time
-
         while ret:
+            frame_idx += 1
             ret, frame = cap.read()
             if not ret:
                 break
-
+            frame = data_preprocessing.dataset_transforms(video_array=frame,
+                                                          train_or_test='test',
+                                                          img_size=self.img_size,
+                                                          model_name=self.model_name)
             frames.append(frame)
 
-            if len(frames) != 15:
+            if len(frames) != 15 or frame_idx % 4 != 0:
                 continue
 
-            mid_time = time.time()  # Record the end time
-            elapsed_time = mid_time - start_time  # Calculate the elapsed time
-            print(f'time to load 15 frame: {elapsed_time}')
-
-            start_time = time.time()  # Record the start time
-
             video_tensor_frame = torch.tensor(np.stack(frames, axis=0))
-            print(video_tensor_frame.shape)
-            video_tensor_frame = data_preprocessing.dataset_transforms(video_array=frame,
-                                                                       train_or_test='test',
-                                                                       img_size=self.img_size,
-                                                                       model_name=self.model_name)
-            mid_time = time.time()  # Record the end time
-            elapsed_time = mid_time - start_time  # Calculate the elapsed time
-            print(f'time to preprocess data: {elapsed_time}')
 
-            start_time = time.time()  # Record the start time
             with torch.no_grad():
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
-            mid_time = time.time()  # Record the end time
-            elapsed_time = mid_time - start_time  # Calculate the elapsed time
-            print(f'time to get 1 prediction: {elapsed_time}')
-
             current_time_list.append(frame_idx / config.FRAME_RATE)
-            frame_idx += 1
             pbar.update(1)  # Update the progress bar
-
-            break  # for debuging purpose
 
         cap.release()
         pbar.close()  # Close the progress bar
+
         # Plot and save the figure
-
-        # plt.figure()
-        # plt.plot(current_time_list, prediction_list)
-        # plt.axhline(y=0.5, color='r', linestyle='--')
-        # plt.title('Critical prediction over time')
-        # plt.xlabel('Time (s)')
-        # plt.ylabel('Prediction')
-        # plt.savefig(f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.png')
-
+        plt.figure()
+        plt.plot(current_time_list, prediction_list)
+        plt.axhline(y=0.5, color='r', linestyle='--')
+        plt.title('Critical prediction over time')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Prediction')
+        plt.savefig(f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.png')
 
 
 def unnormalize_img(img):
