@@ -113,6 +113,11 @@ class FullVideoDataset:
                                                                        train_or_test='test',
                                                                        img_size=self.img_size,
                                                                        model_name=self.model_name)
+            mid_time = time.time()  # Record the end time
+            elapsed_time = mid_time - start_time  # Calculate the elapsed time
+            print(f'time to preprocess data: {elapsed_time}')
+
+            start_time = time.time()  # Record the start time
             with torch.no_grad():
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
