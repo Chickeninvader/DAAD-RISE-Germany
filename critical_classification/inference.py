@@ -95,6 +95,7 @@ class FullVideoDataset:
                                                           img_size=self.img_size,
                                                           model_name=self.model_name)
             frames.append(frame)
+            pbar.update(1)  # Update the progress bar
 
             if len(frames) != 15 or frame_idx % 5 != 0:
                 continue
@@ -104,7 +105,6 @@ class FullVideoDataset:
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
             current_time_list.append(frame_idx / config.FRAME_RATE)
-            pbar.update(1)  # Update the progress bar
 
         cap.release()
         pbar.close()  # Close the progress bar
