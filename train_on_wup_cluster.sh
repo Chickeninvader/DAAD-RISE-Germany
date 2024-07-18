@@ -24,7 +24,7 @@ date
 
 # For visualization
 #python critical_classification/inference.py --data_location /data/nvo/original_video/ --pretrained_path critical_classification/save_models/MYOLOv1_video_lr1e-05_lossBCE_e20_scosine_Aexperiment_20240715_165949.pth
-python critical_classification/inference.py --data_location /data/nvo/original_video/ --pretrained_path critical_classification/save_models/MYOLOv1_video_lr1e-05_lossBCE_e40_scosine_Aexperiment_20240717_101541 --all_frames
+python critical_classification/inference.py --data_location /data/nvo/original_video/ --pretrained_path critical_classification/save_models/MYOLOv1_video_lr1e-05_lossBCE_e40_scosine_Aexperiment_20240717_101541.pth --all_frames
 
 # For other purpose
 # download dataset
