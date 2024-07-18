@@ -102,7 +102,7 @@ def get_video_frames_as_tensor(train_or_test: str,
         raise FileNotFoundError(f'file not support: {video_path}')
 
     frames_array = np.stack(frames, axis=0)
-    frames_array = dataset_transforms(video_array=torch.tensor(frames_array),
+    frames_array = dataset_transforms(video_array=frames_array,
                                       train_or_test=train_or_test,
                                       img_size=img_size,
                                       model_name=model_name)
