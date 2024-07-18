@@ -96,7 +96,7 @@ def format_integer(n):
         return f"{sign}{a} * 10^{b}"
 
 
-def plot_figure(data_dict, save_path: str):
+def plot_figure(data_dict, save_path: str, train_or_test: str):
     """
     Plots and saves a graph of multiple values over epochs.
 
@@ -112,7 +112,7 @@ def plot_figure(data_dict, save_path: str):
 
     plt.xlabel('Epoch')
     plt.ylabel('Value')
-    plt.title('Metrics over Epochs')
+    plt.title(f'Metrics over Epochs on {train_or_test}')
     plt.legend()
     plt.grid(True)
     plt.savefig(save_path)

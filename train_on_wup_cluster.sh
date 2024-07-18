@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task 1  # number of cpus per task
 #SBATCH --gres=gpu:1 # number of gpus (4 out of 8)
 #SBATCH --mem=10000  # memory pool for all cores (in megabytes, if w/o suffix)
-#SBATCH -t 0-03:00  # time (D-HH:MM)
+#SBATCH -t 0-05:00  # time (D-HH:MM)
 #SBATCH -o /home/nvo/slurm_logs/slurm.%N.%j.out  # STDOUT
 #SBATCH -e /home/nvo/slurm_logs/slurm.%N.%j.err  # STDERR
 # show visible gpus
@@ -24,7 +24,7 @@ date
 
 # For visualization
 #python critical_classification/inference.py --data_location /data/nvo/original_video/ --pretrained_path critical_classification/save_models/MYOLOv1_video_lr1e-05_lossBCE_e20_scosine_Aexperiment_20240715_165949.pth
-python critical_classification/inference.py --data_location /data/nvo/original_video/ --pretrained_path critical_classification/save_models/MYOLOv1_video_lr1e-05_lossBCE_e40_scosine_Aexperiment_20240717_101541.pth --all_frames
+python critical_classification/inference.py --data_location /data/nvo/original_video/ --pretrained_path critical_classification/save_models/MYOLOv1_video_lr1e-05_lossBCE_e20_scosine_Aexperiment_20240715_165949.pth --all_frames
 
 # For other purpose
 # download dataset

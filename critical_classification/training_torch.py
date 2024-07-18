@@ -149,7 +149,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
 
     file_name = (f"M{config.model_name}_lr{config.lr}_loss{config.loss}_e"
                  f"{config.num_epochs}_s{config.scheduler}_A{config.additional_saving_info}")
-    save_fig_path = f"critical_classification/output/loss_visualization/{file_name}.png"
+    save_fig_path = f"critical_classification/output/loss_visualization/{file_name}"
     save_model_path = f"critical_classification/save_models/{file_name}.pth"
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
@@ -191,7 +191,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             train_result_dict['f1'].append(train_f1)
             train_result_dict['loss'].append(train_total_loss)
             train_result_dict['lr'].append(train_lr)
-            utils.plot_figure(train_result_dict, save_fig_path)
+            utils.plot_figure(train_result_dict, f'{save_fig_path}_train.png', train_or_test='train')
             # Testing
             print('#' * 50 + f'test epoch {epoch}' + '#' * 50)
             optimizer, fine_tuner, test_accuracy, test_f1, test_total_loss, test_lr = \
@@ -205,7 +205,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             test_result_dict['f1'].append(test_f1)
             test_result_dict['loss'].append(test_total_loss)
             test_result_dict['lr'].append(test_lr)
-            utils.plot_figure(test_result_dict, save_fig_path)
+            utils.plot_figure(test_result_dict, f'{save_fig_path}_test.png', train_or_test='test')
 
             if max_f1_score < test_f1:
                 max_f1_score = test_f1
