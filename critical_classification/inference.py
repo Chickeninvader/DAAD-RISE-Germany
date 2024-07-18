@@ -214,10 +214,9 @@ def main():
         video_dataset = FullVideoDataset(config)
         for idx in range(len(video_dataset)):
             video_dataset.infer_and_save_result(fine_tuner=fine_tuner,
-                                                idx=0,
+                                                idx=idx,
                                                 config=config,
                                                 device=device)
-            break
         return
 
     for idx, (video_tensor_batch, label, metadata) in enumerate(loaders['test']):
