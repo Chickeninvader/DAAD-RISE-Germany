@@ -392,7 +392,7 @@ def test_transform(video, height, width, mean, std):
     return np.array(transformed_video)
 
 
-def dataset_transforms(video_array: np.array,
+def dataset_transforms(video_array: typing.Union[torch.Tensor, np.array],
                        train_or_test: str,
                        img_size: int,
                        model_name: str) -> torch.tensor:
@@ -401,16 +401,20 @@ def dataset_transforms(video_array: np.array,
     """
     mean, std = None, None
     if model_name == 'YOLOv1_video' or model_name is None:
-        # frames = []
         transform = v2.Compose([
             v2.Resize((img_size, img_size), Image.NEAREST),
             v2.ToTensor(),
         ])
-        # for frame in video_array:
-        #     img = Image.fromarray(frame)
-        #     img_tensor = transform(img)
-        #     frames.append(img_tensor)
-        return transform(video_array)
+
+        if video_array.ndim == 3:
+            return transform(video_array)
+
+        frames = []
+        for frame in video_array:
+            img = Image.fromarray(frame)
+            img_tensor = transform(img)
+            frames.append(img_tensor)
+        return torch.stack(frames)
 
     if model_name == 'VideoMAE':
         model_ckpt = "MCG-NJU/videomae-base"
