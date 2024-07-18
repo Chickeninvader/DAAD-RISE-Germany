@@ -100,7 +100,6 @@ class FullVideoDataset:
                 continue
 
             video_tensor_frame = torch.tensor(np.stack(frames, axis=0))
-            print(video_tensor_frame.shape)
             with torch.no_grad():
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
