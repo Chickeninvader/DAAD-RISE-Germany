@@ -96,7 +96,7 @@ class FullVideoDataset:
                                                           model_name=self.model_name)
             frames.append(frame)
 
-            if len(frames) != 15 or frame_idx % 4 != 0:
+            if len(frames) != 15 or frame_idx % 5 != 0:
                 continue
 
             video_tensor_frame = torch.tensor(np.stack(frames, axis=0))
