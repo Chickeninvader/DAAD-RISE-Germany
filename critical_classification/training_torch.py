@@ -107,14 +107,11 @@ def batch_learning_and_evaluating(loaders,
                 # break  # for debuging
                 continue
 
-
-            # Update progress bar with informative text (without newline)
-
             batch_total_loss.backward()
             optimizer.step()
 
             del X, Y_pred, Y_true
-            break  # for debuging
+            # break  # for debuging
 
     if not evaluation:
         scheduler.step()

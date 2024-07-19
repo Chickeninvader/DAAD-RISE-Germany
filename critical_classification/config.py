@@ -24,7 +24,7 @@ class Config:
         self.num_epochs = 40
 
         # Learning rate for the optimizer
-        self.lr = 0.00001
+        self.lr = 0.0001
 
         # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D
         # self.model_name = 'Monocular3D'
