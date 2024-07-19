@@ -262,14 +262,14 @@ class YOLOv1_video_binary(nn.Module):
         self.base_model = YOLOv1(self.split_size, self.num_boxes, self.num_classes).to(self.device)
         weights = torch.load(self.pretrain_base_model_path, map_location=self.device)
 
-        # Freeze base layer
+        # Freeze darknet layer
         self.base_model.load_state_dict(weights["state_dict"])
-        for param in self.base_model.parameters():
+        for param in self.base_model.darkNet.parameters():
             param.requires_grad = False
 
         # Add new LSTM layer for binary output
         self.hidden_size = 128  # hidden size of lstm
-        self.num_layers = 2  # number of LSTM layers stacked
+        self.num_layers = 4  # number of LSTM layers stacked
 
         self.LSTM = torch.nn.LSTM(input_size=split_size * split_size * (num_classes + num_boxes * 5),
                                   hidden_size=self.hidden_size,
