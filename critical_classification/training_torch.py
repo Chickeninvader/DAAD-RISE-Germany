@@ -249,6 +249,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     config = Config()
+    config.data_location = args.data_location
     config.print_config()
-    config.dashcam_data_location = args.data_location
     run_combined_fine_tuning_pipeline(config)
