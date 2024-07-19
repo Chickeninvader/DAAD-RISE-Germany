@@ -8,7 +8,6 @@ import numpy as np
 import torch
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-import time
 
 sys.path.append(os.getcwd())
 
@@ -23,7 +22,7 @@ class FullVideoDataset:
         duration = config.sample_duration
         model_name = config.model_name
         img_size = config.img_size
-        data_location = config.data_location
+        data_location = config.dashcam_data_location
         frame_rate = config.FRAME_RATE
         folder_path = ''
         print('use original representation')
@@ -143,7 +142,7 @@ def save_output(video_tensor,
                 start_time,
                 config,
                 prediction_list=None,
-                base_folder: str = 'critical_classification/dashcam_video/temp_video/', ):
+                base_folder: str = 'critical_classification/critical_dataset/temp_video/', ):
     """Prepares and displays a GIF from a video tensor."""
     if not os.path.exists(base_folder):
         os.makedirs(base_folder)
@@ -189,7 +188,7 @@ def inference_with_model(num_frame,
 def main():
     parser = argparse.ArgumentParser(description="Inference pipeline")
     parser.add_argument('--data_location', type=str, help='Path to the data location',
-                        default='critical_classification/dashcam_video/original_video/')
+                        default='critical_classification/critical_dataset/Dashcam_video/')
     parser.add_argument('--pretrained_path', type=str, help='Path to model location',
                         default=None)
     parser.add_argument('--all_frames', action='store_true', help='Do inference for infer video')
@@ -197,7 +196,7 @@ def main():
     args = parser.parse_args()
 
     config = Config()
-    config.data_location = args.data_location
+    config.dashcam_data_location = args.data_location
     config.pretrained_path = args.pretrained_path
     config.infer_all_video = args.all_frames
     config.sample_duration = 4

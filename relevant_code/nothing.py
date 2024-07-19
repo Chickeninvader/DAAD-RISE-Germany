@@ -48,8 +48,8 @@ def convert_mov_to_mp4(input_path, output_path):
 
 if __name__ == "__main__":
     # Specify input and output folders
-    input_folder = 'critical_classification/dashcam_video/original_video/'
-    output_folder = 'critical_classification/dashcam_video/original_video/'
+    input_folder = 'critical_classification/critical_dataset/Dashcam_video/'
+    output_folder = 'critical_classification/critical_dataset/Dashcam_video/'
 
     # Convert all .mov files in input_folder to .mp4 in output_folder
     convert_mov_files(input_folder, output_folder)

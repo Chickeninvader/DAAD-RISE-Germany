@@ -52,7 +52,7 @@ yolo_classes = ['Pedestrian', 'Cyclist', 'Car', 'motorcycle', 'airplane', 'Van',
 
 # Load the video
 video = cv2.VideoCapture(
-    '/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/dashcam_video/original_video/Vollbremsungen Überholen durchs Bankett und Schleicherei  DDG Dashcam Germany  580.mp4')
+    '/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/critical_dataset/Dashcam_video/Vollbremsungen Überholen durchs Bankett und Schleicherei  DDG Dashcam Germany  580.mp4')
 
 ### svae results
 # Get video information (frame width, height, frames per second)

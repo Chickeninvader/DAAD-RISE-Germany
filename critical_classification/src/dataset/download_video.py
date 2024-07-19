@@ -49,8 +49,8 @@ def download_videos_from_file(file_path, output_dir, df):
 
 if __name__ == '__main__':
     file_path = 'critical_classification/src/dataset/critical_driving_scenario_video_urls.txt'
-    output_dir = '/data/nvo/original_video'  # Replace with your desired output directory
-    df = pd.read_excel('critical_classification/dashcam_video/metadata.xlsx')
+    output_dir = '/data/nvo/Dashcam_video'  # Replace with your desired output directory
+    df = pd.read_excel('critical_classification/critical_dataset/metadata.xlsx')
 
     update_df = download_videos_from_file(file_path, output_dir, df)
-    # update_df.to_excel('critical_classification/dashcam_video/metadata.xlsx', index=False)
+    # update_df.to_excel('critical_classification/critical_dataset/metadata.xlsx', index=False)

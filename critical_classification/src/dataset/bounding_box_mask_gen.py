@@ -43,7 +43,7 @@ ap.add_argument("-nb", "--num_boxes", default=2,
 ap.add_argument("-nc", "--num_classes", default=13,
                 help="number of classes which are being predicted")
 ap.add_argument("-i", "--dataset_path",
-                help="path to dataset", default='critical_classification/dashcam_video/original_video')
+                help="path to dataset", default='critical_classification/critical_dataset/Dashcam_video')
 ap.add_argument("-s", "--shape",
                 help="shape to generate, rectangle or gaussian", default='gaussian')
 

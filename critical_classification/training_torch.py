@@ -113,7 +113,7 @@ def batch_learning_and_evaluating(loaders,
             optimizer.step()
 
             del X, Y_pred, Y_true
-            # break  # for debuging
+            break  # for debuging
 
     if not evaluation:
         scheduler.step()
@@ -126,9 +126,9 @@ def batch_learning_and_evaluating(loaders,
     predictions = torch.cat(predictions)
     ground_truths = torch.cat(ground_truths)
 
-    # print_info_for_debug(ground_truths,
-    #                      predictions,
-    #                      video_name_with_time)
+    print_info_for_debug(ground_truths,
+                         predictions,
+                         video_name_with_time)
 
     accuracy = accuracy_score(ground_truths, predictions)
     f1 = f1_score(ground_truths, predictions)
@@ -147,7 +147,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     fine_tuner.to(device)
     fine_tuner.train()
 
-    file_name = (f"M{config.model_name}_lr{config.lr}_loss{config.loss}_e"
+    file_name = (f"D{config.dataset_name}_M{config.model_name}_lr{config.lr}_loss{config.loss}_e"
                  f"{config.num_epochs}_s{config.scheduler}_A{config.additional_saving_info}")
     save_fig_path = f"critical_classification/output/loss_visualization/{file_name}"
     save_model_path = f"critical_classification/save_models/{file_name}.pth"
@@ -246,11 +246,11 @@ def run_combined_fine_tuning_pipeline(config: Config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Fine-tuning pipeline")
     parser.add_argument('--data_location', type=str, help='Path to the data location',
-                        default='critical_classification/dashcam_video/original_video/')
+                        default='critical_classification/critical_dataset/')
     # Add more arguments as needed
 
     args = parser.parse_args()
     config = Config()
     config.print_config()
-    config.data_location = args.data_location
+    config.dashcam_data_location = args.data_location
     run_combined_fine_tuning_pipeline(config)

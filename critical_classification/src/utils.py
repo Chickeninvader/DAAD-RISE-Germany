@@ -117,3 +117,87 @@ def plot_figure(data_dict, save_path: str, train_or_test: str):
     plt.grid(True)
     plt.savefig(save_path)
     plt.close()
+
+
+def _format_time(seconds):
+    """
+    Format a time given in seconds into a string "MM:SS".
+    """
+    minutes = seconds // 60
+    seconds = seconds % 60
+    return f'{minutes}:{seconds:02d}'
+
+
+def _calculate_non_critical_times(critical_times, total_duration):
+    """
+    Calculate non-critical times based on critical times and total duration.
+    """
+    critical_ranges = [_parse_time_range(tr) for tr in critical_times.split(', ')]
+    non_critical_ranges = []
+    last_end = 0
+    for start, end in critical_ranges:
+        if last_end < start:
+            non_critical_ranges.append(f'{_format_time(last_end)}-{_format_time(start)}')
+        last_end = end
+    if last_end < total_duration:
+        non_critical_ranges.append(f'{_format_time(last_end)}-{_format_time(total_duration)}')
+    return non_critical_ranges
+
+
+def _parse_time_range(time_range):
+    """
+    Parse a time range string into start and end times in seconds.
+    """
+    start_str, end_str = time_range.split('-')
+    start = sum(int(x) * 60 ** i for i, x in enumerate(reversed(start_str.split(':'))))
+    end = sum(int(x) * 60 ** i for i, x in enumerate(reversed(end_str.split(':'))))
+    return start, end
+
+
+def add_row_metadata(expanded_metadata: list,
+                     dataset_name: str,
+                     video_path: str,
+                     video_duration: int,
+                     critical_times: str):
+    if dataset_name == 'Dashcam':
+        if critical_times:
+            for time_range in critical_times.split(', '):
+                expanded_metadata.append({
+                    'full_path': video_path,
+                    'sample_duration': time_range,
+                    'label': 1
+                })
+            # Add remaining times as non-critical
+            non_critical_times = _calculate_non_critical_times(critical_times, video_duration)
+            for time_range in non_critical_times:
+                expanded_metadata.append({
+                    'full_path': video_path,
+                    'sample_duration': time_range,
+                    'label': 0
+                })
+        else:
+            expanded_metadata.append({
+                'full_path': video_path,
+                'sample_duration': f'0:00-{_format_time(video_duration)}',
+                'label': 0
+            })
+    elif dataset_name == 'Bdd100k':
+        for start in range(0, video_duration, 10):
+            end = min(start + 10, video_duration)
+            expanded_metadata.append({
+                'full_path': video_path,
+                'sample_duration': f'{_format_time(start)}-{_format_time(end)}',
+                'label': 0
+            })
+    elif dataset_name == 'Carcrash':
+        critical_labels = [int(x) for x in critical_times.split(', ')]
+        for second in range(video_duration):
+            start_time = second
+            end_time = second + 1
+            label = 1 if critical_labels[second] == 1 else 0
+            expanded_metadata.append({
+                'full_path': video_path,
+                'sample_duration': f'{_format_time(start_time)}-{_format_time(end_time)}',
+                'label': label
+            })
+    return expanded_metadata

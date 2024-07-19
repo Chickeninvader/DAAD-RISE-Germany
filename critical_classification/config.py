@@ -10,6 +10,9 @@ class Config:
         # Framework to use, tensorflow or torch
         self.framework = 'torch'
 
+        # Dataset to use: Dashcam, Carcarsh or all
+        self.dataset_name = 'all'
+
         # Batch size for training. Set to 1 to get 1 video at the time
         self.batch_size = 1
 
@@ -60,10 +63,10 @@ class Config:
         self.FRAME_RATE = 30
 
         # Load metadata from an Excel file, which contains information about the dataset
-        self.metadata = pd.read_excel('critical_classification/dashcam_video/metadata.xlsx')
+        self.metadata = pd.read_excel('critical_classification/critical_dataset/metadata.xlsx')
 
         # Data_location
-        self.data_location = 'critical_classification/dashcam_video/original_video/'
+        self.data_location = 'critical_classification/critical_dataset/'
 
         # Infer from all video flag
         self.infer_all_video = False
