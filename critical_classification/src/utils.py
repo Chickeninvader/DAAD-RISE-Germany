@@ -160,25 +160,20 @@ def add_row_metadata(expanded_metadata: list,
                      video_duration: int,
                      critical_times: str):
     if dataset_name == 'Dashcam':
-        if critical_times:
-            for time_range in critical_times.split(', '):
-                expanded_metadata.append({
-                    'full_path': video_path,
-                    'sample_duration': time_range,
-                    'label': 1
-                })
-            # Add remaining times as non-critical
-            non_critical_times = _calculate_non_critical_times(critical_times, video_duration)
-            for time_range in non_critical_times:
-                expanded_metadata.append({
-                    'full_path': video_path,
-                    'sample_duration': time_range,
-                    'label': 0
-                })
-        else:
+        for time_range in critical_times.split(', '):
             expanded_metadata.append({
                 'full_path': video_path,
-                'sample_duration': f'0:00-{_format_time(video_duration)}',
+                'sample_duration': time_range,
+                'video_duration': video_duration,
+                'label': 1
+            })
+        # Add remaining times as non-critical
+        non_critical_times = _calculate_non_critical_times(critical_times, video_duration)
+        for time_range in non_critical_times:
+            expanded_metadata.append({
+                'full_path': video_path,
+                'sample_duration': time_range,
+                'video_duration': video_duration,
                 'label': 0
             })
     elif dataset_name == 'Bdd100k':
@@ -187,17 +182,23 @@ def add_row_metadata(expanded_metadata: list,
             expanded_metadata.append({
                 'full_path': video_path,
                 'sample_duration': f'{_format_time(start)}-{_format_time(end)}',
+                'video_duration': video_duration,
                 'label': 0
             })
     elif dataset_name == 'Carcrash':
         critical_labels = [int(x) for x in critical_times.split(', ')]
         for second in range(video_duration):
+            # label is define: during the start-end time, label is 0 if all value in critical_labels are 0, and 1 otherwise
             start_time = second
             end_time = second + 1
-            label = 1 if critical_labels[second] == 1 else 0
+            start_idx = int(start_time / video_duration * len(critical_labels))
+            end_idx = int(end_time / video_duration * len(critical_labels))
+            label = 1 if any(label == 1 for label in critical_labels[start_idx:end_idx]) else 0
+
             expanded_metadata.append({
                 'full_path': video_path,
                 'sample_duration': f'{_format_time(start_time)}-{_format_time(end_time)}',
+                'video_duration': video_duration,
                 'label': label
             })
     return expanded_metadata

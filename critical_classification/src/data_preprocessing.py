@@ -168,7 +168,7 @@ def get_video_frames_as_tensor(config,
       ValueError: If video cannot be opened or frame is not read successfully.
     """
 
-    index = idx,
+    index = idx
     sample_duration = config.sample_duration
     frame_rate = config.FRAME_RATE
     model_name = config.model_name
@@ -344,7 +344,7 @@ def get_loaders(datasets: typing.Dict[str, CriticalDataset],
         weight[0] = 1 / datasets[split].num_negative_class
         samples_weight = np.array(
             [weight[idx]
-             for idx in np.where(datasets[split].metadata['video_type'] == 'Dashcam', 1, 0)])
+             for idx in np.where(datasets[split].metadata['label'] == 1, 1, 0)])
         samples_weight = torch.from_numpy(samples_weight)
         samples_weight = samples_weight.double()
         sampler = torch.utils.data.sampler.WeightedRandomSampler(samples_weight, len(samples_weight))
@@ -429,3 +429,4 @@ def dataset_transforms(video_array: typing.Union[torch.Tensor, np.array],
         return train_transform(video_array, height, width, mean, std)
     else:
         return test_transform(video_array, height, width, mean, std)
+

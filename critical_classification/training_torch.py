@@ -81,15 +81,16 @@ def batch_learning_and_evaluating(loaders,
             X = X.to(device).float()
             Y_true = Y_true.to(device)
 
+            # For debuging:
+            # Y_pred = Y_true
+            # evaluation = True
+
             with autocast():
                 Y_pred = fine_tuner(X)
 
             if Y_pred.ndim == 1:
                 Y_pred = Y_pred.unsqueeze(dim=0)
 
-            # For debuging:
-            # Y_pred = Y_true
-            # evaluation = True
 
             predictions.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)).detach().to('cpu'))
             ground_truths.append(Y_true.detach().to('cpu'))

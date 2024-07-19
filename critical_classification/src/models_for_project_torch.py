@@ -402,3 +402,15 @@ class VideoMAE(torch.nn.Module):
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         X = self.model(X)
         return X
+
+
+class DummyModel(nn.Module):
+    def __init__(self):
+        super(DummyModel, self).__init__()
+        # You can define dummy layers here if needed, e.g.:
+        self.dummy_layer = nn.Identity()
+        self.dummy_linear = nn.Linear(1, 1)
+
+    def forward(self, x):
+        # Dummy forward pass: just return the input tensor
+        return self.dummy_linear(x)
