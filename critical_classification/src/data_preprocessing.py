@@ -303,7 +303,7 @@ class CriticalDataset(Dataset):
                                                        metadata=self.metadata)
         label = self.metadata['label'][idx]
 
-        return video, label, (self.metadata['path'][idx], start_time)
+        return video, label, (self.metadata['full_path'][idx], start_time)
 
 
 def get_datasets(config: Config):
