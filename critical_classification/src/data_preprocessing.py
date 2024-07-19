@@ -207,7 +207,6 @@ def get_video_frames_as_tensor(config,
         assert frames_array.shape[1] == 3, (f'output representation not match with CHW, shape {frames_array.shape},'
                                             f'video path: {video_path}')
 
-
     return frames_array, start_time
 
 
@@ -429,4 +428,3 @@ def dataset_transforms(video_array: typing.Union[torch.Tensor, np.array],
         return train_transform(video_array, height, width, mean, std)
     else:
         return test_transform(video_array, height, width, mean, std)
-

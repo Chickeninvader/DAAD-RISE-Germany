@@ -11,6 +11,8 @@ from torch.cuda.amp import autocast
 import typing
 from tqdm import tqdm
 import warnings
+import torch.multiprocessing
+
 
 sys.path.append(os.getcwd())
 
@@ -19,6 +21,7 @@ from critical_classification.config import Config
 
 warnings.filterwarnings("ignore")
 
+torch.multiprocessing.set_sharing_strategy('file_system')
 if utils.is_local():
     os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
 
