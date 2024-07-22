@@ -414,10 +414,12 @@ class VideoSwinTransformer(torch.nn.Module):
         num_features = self.model.head.in_features
 
         # Replace the final layer
-        self.model.head = torch.nn.Linear(num_features, 2)
+        self.model.head = torch.nn.Linear(num_features, 1)
+        self.sigmoid = torch.nn.Sigmoid()
 
     def forward(self, x):
-        return self.model(x)
+        x = torch.permute(x, (0, 2, 1, 3, 4))
+        return self.sigmoid(self.model(x))
 
 
 class DummyModel(nn.Module):

@@ -13,8 +13,8 @@ class Config:
         # Dataset to use: Dashcam, Carcarsh or all
         self.dataset_name = 'all'
 
-        # Batch size for training. Set to 1 to get 1 video at the time
-        self.batch_size = 1
+        # Batch size for training. Set to 1 to get 1 video at the time (use for YOlO)
+        self.batch_size = 2
 
         # Loss function to use, here it's Binary Cross-Entropy (BCE)
         self.loss = 'BCE'
@@ -26,9 +26,8 @@ class Config:
         # Learning rate for the optimizer
         self.lr = 0.00001
 
-        # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D
-        # self.model_name = 'Monocular3D'
-        self.model_name = 'YOLOv1_video'
+        # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D, Swin3D
+        self.model_name = 'Swin3D'
         # self.model_name = None
 
         # Input image representation, depend on model

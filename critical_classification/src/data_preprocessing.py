@@ -263,7 +263,7 @@ class CriticalDataset(Dataset):
             raise ValueError(f"Invalid time format found in rows with data:\n{self.metadata[~invalid_rows]}")
 
         # Add sample_duration and labels
-        self.metadata = self._expand_metadata(self.metadata)
+        self.metadata = self.expand_metadata(self.metadata)
 
         self.train_or_test = 'test' if test else 'train'
         self.num_positive_class = sum(self.metadata['label'] == 1)
@@ -275,7 +275,7 @@ class CriticalDataset(Dataset):
 
         self.config = config
 
-    def _expand_metadata(self, metadata):
+    def expand_metadata(self, metadata):
         expanded_metadata = []
         for _, row in metadata.iterrows():
             video_path = row['full_path']
