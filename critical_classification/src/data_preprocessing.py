@@ -368,7 +368,6 @@ def get_loaders(datasets: typing.Dict[str, CriticalDataset],
             batch_size=batch_size,
             sampler=sampler if split == 'train' else None,
             num_workers=2,
-            pin_memory=True
         )
     return loaders
 
