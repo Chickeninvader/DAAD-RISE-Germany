@@ -20,7 +20,7 @@ date
 ## < Here comes the command to be executed >
 
 # For training the model
-#python critical_classification/training_torch.py --data_location /data/nvo/
+python critical_classification/training_torch.py --data_location /data/nvo/
 
 # For visualization
 #python critical_classification/inference.py --data_location /data/nvo/ --pretrained_path critical_classification/save_models/MYOLOv1_video_lr1e-05_lossBCE_e20_scosine_Aexperiment_20240715_165949.pth
@@ -29,8 +29,6 @@ date
 # For other purpose
 # download dataset
 #python critical_classification/src/dataset/download_video.py
-
-python relevant_code/nothing.py
 
 echo Training complete
 date
