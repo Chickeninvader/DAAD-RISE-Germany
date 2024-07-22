@@ -28,7 +28,7 @@ class Config:
         self.lr = 0.0001
 
         # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D, Swin3D
-        self.model_name = 'YOLOv1_video'
+        self.model_name = 'Swin3D'
         # self.model_name = None
 
         # Input image representation, depend on model
