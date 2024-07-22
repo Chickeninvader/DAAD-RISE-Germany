@@ -302,6 +302,8 @@ class CriticalDataset(Dataset):
                                                        metadata=self.metadata)
         label = self.metadata['label'][idx]
 
+        print(video.shape)
+
         return video, label, (self.metadata['full_path'][idx], start_time)
 
 
