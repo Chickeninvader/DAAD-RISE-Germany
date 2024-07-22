@@ -94,7 +94,7 @@ def batch_learning_and_evaluating(loaders,
                 Y_pred = fine_tuner(X)
 
             if Y_pred.ndim == 1:
-                Y_pred = Y_pred.unsqueeze(dim=0)
+                Y_pred = Y_pred.unsqueeze(dim=1)
 
 
             predictions.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)).detach().to('cpu'))
