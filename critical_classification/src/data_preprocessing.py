@@ -76,9 +76,7 @@ def get_critical_mid_time(sample_time,
         # mid-time of them
         num_critical_frame = sample_time.count(1)
         random_idx = random.randint(0, num_critical_frame)
-        print(random_idx)
         random_time = 5 - random_idx / 10 - 7.5 / 10
-        print(random_time)
 
     else:
         # get random time for other dataset. the frame rate is approx 30fpx.
@@ -198,11 +196,9 @@ def get_video_frames_as_tensor(config: Config,
     start_time = get_critical_mid_time(sample_time=sample_time,
                                        video_duration=video_duration)
 
-    start_time_in_ms = int(start_time * 1000 - sample_duration * 500)
+    start_time_in_ms = int(start_time * 1000 - sample_duration * 1000)
     sample_duration_in_ms = int(1000 * sample_duration)
     video_path = metadata['full_path'][index]
-
-    print(f'start time in ms is {start_time_in_ms}')
 
     # try:
     if video_path.lower().endswith('.mp4'):
@@ -371,7 +367,7 @@ def get_loaders(datasets: typing.Dict[str, CriticalDataset],
             dataset=datasets[split],
             batch_size=batch_size,
             sampler=sampler if split == 'train' else None,
-            # num_workers=4,
+            num_workers=4,
         )
     return loaders
 
