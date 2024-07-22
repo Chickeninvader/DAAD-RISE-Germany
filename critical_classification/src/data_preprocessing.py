@@ -35,11 +35,12 @@ def get_frames_from_cv2(video_path: str,
     cap.set(cv2.CAP_PROP_POS_MSEC, start_time_in_ms)
 
     frames = []
-    for i in range(sample_duration_in_ms // int(1000 / frame_rate)):
+    for i in range(int(frame_rate / 2)):
         ret, frame = cap.read()
         if ret:
             frames.append(frame)
             continue
+        raise ValueError('Frame not read')
 
     cap.release()
     return frames
@@ -301,8 +302,6 @@ class CriticalDataset(Dataset):
                                                        idx=idx,
                                                        metadata=self.metadata)
         label = self.metadata['label'][idx]
-
-        print(video.shape)
 
         return video, label, (self.metadata['full_path'][idx], start_time)
 
