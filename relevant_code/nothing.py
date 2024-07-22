@@ -18,6 +18,6 @@ def get_video_frame_rate(video_path: str) -> float:
 
 
 # Example usage
-video_path = '/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/critical_dataset/Dashcam_video/190kmh-Unfall Einsatzfahrten gehen schief und rote Ampeln  DDG Dashcam Germany  Unfallfolge 11.mp4'
+video_path = '/data/nvo/Car_crash_video/000062.mp4'
 frame_rate = get_video_frame_rate(video_path)
 print(f"Frame rate of the video is: {frame_rate} FPS")

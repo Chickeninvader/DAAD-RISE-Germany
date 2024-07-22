@@ -194,8 +194,7 @@ def get_video_frames_as_tensor(config: Config,
     video_duration = metadata['video_duration'][index]
 
     start_time = get_critical_mid_time(sample_time=sample_time,
-                                       video_duration=video_duration,
-                                       )
+                                       video_duration=video_duration)
 
     start_time_in_ms = int(start_time * 1000 - sample_duration * 500)
     sample_duration_in_ms = int(1000 * sample_duration)
