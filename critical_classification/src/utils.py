@@ -170,15 +170,21 @@ def add_row_metadata(expanded_metadata: list,
         # Add remaining times as non-critical
         non_critical_times = _calculate_non_critical_times(critical_times, video_duration)
         for time_range in non_critical_times:
-            expanded_metadata.append({
-                'full_path': video_path,
-                'sample_duration': time_range,
-                'video_duration': video_duration,
-                'label': 0
-            })
+            start_time, end_time = _parse_time_range(time_range)
+
+            # Split non-critical times into 4-second segments
+            for start in range(start_time, end_time, 4):
+                end = min(start + 4, end_time)
+                expanded_metadata.append({
+                    'full_path': video_path,
+                    'sample_duration': f'{_format_time(start)}-{_format_time(end)}',
+                    'video_duration': video_duration,
+                    'label': 0
+                })
     elif dataset_name == 'Bdd100k':
-        for start in range(0, video_duration, 10):
-            end = min(start + 10, video_duration)
+        # Sample 4s for 40s for all the video
+        for start in range(0, video_duration, 4):
+            end = min(start + 4, video_duration)
             expanded_metadata.append({
                 'full_path': video_path,
                 'sample_duration': f'{_format_time(start)}-{_format_time(end)}',
