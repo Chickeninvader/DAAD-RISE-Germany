@@ -14,7 +14,7 @@ class Config:
         self.dataset_name = 'all'
 
         # Batch size for training. Set to 1 to get 1 video at the time (use for YOlO)
-        self.batch_size = 16
+        self.batch_size = 8
 
         # Loss function to use, here it's Binary Cross-Entropy (BCE)
         self.loss = 'BCE'
