@@ -69,8 +69,8 @@ def get_critical_mid_time(sample_time,
     start_time_in_second = sum(x * int(t) for x, t in zip([60, 1], start_time.split(":")))
     end_time_in_second = sum(x * int(t) for x, t in zip([60, 1], end_time.split(":")))
 
-    random_time = random.uniform(start_time_in_second if start_time != '0:00' else 0.51,
-                                 end_time_in_second if end_time != video_duration else end_time_in_second - 0.51)
+    random_time = random.uniform(start_time_in_second if start_time_in_second != 0 else 0.51,
+                                 end_time_in_second if end_time_in_second != video_duration else end_time_in_second - 0.51)
 
     return random_time
 
