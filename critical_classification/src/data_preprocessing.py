@@ -76,7 +76,7 @@ def get_critical_mid_time(sample_time,
         # mid-time of them
         num_critical_frame = sample_time.count(1)
         random_idx = random.randint(0, num_critical_frame)
-        random_time = 5 - random_idx / 10 - 8.5 / 10
+        random_time = 5 - random_idx / 10 - 1
 
     else:
         # get random time for other dataset. the frame rate is approx 30fpx.
