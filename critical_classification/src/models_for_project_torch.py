@@ -269,7 +269,7 @@ class YOLOv1_video_binary(nn.Module):
             param.requires_grad = False
 
         # Add new LSTM layer for binary output
-        self.hidden_size = 128  # hidden size of lstm
+        self.hidden_size = 256  # hidden size of lstm
         self.num_layers = 4  # number of LSTM layers stacked
 
         self.LSTM = torch.nn.LSTM(input_size=split_size * split_size * (num_classes + num_boxes * 5),
