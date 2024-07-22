@@ -14,8 +14,8 @@ class Config:
         self.dataset_name = 'all'
 
         # Batch size for training. Set to 1 to get 1 video at the time (use for YOlO)
-        self.batch_size = 1
-        # self.batch_size = 4
+        # self.batch_size = 1
+        self.batch_size = 4
 
         # Loss function to use, here it's Binary Cross-Entropy (BCE)
         self.loss = 'BCE'
@@ -25,7 +25,7 @@ class Config:
         self.num_epochs = 40
 
         # Learning rate for the optimizer
-        self.lr = 0.00001
+        self.lr = 0.0001
 
         # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D, Swin3D
         self.model_name = 'YOLOv1_video'
@@ -36,8 +36,8 @@ class Config:
         # self.img_representation = 'HWC'  # for Monocular3D
 
         # image size of input. Also depend on model
-        self.img_size = 448  # For YOLOv1_image, YOLOv1_video
-        # self.img_size = 224  # For Monocular3D, Swin3D
+        # self.img_size = 448  # For YOLOv1_image, YOLOv1_video
+        self.img_size = 224  # For Monocular3D, Swin3D
 
         # Additional information to be appended to the saving file name
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
