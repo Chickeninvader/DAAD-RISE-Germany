@@ -35,6 +35,8 @@ def get_frames_from_cv2(video_path: str,
     cap.set(cv2.CAP_PROP_POS_MSEC, start_time_in_ms)
 
     frames = []
+
+    # Always get 15 frames
     for i in range(int(frame_rate / 2)):
         ret, frame = cap.read()
         if ret:
@@ -61,7 +63,7 @@ def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms,
 def get_critical_mid_time(sample_time,
                           video_duration):
     """
-    Generates a random time within or between specified critical time ranges in a video.
+    Generates a random time (sec) within or between specified critical time ranges in a video.
 
     Args:
     sample_time (float): The time in seconds that we want to sample video.
@@ -69,13 +71,21 @@ def get_critical_mid_time(sample_time,
     Returns:
     float: A random time in second within the specified conditions.
     """
+    if not isinstance(sample_time, str):
+        # get random time for car crash dataset. the frame rate is 10fps. Pick random 15 consecutive frames and get
+        # mid-time of them
+        num_critical_frame = sample_time.count(1)
+        random_idx = random.randint(0, num_critical_frame)
+        random_time = video_duration - random_idx / 10 - 7.5 / 10
 
-    start_time, end_time = sample_time.split('-')
-    start_time_in_second = sum(x * int(t) for x, t in zip([60, 1], start_time.split(":")))
-    end_time_in_second = sum(x * int(t) for x, t in zip([60, 1], end_time.split(":")))
+    else:
+        # get random time for other dataset. the frame rate is approx 30fpx.
+        start_time, end_time = sample_time.split('-')
+        start_time_in_second = sum(x * int(t) for x, t in zip([60, 1], start_time.split(":")))
+        end_time_in_second = sum(x * int(t) for x, t in zip([60, 1], end_time.split(":")))
 
-    random_time = random.uniform(start_time_in_second if start_time_in_second != 0 else 0.51,
-                                 end_time_in_second if end_time_in_second != video_duration else end_time_in_second - 0.51)
+        random_time = random.uniform(start_time_in_second if start_time_in_second != 0 else 1,
+                                     end_time_in_second if end_time_in_second >= video_duration else video_duration - 1)
 
     return random_time
 
@@ -151,10 +161,10 @@ def is_valid_time_format(critical_driving_time):
     return False
 
 
-def get_video_frames_as_tensor(config,
-                               train_or_test,
-                               metadata,
-                               idx
+def get_video_frames_as_tensor(config: Config,
+                               train_or_test: str,
+                               metadata: pd.DataFrame,
+                               idx: int
                                ):
     """
     This function reads a video at a specific time and captures frames for a
@@ -184,7 +194,8 @@ def get_video_frames_as_tensor(config,
     video_duration = metadata['video_duration'][index]
 
     start_time = get_critical_mid_time(sample_time=sample_time,
-                                       video_duration=video_duration)
+                                       video_duration=video_duration,
+                                       )
 
     start_time_in_ms = int(start_time * 1000 - sample_duration * 500)
     sample_duration_in_ms = int(1000 * sample_duration)

@@ -186,19 +186,13 @@ def add_row_metadata(expanded_metadata: list,
                 'label': 0
             })
     elif dataset_name == 'Carcrash':
+        # For the dataset, critical label is used only
         critical_labels = [int(x) for x in critical_times.split(', ')]
-        for second in range(video_duration):
-            # label is define: during the start-end time, label is 0 if all value in critical_labels are 0, and 1 otherwise
-            start_time = second
-            end_time = second + 1
-            start_idx = int(start_time / video_duration * len(critical_labels))
-            end_idx = int(end_time / video_duration * len(critical_labels))
-            label = 1 if any(label == 1 for label in critical_labels[start_idx:end_idx]) else 0
 
-            expanded_metadata.append({
-                'full_path': video_path,
-                'sample_duration': f'{_format_time(start_time)}-{_format_time(end_time)}',
-                'video_duration': video_duration,
-                'label': label
-            })
+        expanded_metadata.append({
+            'full_path': video_path,
+            'sample_duration': critical_labels,
+            'video_duration': video_duration,
+            'label': 1
+        })
     return expanded_metadata
