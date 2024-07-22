@@ -8,7 +8,7 @@ sys.path.append(os.getcwd())
 from critical_classification.src import data_preprocessing
 from critical_classification.config import Config
 from critical_classification.src.models_for_project_torch import YOLOv1_video_binary, YOLOv1_image_binary, VideoMAE, \
-    DummyModel
+    DummyModel, VideoSwinTransformer
 
 
 def initiate(config: Config):
@@ -56,6 +56,8 @@ def initiate(config: Config):
         fine_tuner = YOLOv1_image_binary(split_size=14, num_boxes=2, num_classes=13, device=device)
     elif model_name == 'YOLOv1_video':
         fine_tuner = YOLOv1_video_binary(split_size=14, num_boxes=2, num_classes=13, device=device)
+    elif model_name == 'Swin3D':
+        fine_tuner = VideoSwinTransformer()
 
     elif model_name == 'Monocular3D':
         fine_tuner = CriticalClassification(

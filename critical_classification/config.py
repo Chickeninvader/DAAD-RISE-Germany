@@ -32,12 +32,12 @@ class Config:
         # self.model_name = None
 
         # Input image representation, depend on model
-        self.img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video
+        self.img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video, Swin3D
         # self.img_representation = 'HWC'  # for Monocular3D
 
         # image size of input. Also depend on model
-        self.img_size = 448  # For YOLOv1_image, YOLOv1_video
-        # self.img_size = 224  # For Monocular3D
+        # self.img_size = 448  # For YOLOv1_image, YOLOv1_video
+        self.img_size = 224  # For Monocular3D, Swin3D
 
         # Additional information to be appended to the saving file name
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")

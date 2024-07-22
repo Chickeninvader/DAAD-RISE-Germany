@@ -411,7 +411,24 @@ def dataset_transforms(video_array: typing.Union[torch.Tensor, np.array],
             frames.append(img_tensor)
         return torch.stack(frames)
 
-    if model_name == 'VideoMAE':
+    elif model_name == 'Swin3D':
+        transform = v2.Compose([
+            v2.Resize((img_size, img_size)),
+            v2.ToTensor(),
+            v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+
+        if video_array.ndim == 3:
+            return transform(video_array)
+
+        frames = []
+        for frame in video_array:
+            img = Image.fromarray(frame)
+            img_tensor = transform(img)
+            frames.append(img_tensor)
+        return torch.stack(frames)
+
+    elif model_name == 'VideoMAE':
         model_ckpt = "MCG-NJU/videomae-base"
         image_processor = VideoMAEImageProcessor.from_pretrained(model_ckpt)
         mean = image_processor.image_mean
@@ -421,6 +438,7 @@ def dataset_transforms(video_array: typing.Union[torch.Tensor, np.array],
         else:
             height = image_processor.size["height"]
             width = image_processor.size["width"]
+
     else:
         height, width = img_size, img_size
 

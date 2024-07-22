@@ -6,6 +6,7 @@ import torch.utils.data.distributed
 import torchvision
 from transformers import VideoMAEForVideoClassification
 from torch.autograd import Variable
+import torchvision.models as models
 
 
 class YOLOv1(nn.Module):
@@ -362,7 +363,7 @@ class ResNet3D(torch.nn.Module):
     def __init__(self, ):
         super().__init__()
 
-        self.resnet_3d = torchvision.models.video.r3d_18()
+        self.resnet_3d = torchvision.models.video.r3d_18(pretrained=True)
         self.output_layer = nn.Sequential(
             nn.Linear(400, 64),  # First layer
             nn.LeakyReLU(0.1),
@@ -402,6 +403,21 @@ class VideoMAE(torch.nn.Module):
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         X = self.model(X)
         return X
+
+
+class VideoSwinTransformer(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.model = models.video.swin3d_b(weights=models.video.Swin3D_B_Weights.KINETICS400_V1)
+
+        # Suppose the final layer is named 'head'
+        num_features = self.model.head.in_features
+
+        # Replace the final layer
+        self.model.head = torch.nn.Linear(num_features, 2)
+
+    def forward(self, x):
+        return self.model(x)
 
 
 class DummyModel(nn.Module):
