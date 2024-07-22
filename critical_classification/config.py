@@ -27,7 +27,7 @@ class Config:
         self.lr = 0.00001
 
         # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D, Swin3D
-        self.model_name = 'Swin3D'
+        self.model_name = 'YOLOv1_video'
         # self.model_name = None
 
         # Input image representation, depend on model
@@ -40,8 +40,12 @@ class Config:
 
         # Additional information to be appended to the saving file name
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.additional_saving_info = f'experiment_{current_time}'
-
+        if self.model_name == 'YOLOv1_video':
+            hidden_size = 256
+            lstm_layer = 4
+            self.additional_saving_info = f'experiment_{current_time}_hidden_size_{hidden_size}_lstm_layer_{lstm_layer}'
+        else:
+            self.additional_saving_info = f'experiment_{current_time}
         # Path to pretrained model weights, if any
         self.pretrained_path = None
         # self.pretrained_path = 'critical_classification/save_models/file_name'
