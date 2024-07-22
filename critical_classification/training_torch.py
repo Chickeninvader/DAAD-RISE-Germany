@@ -80,8 +80,8 @@ def batch_learning_and_evaluating(loaders,
             optimizer.zero_grad()
 
             X, Y_true, video_name_with_time_batch = batch
-            # If X is 1 video only, collapse the dimension
-            if X.shape[0] == 1:
+            # If X is 1 video only, collapse the dimension (when model is YOLO only
+            if X.shape[0] == 1 and 'YOLO' in config.model_name:
                 X = torch.squeeze(X)
             X = X.to(device).float()
             Y_true = Y_true.to(device)
