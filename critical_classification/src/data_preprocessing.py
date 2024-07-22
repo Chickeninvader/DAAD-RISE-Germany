@@ -40,7 +40,11 @@ def get_frames_from_cv2(video_path: str,
         if ret:
             frames.append(frame)
             continue
-        raise ValueError('Frame not read')
+        raise ValueError(
+            f"{video_path} sample at time: {start_time_in_ms / 1000} second, "
+            f"current frame: {i}"
+            f"with sample duration {sample_duration_in_ms / 1000} second, has some errors"
+        )
 
     cap.release()
     return frames
