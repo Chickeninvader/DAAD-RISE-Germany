@@ -45,7 +45,7 @@ class Config:
             lstm_layer = 4
             self.additional_saving_info = f'experiment_{current_time}_hidden_size_{hidden_size}_lstm_layer_{lstm_layer}'
         else:
-            self.additional_saving_info = f'experiment_{current_time}
+            self.additional_saving_info = f'experiment_{current_time}'
         # Path to pretrained model weights, if any
         self.pretrained_path = None
         # self.pretrained_path = 'critical_classification/save_models/file_name'
