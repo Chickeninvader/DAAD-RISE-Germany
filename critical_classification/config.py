@@ -50,7 +50,7 @@ class YOLOv1VideoConfig(Config):
         self.img_representation = 'CHW'
         self.img_size = 448
         self.batch_size = 1
-        hidden_size = 256
+        hidden_size = 128
         lstm_layer = 4
         self.additional_saving_info = f'experiment_{self.current_time}_hidden_size_{hidden_size}_lstm_layer_{lstm_layer}'
 
