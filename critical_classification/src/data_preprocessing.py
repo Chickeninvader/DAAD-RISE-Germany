@@ -223,6 +223,10 @@ def get_video_frames_as_tensor(config: Config,
                                       train_or_test=train_or_test,
                                       img_size=img_size,
                                       model_name=model_name)
+    assert frames_array.shape[0] == image_batch_size, (f'{video_path} has start time {start_time}, '
+                                                       f'duration {sample_duration}'
+                                                       f'has incorrect shape {frames_array.shape}')
+
     if img_representation == 'HWC':
         # Final shape: (num_frames, height, width, channel)
         assert frames_array.shape[3] == 3, (f'output representation not match with HWC, shape {frames_array.shape},'
