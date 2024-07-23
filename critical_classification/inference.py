@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 sys.path.append(os.getcwd())
 
 from critical_classification.src import backbone_pipeline, data_preprocessing, utils
-from critical_classification.config import Config
+from critical_classification.config import Config, GetConfig
 from critical_classification.src.data_preprocessing import get_video_duration_opencv
 
 
@@ -188,18 +188,15 @@ def main():
     parser = argparse.ArgumentParser(description="Inference pipeline")
     parser.add_argument('--data_location', type=str, help='Path to the data location',
                         default='critical_classification/critical_dataset/Dashcam_video/')
+    parser.add_argument('--model_name', type=str, help='pytorch model',
+                        default=None)
     parser.add_argument('--pretrained_path', type=str, help='Path to model location',
                         default=None)
     parser.add_argument('--all_frames', action='store_true', help='Do inference for infer video')
 
     args = parser.parse_args()
 
-    config = Config()
-    config.data_location = args.data_location
-    config.pretrained_path = args.pretrained_path
-    config.infer_all_video = args.all_frames
-    config.sample_duration = 4
-    config.print_config()
+    config = GetConfig(args)
 
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)

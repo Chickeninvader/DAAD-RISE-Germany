@@ -3,77 +3,97 @@ from datetime import datetime
 
 
 class Config:
-    def __init__(self):
-        # Device to use: cuda:0 or cpu
+    def __init__(self,
+                 ):
+        # Common configurations
         self.device_str = 'cuda:0'
-
-        # Framework to use, tensorflow or torch
         self.framework = 'torch'
-
-        # Dataset to use: Dashcam, Carcarsh or all
         self.dataset_name = 'all'
-
-        # Batch size for training. Set to 1 to get 1 video at the time (use for YOlO)
-        # self.batch_size = 1
         self.batch_size = 4
-
-        # Loss function to use, here it's Binary Cross-Entropy (BCE)
         self.loss = 'BCE'
-
-        # Number of epochs to train the model
-        self.num_epochs = 40
-
-        # Learning rate for the optimizer
+        self.num_epochs = 10
         self.lr = 0.0001
+        self.scheduler = 'cosine'
+        self.save_files = True
+        self.representation = 'original'
+        self.sample_duration = 0.5
+        self.FRAME_RATE = 30
+        self.metadata = pd.read_excel('critical_classification/critical_dataset/metadata.xlsx')
+        self.data_location = None
+        self.infer_all_video = False
+        self.img_representation = None
+        self.model_name = None
+        self.img_size = None
+        self.all_frames = False
 
-        # Name of the model architecture being used, including Monocular3D, YOLOv1_image, YOLOv1_video, ResNet3D, Swin3D
-        self.model_name = 'Swin3D'
-        # self.model_name = None
+        # Current time for saving info
+        self.current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        # Input image representation, depend on model
-        self.img_representation = 'CHW'  # for YOLOv1_image, YOLOv1_video, Swin3D
-        # self.img_representation = 'HWC'  # for Monocular3D
-
-        # image size of input. Also depend on model
-        # self.img_size = 448  # For YOLOv1_image, YOLOv1_video
-        self.img_size = 224  # For Monocular3D, Swin3D
-
-        # Additional information to be appended to the saving file name
-        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        if self.model_name == 'YOLOv1_video':
-            hidden_size = 256
-            lstm_layer = 4
-            self.additional_saving_info = f'experiment_{current_time}_hidden_size_{hidden_size}_lstm_layer_{lstm_layer}'
-        else:
-            self.additional_saving_info = f'experiment_{current_time}'
         # Path to pretrained model weights, if any
         self.pretrained_path = None
-
-        # Scheduler: step, exponential or cosine
-        self.scheduler = 'cosine'
-
-        # Flag to indicate whether to save the trained model
-        self.save_files = True
-
-        # Type of data representation being used (e.g., 'original', 'gaussian', etc.)
-        self.representation = 'original'
-
-        # Duration of video segments to be processed, in seconds
-        self.sample_duration = 0.5
-        # self.duration = 0.5/15  # take 1 image only
-
-        self.FRAME_RATE = 30
-
-        # Load metadata from an Excel file, which contains information about the dataset
-        self.metadata = pd.read_excel('critical_classification/critical_dataset/metadata.xlsx')
-
-        # Data_location
-        self.data_location = 'critical_classification/critical_dataset/'
-
-        # Infer from all video flag
-        self.infer_all_video = False
-
 
     def print_config(self):
         for key, value in self.__dict__.items():
             print(f"{key}: {value}")
+
+
+class YOLOv1VideoConfig(Config):
+    def __init__(self,
+                 ):
+        super().__init__()
+        # Model-specific configurations
+        self.model_name = 'YOLOv1_video'
+        self.img_representation = 'CHW'
+        self.img_size = 448
+        self.batch_size = 1
+        hidden_size = 256
+        lstm_layer = 4
+        self.additional_saving_info = f'experiment_{self.current_time}_hidden_size_{hidden_size}_lstm_layer_{lstm_layer}'
+
+
+class Swin3DConfig(Config):
+    def __init__(self):
+        super().__init__()
+        # Model-specific configurations
+        self.model_name = 'Swin3D'
+        self.img_representation = 'CHW'
+        self.img_size = 224
+        self.additional_saving_info = f'experiment_{self.current_time}'
+
+
+class ResNet3DConfig(Config):
+    def __init__(self):
+        super().__init__()
+        # Model-specific configurations
+        self.model_name = 'ResNet3D'
+        self.img_representation = 'CHW'
+        self.img_size = 224
+        self.additional_saving_info = f'experiment_{self.current_time}'
+
+
+class Monocular3DConfig(Config):
+    def __init__(self):
+        super().__init__()
+        # Model-specific configurations
+        self.model_name = 'Monocular3D'
+        self.img_representation = 'HWC'
+        self.img_size = 224
+        self.additional_saving_info = f'experiment_{self.current_time}'
+
+
+def GetConfig(args):
+    model_name = args.model_name
+
+    if model_name == 'YOLOv1_video':
+        config = YOLOv1VideoConfig()
+    elif model_name == 'Swin3D':
+        config = Swin3DConfig()
+    else:
+        config = Config()
+
+    config.data_location = args.data_location
+    config.sample_duration = args.sample_duration
+    config.pretrained_path = args.pretrained_path
+    config.all_frames = args.all_frames
+
+    return config

@@ -17,7 +17,7 @@ import torch.multiprocessing
 sys.path.append(os.getcwd())
 
 from critical_classification.src import utils, context_handlers, backbone_pipeline
-from critical_classification.config import Config
+from critical_classification.config import Config, GetConfig
 
 warnings.filterwarnings("ignore")
 
@@ -253,7 +253,6 @@ if __name__ == '__main__':
     # Add more arguments as needed
 
     args = parser.parse_args()
-    config = Config()
-    config.data_location = args.data_location
-    config.print_config()
+
+    config = GetConfig(args)
     run_combined_fine_tuning_pipeline(config)
