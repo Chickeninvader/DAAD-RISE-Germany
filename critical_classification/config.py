@@ -26,7 +26,6 @@ class Config:
         self.img_representation = None
         self.model_name = None
         self.img_size = None
-        self.all_frames = False
 
         # Current time for saving info
         self.current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -91,7 +90,7 @@ def GetConfig():
                         default=None)
     parser.add_argument('--pretrained_path', type=str, help='Path to model location',
                         default=None)
-    parser.add_argument('--all_frames', action='store_true', help='Do inference for infer video')
+    parser.add_argument('--infer_all_video', action='store_true', help='Do inference for infer video')
     parser.add_argument('--sample_duration', type=float, help='Duration to sample video',
                         default=0.5)
 
@@ -108,6 +107,6 @@ def GetConfig():
     config.data_location = args.data_location
     config.sample_duration = args.sample_duration
     config.pretrained_path = args.pretrained_path
-    config.all_frames = args.all_frames
+    config.infer_all_video = args.infer_all_video
 
     return config
