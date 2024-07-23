@@ -37,7 +37,7 @@ def get_frames_from_cv2(video_path: str,
     frames = []
 
     # Always get 15 frames
-    for i in range(int(frame_rate / 2)):
+    for i in range(15):
         ret, frame = cap.read()
         if ret:
             frames.append(frame)
@@ -52,11 +52,20 @@ def get_frames_from_cv2(video_path: str,
     return frames
 
 
-def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate):
+def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms):
     clip = VideoFileClip(video_path)
     start_time = start_time_in_ms / 1000
     end_time = start_time + (sample_duration_in_ms / 1000)
-    frames = [frame for frame in clip.subclip(start_time, end_time).iter_frames(fps=frame_rate)]
+
+    # Get the subclip
+    subclip = clip.subclip(start_time, end_time)
+
+    # Calculate the interval to get exactly 15 frames
+    interval = (sample_duration_in_ms / 1000) / 15
+
+    # Extract frames at the calculated intervals
+    frames = [subclip.get_frame(i * interval) for i in range(15)]
+
     return frames
 
 
@@ -202,9 +211,9 @@ def get_video_frames_as_tensor(config: Config,
 
     # try:
     if video_path.lower().endswith('.mp4'):
-        frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate)
+        frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms)
     elif video_path.lower().endswith('.mov'):
-        frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, frame_rate)
+        frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms)
     else:
         raise FileNotFoundError(f'file not support: {video_path}')
 
