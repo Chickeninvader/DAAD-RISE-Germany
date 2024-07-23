@@ -39,6 +39,8 @@ class FullVideoDataset:
             os.path.join(base_path_mapping.get(video_type, ''), f'{filename}')
             for video_type, filename in zip(self.metadata['video_type'], self.metadata['path'])
         ]
+        for path in self.metadata['full_path']:
+            print(path)
 
         # Filter metadata based on path existence
         valid_indices = [True if os.path.exists(path) else False for path in self.metadata['full_path']]
