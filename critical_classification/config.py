@@ -94,10 +94,8 @@ def GetConfig():
     parser.add_argument('--pretrained_path', type=str, help='Path to model location',
                         default=None)
     parser.add_argument('--infer_all_video', action='store_true', help='Do inference for infer video')
-    parser.add_argument('--sample_duration', type=float, help='Duration to sample video',
-                        default=0.5)
-    parser.add_argument('--image_batch_size', type=int, help='Duration to sample video',
-                        default=0.5)
+    parser.add_argument('--image_batch_size', type=int, help='Number of frames to sample video',
+                        default=15)
 
     args = parser.parse_args()
     model_name = args.model_name
@@ -110,8 +108,10 @@ def GetConfig():
         config = Config()
 
     config.data_location = args.data_location
-    config.sample_duration = args.sample_duration
+    config.image_batch_size = args.image_batch_size
+    config.sample_duration = args.image_batch_size / 30
     config.pretrained_path = args.pretrained_path
     config.infer_all_video = args.infer_all_video
+    config.print_config()
 
     return config

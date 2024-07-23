@@ -350,7 +350,7 @@ def get_datasets(config: Config):
 
 
 def get_loaders(datasets: typing.Dict[str, CriticalDataset],
-                video_batch_size: int,
+                batch_size: int,
                 ) -> typing.Dict[str, torch.utils.data.DataLoader]:
     """
     Instantiates and returns train and test torch data loaders
@@ -358,7 +358,7 @@ def get_loaders(datasets: typing.Dict[str, CriticalDataset],
     Parameters
     ----------
         :param datasets:
-        :param video_batch_size:
+        :param batch_size:
     """
     loaders = {}
 
@@ -375,7 +375,7 @@ def get_loaders(datasets: typing.Dict[str, CriticalDataset],
 
         loaders[split] = torch.utils.data.DataLoader(
             dataset=datasets[split],
-            batch_size=video_batch_size,
+            batch_size=batch_size,
             sampler=sampler if split == 'train' else None,
             num_workers=1,
         )

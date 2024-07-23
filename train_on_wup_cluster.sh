@@ -20,17 +20,19 @@ date
 ## < Here comes the command to be executed >
 
 # For training the model
-#python critical_classification/training_torch.py \
-#  --model_name Swin3D \
-#  --data_location /data/nvo/
+python critical_classification/training_torch.py \
+  --model_name Swin3D \
+  --data_location /data/nvo/ \
+  --image_batch_size 10
 
 # For visualization
 
-python critical_classification/inference.py \
-  --model_name Swin3D \
-  --data_location /data/nvo/ \
-  --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr0.0001_lossBCE_e40_scosine_Aexperiment_20240722_173158.pth \
-  --infer_all_video
+#python critical_classification/inference.py \
+#  --model_name Swin3D \
+#  --data_location /data/nvo/ \
+#  --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr0.0001_lossBCE_e40_scosine_Aexperiment_20240722_173158.pth \
+#  --infer_all_video
+
 
 # For other purpose
 # download dataset
