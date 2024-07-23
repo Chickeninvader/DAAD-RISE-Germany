@@ -143,7 +143,6 @@ def create_gif(video_tensor):
 def save_output(video_tensor,
                 file_name,
                 start_time,
-                config,
                 prediction_list=None,
                 base_folder: str = 'critical_classification/critical_dataset/temp_video/', ):
     """Prepares and displays a GIF from a video tensor."""
@@ -157,7 +156,7 @@ def save_output(video_tensor,
     save_video_file_name = f'{base_folder}{str(file_name[:-4])}_{int(start_time)}.mp4'
     video_stream = cv2.VideoWriter(save_video_file_name,
                                    cv2.VideoWriter_fourcc(*"mp4v"),
-                                   config.FRAME_RATE,
+                                   30,
                                    (width, height))
     for idx, frame in enumerate(frames):
         # since the model is trained with num_frame = 15, only after 15 frames we get the prediction
@@ -206,12 +205,15 @@ def main():
                                                 device=device)
         return
 
-    for idx, (video_tensor_batch, label, metadata) in enumerate(loaders['test']):
+    positive_video_counts = 0
+    negative_video_counts = 0
+
+    for idx, (video_tensor_batch, label, metadata) in enumerate(loaders['train']):
         video_tensor = video_tensor_batch[0]
-        file_name, start_time = metadata
-        file_name = file_name[0]
+        full_path, start_time = metadata
+        full_path = full_path[0]
+        file_name = os.path.basename(full_path)
         num_frame = video_tensor.shape[0]
-        print(f'start doing inference for {file_name}')
 
         if config.model_name is not None:
             prediction_list = inference_with_model(num_frame=num_frame,
@@ -220,11 +222,26 @@ def main():
                                                    device=device)
 
             print(f'{file_name} has prediction: {prediction_list}')
-            save_output(video_tensor, file_name, start_time, config, prediction_list)
+            save_output(video_tensor, file_name, start_time, prediction_list)
             del video_tensor, video_tensor_batch, prediction_list
+            continue
 
+        # if there is no model, simply save video
+        if int(label) == 0:
+            negative_video_counts += 1
         else:
-            save_output(video_tensor, file_name, start_time, config)
+            positive_video_counts += 1
+
+            # Check if we have enough samples to stop
+        if positive_video_counts >= 5 and negative_video_counts >= 5:
+            break
+
+            # Skip further processing if counts are already sufficient
+        if (int(label) == 0 and negative_video_counts > 5) or (int(label) == 1 and positive_video_counts > 5):
+            continue
+
+        print(f'{file_name} has ground truth: {label}')
+        save_output(video_tensor, file_name, start_time, config)
 
 
 if __name__ == '__main__':

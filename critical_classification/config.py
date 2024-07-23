@@ -84,11 +84,22 @@ class Monocular3DConfig(Config):
         self.img_size = 224
         self.additional_saving_info = f'experiment_{self.current_time}'
 
+class InferConfig(Config):
+    def __init__(self,
+                 ):
+        super().__init__()
+        # Model-specific configurations
+        self.model_name = None
+        self.img_representation = 'CHW'
+        self.img_size = 448
+        self.video_batch_size = 1
+        self.additional_saving_info = f'experiment_{self.current_time}'
+
 
 def GetConfig():
     parser = argparse.ArgumentParser(description="Train and/or infer pipeline")
     parser.add_argument('--data_location', type=str, help='Path to the data location',
-                        default='critical_classification/critical_dataset/Dashcam_video/')
+                        default='critical_classification/critical_dataset/')
     parser.add_argument('--model_name', type=str, help='pytorch model',
                         default=None)
     parser.add_argument('--pretrained_path', type=str, help='Path to model location',
@@ -98,14 +109,13 @@ def GetConfig():
                         default=15)
 
     args = parser.parse_args()
-    model_name = args.model_name
 
-    if model_name == 'YOLOv1_video':
+    if args.model_name == 'YOLOv1_video':
         config = YOLOv1VideoConfig()
-    elif model_name == 'Swin3D':
+    elif args.model_name == 'Swin3D':
         config = Swin3DConfig()
     else:
-        config = Config()
+        config = InferConfig()
 
     config.data_location = args.data_location
     config.image_batch_size = args.image_batch_size

@@ -94,7 +94,7 @@ def get_critical_mid_time(sample_time,
         end_time_in_second = sum(x * int(t) for x, t in zip([60, 1], end_time.split(":")))
 
         random_time = random.uniform(start_time_in_second if start_time_in_second != 0 else 1,
-                                     end_time_in_second if end_time_in_second >= video_duration else video_duration - 1)
+                                     end_time_in_second if end_time_in_second <= video_duration - 1 else video_duration - 1)
 
     return random_time
 
@@ -333,6 +333,7 @@ class CriticalDataset(Dataset):
 
     def __getitem__(self, idx):
         idx = idx % len(self.metadata)
+        label = self.metadata['label'][idx]
         video, start_time = get_video_frames_as_tensor(config=self.config,
                                                        train_or_test=self.train_or_test,
                                                        idx=idx,
