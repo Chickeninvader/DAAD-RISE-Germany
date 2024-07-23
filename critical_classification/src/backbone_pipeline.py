@@ -78,9 +78,10 @@ def initiate(config: Config):
         loaders = data_preprocessing.get_loaders(datasets=datasets,
                                                  batch_size=batch_size)
 
+        print(f"Total frames number of train video: {len(loaders['train'].dataset)}\n"
+              f"Total frames number of test video: {len(loaders['test'].dataset)}")
+
     print(f'Model use: {model_name}')
-    print(f"Total frames number of train video: {len(loaders['train'].dataset)}\n"
-          f"Total frames number of test video: {len(loaders['test'].dataset)}")
     print(f'Each frame are {sample_duration * 30} images')
 
     return fine_tuner, loaders, device
