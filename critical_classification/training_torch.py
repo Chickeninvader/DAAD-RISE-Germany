@@ -247,12 +247,6 @@ def run_combined_fine_tuning_pipeline(config: Config):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Fine-tuning pipeline")
-    parser.add_argument('--data_location', type=str, help='Path to the data location',
-                        default='critical_classification/critical_dataset/')
-    # Add more arguments as needed
 
-    args = parser.parse_args()
-
-    config = GetConfig(args)
+    config = GetConfig()
     run_combined_fine_tuning_pipeline(config)
