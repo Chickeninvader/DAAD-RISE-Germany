@@ -375,7 +375,7 @@ def get_loaders(datasets: typing.Dict[str, CriticalDataset],
             dataset=datasets[split],
             batch_size=batch_size,
             sampler=sampler if split == 'train' else None,
-            num_workers=2,
+            num_workers=1,
         )
     return loaders
 
