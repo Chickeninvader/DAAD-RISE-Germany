@@ -1,11 +1,18 @@
+import pickle
+
 import dash
 from dash import dcc, html
 import plotly.graph_objs as go
 import pandas as pd
 
+file_name = ''
+
+with open(file_name, 'rb') as file:
+    loaded_list = pickle.load(file)
+
 # Sample data for testing
-current_time_list = [i for i in range(660)]
-prediction_list = [0.5 + 0.1 * (-1) ** (i // 50) * (i % 50) / 50 for i in range(660)]
+current_time_list = loaded_list['current_time_list']
+prediction_list = loaded_list['prediction_list']
 
 app = dash.Dash(__name__)
 
@@ -19,7 +26,7 @@ fig.add_trace(go.Scatter(x=df['time'], y=df['prediction'], mode='lines', name='P
 fig.add_hline(y=0.5, line_dash='dash', line_color='red', name='Threshold')
 
 fig.update_layout(
-    title='Critical prediction over time',
+    title=loaded_list['name'],
     xaxis_title='Time (s)',
     yaxis_title='Prediction',
     xaxis=dict(tickmode='linear', tick0=0, dtick=10)

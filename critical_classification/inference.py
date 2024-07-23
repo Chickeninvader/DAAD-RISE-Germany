@@ -1,5 +1,5 @@
-import argparse
 import os
+import pickle
 import sys
 from collections import deque
 
@@ -7,7 +7,6 @@ import cv2
 import numpy as np
 import torch
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 
 sys.path.append(os.getcwd())
 
@@ -105,21 +104,21 @@ class FullVideoDataset:
         cap.release()
         pbar.close()  # Close the progress bar
 
-        # Plot and save the figure
-        plt.figure()
-        plt.plot(current_time_list, prediction_list)
-        plt.axhline(y=0.5, color='r', linestyle='--')
-        plt.title('Critical prediction over time')
-        plt.xlabel('Time (s)')
-        plt.ylabel('Prediction')
-
         # Construct the full path
         directory = f'{base_folder}{config.model_name}_{config.additional_saving_info}'
-        file_path = f'{directory}/{str(file_name[:-4])}.png'
+        file_path = f'{directory}/{str(file_name[:-4])}.pkl'
 
         # Create the directory if it does not exist
         os.makedirs(directory, exist_ok=True)
-        plt.savefig(file_path)
+
+        temp_dict = {
+            'name': f'{config.model_name}_{config.additional_saving_info}',
+            'current_time_list': current_time_list,
+            'prediction_list': prediction_list
+        }
+
+        with open(file_path, 'wb') as file:
+            pickle.dump(temp_dict, file)
 
 
 def unnormalize_img(img):
@@ -190,9 +189,7 @@ def inference_with_model(num_frame,
 
 
 def main():
-
     config = GetConfig()
-
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
     )
