@@ -63,7 +63,7 @@ def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms,
     interval = (sample_duration_in_ms / 1000) / image_batch_size
 
     # Extract frames at the calculated intervals
-    frames = [subclip.get_frame(i * interval) for i in range(15)]
+    frames = [subclip.get_frame(i * interval) for i in range(image_batch_size)]
 
     return frames
 
