@@ -32,8 +32,6 @@ def initiate(config: Config):
         device_str = config.device_str
     else:
         device_str = 'cpu'
-    # device_str = 'mps' if utils.is_local() and torch.backends.mps.is_available() \
-    #     else ("cuda:0" if torch.cuda.is_available() else 'cpu')
 
     if config.framework == 'torch':
         device = torch.device(device_str)
@@ -45,10 +43,6 @@ def initiate(config: Config):
         device = None
     else:
         raise ValueError('Not support framework')
-
-    datasets = data_preprocessing.get_datasets(
-        config=config
-    )
 
     if model_name == 'VideoMAP':
         fine_tuner = VideoMAE()
@@ -74,8 +68,16 @@ def initiate(config: Config):
         fine_tuner.load_state_dict(state_dict)
         print('Pretrained weights loaded successfully.')
 
-    loaders = data_preprocessing.get_loaders(datasets=datasets,
-                                             batch_size=batch_size)
+    if config.infer_all_video:
+        loaders = None
+    else:
+        datasets = data_preprocessing.get_datasets(
+            config=config
+        )
+
+        loaders = data_preprocessing.get_loaders(datasets=datasets,
+                                                 batch_size=batch_size)
+
     print(f'Model use: {model_name}')
     print(f"Total frames number of train video: {len(loaders['train'].dataset)}\n"
           f"Total frames number of test video: {len(loaders['test'].dataset)}")

@@ -21,7 +21,6 @@ class Config:
         self.loss = 'BCE'
 
         # Number of epochs to train the model
-        # self.num_epochs = 1  # for debugging
         self.num_epochs = 40
 
         # Learning rate for the optimizer
@@ -49,7 +48,6 @@ class Config:
             self.additional_saving_info = f'experiment_{current_time}'
         # Path to pretrained model weights, if any
         self.pretrained_path = None
-        # self.pretrained_path = 'critical_classification/save_models/file_name'
 
         # Scheduler: step, exponential or cosine
         self.scheduler = 'cosine'
@@ -74,6 +72,7 @@ class Config:
 
         # Infer from all video flag
         self.infer_all_video = False
+
 
     def print_config(self):
         for key, value in self.__dict__.items():

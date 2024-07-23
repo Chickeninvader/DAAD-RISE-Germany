@@ -13,45 +13,42 @@ sys.path.append(os.getcwd())
 
 from critical_classification.src import backbone_pipeline, data_preprocessing, utils
 from critical_classification.config import Config
+from critical_classification.src.data_preprocessing import get_video_duration_opencv
 
 
 class FullVideoDataset:
-    def __init__(self, config):
-        metadata = config.metadata
-        img_representation = config.img_representation
-        duration = config.sample_duration
-        model_name = config.model_name
-        img_size = config.img_size
-        data_location = config.dashcam_data_location
-        frame_rate = config.FRAME_RATE
-        folder_path = ''
-        print('use original representation')
+    def __init__(self, config: Config):
+        self.metadata = config.metadata
+        self.img_representation = config.img_representation
+        self.model_name = config.model_name
+        self.img_size = config.img_size
+        self.data_location = config.data_location
+        self.dataset_name = config.dataset_name
+        self.frame_rate = config.FRAME_RATE
+        self.config = config
 
-        self.metadata = metadata[metadata['train_or_test'] == 'infer']
-        self.img_representation = img_representation
+        self.metadata = self.metadata[self.metadata['train_or_test'] == 'infer']
+
+        base_path_mapping = {
+            'Dashcam': os.path.join(config.data_location, 'Dashcam_video/'),
+            'Carcrash': os.path.join(config.data_location, 'Car_crash_video/'),
+            'Bdd100k': os.path.join(config.data_location, 'Bdd100k_video/')
+        }
 
         self.metadata['full_path'] = [
-            os.path.join(os.getcwd(), f"{data_location}{folder_path}", f'{filename}')
-            for filename in self.metadata['path']
+            os.path.join(base_path_mapping.get(video_type, ''), f'{filename}')
+            for video_type, filename in zip(self.metadata['video_type'], self.metadata['path'])
         ]
 
         # Filter metadata based on path existence
-        valid_indices = [i for i, path in enumerate(self.metadata['full_path']) if os.path.exists(path)]
-        self.metadata = self.metadata.iloc[valid_indices]
-        self.metadata['duration'] = [data_preprocessing.get_video_duration_opencv(path)
-                                     for path in self.metadata['full_path']]
+        valid_indices = [True if os.path.exists(path) else False for path in self.metadata['full_path']]
+        self.metadata = self.metadata[valid_indices]
 
+        self.metadata['duration'] = [int(get_video_duration_opencv(path)) for path in self.metadata['full_path']]
         self.metadata = self.metadata.reset_index(drop=True)
-        self.duration = duration
-        self.frame_rate = frame_rate
-        self.model_name = model_name
-        self.img_size = img_size
 
         print(f'Infer dataset contain: ')
         print(utils.blue_text(f"{len(self.metadata)} videos contain critical data"))
-
-        self.current_idx = 0
-        self.cap = None
 
     def __len__(self):
         return len(self.metadata)
