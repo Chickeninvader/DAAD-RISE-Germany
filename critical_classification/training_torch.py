@@ -181,6 +181,10 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     test_result_dict = {'acc': [], 'f1': [], 'loss': [], 'lr': []}
     max_f1_score = 0
 
+    print(utils.green_text(f'save best fine tuner!'))
+    torch.save(best_fine_tuner.state_dict(),
+               save_model_path)
+
     for epoch in range(config.num_epochs):
         with ((context_handlers.TimeWrapper())):
             print('#' * 50 + f'train epoch {epoch}' + '#' * 50)
@@ -215,6 +219,9 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                 best_fine_tuner = copy.deepcopy(fine_tuner)
                 print(utils.green_text(f'save best fine tuner!'))
 
+                torch.save(best_fine_tuner.state_dict(),
+                           save_model_path)
+
     # Final model
     print('#' * 50 + f'test best fine_tuner' + '#' * 50)
     batch_learning_and_evaluating(loaders=loaders['test'],
@@ -223,9 +230,6 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                                   fine_tuner=best_fine_tuner,
                                   scheduler=scheduler,
                                   evaluation=True)
-    if config.save_files:
-        torch.save(best_fine_tuner.state_dict(),
-                   save_model_path)
 
     print('#' * 100)
 
