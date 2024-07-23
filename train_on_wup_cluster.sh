@@ -29,10 +29,7 @@ date
 #  --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr0.0001_lossBCE_e40_scosine_Aexperiment_20240722_173158.pth \
 #  --all_frames
 
-python critical_classification/inference.py \
-  --data_location /data/nvo/ \
-  --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr0.0001_lossBCE_e40_scosine_Aexperiment_20240722_173158.pth \
-  --all_frames
+python critical_classification/inference.py --data_location /data/nvo/ --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr0.0001_lossBCE_e40_scosine_Aexperiment_20240722_173158.pth --all_frames
 
 # For other purpose
 # download dataset
