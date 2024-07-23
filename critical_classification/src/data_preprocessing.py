@@ -25,8 +25,7 @@ from critical_classification.config import Config
 
 def get_frames_from_cv2(video_path: str,
                         start_time_in_ms: int,
-                        sample_duration_in_ms: int,
-                        frame_rate: int):
+                        sample_duration_in_ms: int):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
