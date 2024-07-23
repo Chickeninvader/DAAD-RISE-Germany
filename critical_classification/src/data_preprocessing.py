@@ -25,7 +25,8 @@ from critical_classification.config import Config
 
 def get_frames_from_cv2(video_path: str,
                         start_time_in_ms: int,
-                        sample_duration_in_ms: int):
+                        sample_duration_in_ms: int,
+                        image_batch_size: int):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
@@ -35,8 +36,7 @@ def get_frames_from_cv2(video_path: str,
 
     frames = []
 
-    # Always get 15 frames
-    for i in range(15):
+    for i in range(image_batch_size):
         ret, frame = cap.read()
         if ret:
             frames.append(frame)
@@ -51,7 +51,7 @@ def get_frames_from_cv2(video_path: str,
     return frames
 
 
-def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms):
+def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, image_batch_size):
     clip = VideoFileClip(video_path)
     start_time = start_time_in_ms / 1000
     end_time = start_time + (sample_duration_in_ms / 1000)
@@ -59,8 +59,8 @@ def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms)
     # Get the subclip
     subclip = clip.subclip(start_time, end_time)
 
-    # Calculate the interval to get exactly 15 frames
-    interval = (sample_duration_in_ms / 1000) / 15
+    # Calculate the interval to get exactly image_batch_size frames
+    interval = (sample_duration_in_ms / 1000) / image_batch_size
 
     # Extract frames at the calculated intervals
     frames = [subclip.get_frame(i * interval) for i in range(15)]
@@ -69,7 +69,8 @@ def get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms)
 
 
 def get_critical_mid_time(sample_time,
-                          video_duration):
+                          video_duration,
+                          image_batch_size):
     """
     Generates a random time (sec) within or between specified critical time ranges in a video.
 
@@ -80,11 +81,11 @@ def get_critical_mid_time(sample_time,
     float: A random time in second within the specified conditions.
     """
     if not isinstance(sample_time, str):
-        # get random time for car crash dataset. the frame rate is 10fps. Pick random 15 consecutive frames and get
-        # mid-time of them
+        # get random time for car crash dataset. the frame rate is 10fps. Pick random image_batch_size consecutive 
+        # frames and get mid-time of them
         num_critical_frame = sample_time.count(1)
         random_idx = random.randint(0, num_critical_frame)
-        random_time = 5 - random_idx / 10 - 10 / 10
+        random_time = 5 - random_idx / 10 - image_batch_size / 2 / 10
 
     else:
         # get random time for other dataset. the frame rate is approx 30fpx.
@@ -193,16 +194,17 @@ def get_video_frames_as_tensor(config: Config,
 
     index = idx
     sample_duration = config.sample_duration
-    frame_rate = config.FRAME_RATE
     model_name = config.model_name
     img_representation = config.img_representation
     img_size = config.img_size
+    image_batch_size = config.image_batch_size
 
     sample_time = metadata['sample_duration'][index]
     video_duration = metadata['video_duration'][index]
 
     start_time = get_critical_mid_time(sample_time=sample_time,
-                                       video_duration=video_duration)
+                                       video_duration=video_duration,
+                                       image_batch_size=image_batch_size)
 
     start_time_in_ms = int(start_time * 1000 - sample_duration * 1000)
     sample_duration_in_ms = int(1000 * sample_duration)
@@ -210,9 +212,9 @@ def get_video_frames_as_tensor(config: Config,
 
     # try:
     if video_path.lower().endswith('.mp4'):
-        frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms)
+        frames = get_frames_from_cv2(video_path, start_time_in_ms, sample_duration_in_ms, image_batch_size)
     elif video_path.lower().endswith('.mov'):
-        frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms)
+        frames = get_frames_from_moviepy(video_path, start_time_in_ms, sample_duration_in_ms, image_batch_size)
     else:
         raise FileNotFoundError(f'file not support: {video_path}')
 
@@ -249,7 +251,6 @@ class CriticalDataset(Dataset):
         self.img_size = config.img_size
         self.data_location = config.data_location
         self.dataset_name = config.dataset_name
-        self.frame_rate = config.FRAME_RATE
         self.config = config
 
         if self.dataset_name == 'Dashcam':
@@ -293,8 +294,9 @@ class CriticalDataset(Dataset):
         self.num_negative_class = sum(self.metadata['label'] == 0)
 
         print(f'{self.train_or_test} dataset contains: ')
-        print(utils.green_text(f"{self.num_positive_class} videos with 15-16 frames contain critical data"))
-        print(utils.red_text(f"{self.num_negative_class} videos with 15-16 frames contain non-critical data"))
+        print(utils.green_text(f"{self.num_positive_class} videos with "
+                               f"{config.image_batch_size} frames contain critical data"))
+        print(utils.red_text(f"{self.num_negative_class} videos contain non-critical data"))
 
         self.config = config
 
@@ -348,7 +350,7 @@ def get_datasets(config: Config):
 
 
 def get_loaders(datasets: typing.Dict[str, CriticalDataset],
-                batch_size: int,
+                video_batch_size: int,
                 ) -> typing.Dict[str, torch.utils.data.DataLoader]:
     """
     Instantiates and returns train and test torch data loaders
@@ -356,7 +358,7 @@ def get_loaders(datasets: typing.Dict[str, CriticalDataset],
     Parameters
     ----------
         :param datasets:
-        :param batch_size:
+        :param video_batch_size:
     """
     loaders = {}
 
@@ -373,7 +375,7 @@ def get_loaders(datasets: typing.Dict[str, CriticalDataset],
 
         loaders[split] = torch.utils.data.DataLoader(
             dataset=datasets[split],
-            batch_size=batch_size,
+            batch_size=video_batch_size,
             sampler=sampler if split == 'train' else None,
             num_workers=1,
         )

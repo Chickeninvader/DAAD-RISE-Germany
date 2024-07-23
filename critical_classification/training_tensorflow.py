@@ -171,7 +171,7 @@ def fine_tune_combined_model(fine_tuner: tf.keras.Model,
 def run_combined_fine_tuning_pipeline(config):
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(metadata=config.metadata,
-                                   batch_size=config.batch_size,
+                                   batch_size=config.video_batch_size,
                                    model_name=config.model_name,
                                    pretrained_path=config.pretrained_path,
                                    img_representation=config.img_representation,

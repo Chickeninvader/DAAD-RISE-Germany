@@ -11,15 +11,15 @@ class Config:
         self.device_str = 'cuda:0'
         self.framework = 'torch'
         self.dataset_name = 'all'
-        self.batch_size = 4
+        self.video_batch_size = 4
+        self.image_batch_size = 10
         self.loss = 'BCE'
         self.num_epochs = 10
         self.lr = 0.0001
         self.scheduler = 'cosine'
         self.save_files = True
         self.representation = 'original'
-        self.sample_duration = 0.5
-        self.FRAME_RATE = 30
+        self.sample_duration = self.image_batch_size / 30
         self.metadata = pd.read_excel('critical_classification/critical_dataset/metadata.xlsx')
         self.infer_all_video = False
 
@@ -49,7 +49,7 @@ class YOLOv1VideoConfig(Config):
         self.model_name = 'YOLOv1_video'
         self.img_representation = 'CHW'
         self.img_size = 448
-        self.batch_size = 1
+        self.video_batch_size = 1
         hidden_size = 128
         lstm_layer = 4
         self.additional_saving_info = f'experiment_{self.current_time}_hidden_size_{hidden_size}_lstm_layer_{lstm_layer}'
@@ -95,6 +95,8 @@ def GetConfig():
                         default=None)
     parser.add_argument('--infer_all_video', action='store_true', help='Do inference for infer video')
     parser.add_argument('--sample_duration', type=float, help='Duration to sample video',
+                        default=0.5)
+    parser.add_argument('--image_batch_size', type=int, help='Duration to sample video',
                         default=0.5)
 
     args = parser.parse_args()

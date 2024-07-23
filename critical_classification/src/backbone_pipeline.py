@@ -24,7 +24,7 @@ def initiate(config: Config):
             - loaders (dict): A dictionary of data loaders for training, validation, and testing.
             - devices (list): A list of torch.device objects for model placement.
     """
-    batch_size = config.batch_size
+    video_batch_size = config.video_batch_size
     model_name = config.model_name
     pretrained_path = config.pretrained_path
     sample_duration = config.sample_duration
@@ -76,7 +76,7 @@ def initiate(config: Config):
         )
 
         loaders = data_preprocessing.get_loaders(datasets=datasets,
-                                                 batch_size=batch_size)
+                                                 video_batch_size=video_batch_size)
 
         print(f"Total frames number of train video: {len(loaders['train'].dataset)}\n"
               f"Total frames number of test video: {len(loaders['test'].dataset)}")
