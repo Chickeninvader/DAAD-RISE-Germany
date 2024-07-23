@@ -206,8 +206,16 @@ def get_video_frames_as_tensor(config: Config,
                                        video_duration=video_duration,
                                        image_batch_size=image_batch_size)
 
-    start_time_in_ms = int(start_time * 1000 - sample_duration * 1000)
-    sample_duration_in_ms = int(1000 * sample_duration)
+    if isinstance(sample_time, str):
+        # Dashcam and Bdd100k dataset
+        start_time_in_ms = int(start_time * 1000 - sample_duration * 1000 / 2)
+        sample_duration_in_ms = int(1000 * sample_duration)
+    else:
+        # Carcrash dataset has 10fps, so sample duration change accordingly
+        sample_duration = image_batch_size / 10
+        start_time_in_ms = int(start_time * 1000 - sample_duration * 1000 / 2)
+        sample_duration_in_ms = int(1000 * sample_duration)
+
     video_path = metadata['full_path'][index]
 
     # try:
