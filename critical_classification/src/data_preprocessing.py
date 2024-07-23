@@ -333,7 +333,6 @@ class CriticalDataset(Dataset):
 
     def __getitem__(self, idx):
         idx = idx % len(self.metadata)
-        label = self.metadata['label'][idx]
         video, start_time = get_video_frames_as_tensor(config=self.config,
                                                        train_or_test=self.train_or_test,
                                                        idx=idx,
