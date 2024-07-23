@@ -195,7 +195,7 @@ def main():
     args = parser.parse_args()
 
     config = Config()
-    config.dashcam_data_location = args.data_location
+    config.data_location = args.data_location
     config.pretrained_path = args.pretrained_path
     config.infer_all_video = args.all_frames
     config.sample_duration = 4
