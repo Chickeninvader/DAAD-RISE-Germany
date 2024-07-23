@@ -21,17 +21,20 @@ class Config:
         self.sample_duration = 0.5
         self.FRAME_RATE = 30
         self.metadata = pd.read_excel('critical_classification/critical_dataset/metadata.xlsx')
-        self.data_location = None
         self.infer_all_video = False
+
+        # These variable need to specify during training/inference
+        self.data_location = None
         self.img_representation = None
         self.model_name = None
         self.img_size = None
-
-        # Current time for saving info
-        self.current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.additional_saving_info = None
 
         # Path to pretrained model weights, if any
         self.pretrained_path = None
+
+        # Current time for saving info
+        self.current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     def print_config(self):
         for key, value in self.__dict__.items():

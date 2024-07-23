@@ -112,7 +112,14 @@ class FullVideoDataset:
         plt.title('Critical prediction over time')
         plt.xlabel('Time (s)')
         plt.ylabel('Prediction')
-        plt.savefig(f'{base_folder}{str(file_name[:-4])}_{config.additional_saving_info}.png')
+
+        # Construct the full path
+        directory = f'{base_folder}{config.model_name}_{config.additional_saving_info}'
+        file_path = f'{directory}/{str(file_name[:-4])}.png'
+
+        # Create the directory if it does not exist
+        os.makedirs(directory, exist_ok=True)
+        plt.savefig(file_path)
 
 
 def unnormalize_img(img):
