@@ -96,7 +96,7 @@ class FullVideoDataset:
             if len(frames) != 15 or frame_idx % 5 != 0:
                 continue
 
-            video_tensor_frame = torch.tensor(np.stack(frames, axis=0))
+            video_tensor_frame = torch.tensor(np.expand_dims(np.stack(frames, axis=0), axis=0))
             with torch.no_grad():
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
