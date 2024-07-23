@@ -92,6 +92,8 @@ def GetConfig():
     parser.add_argument('--pretrained_path', type=str, help='Path to model location',
                         default=None)
     parser.add_argument('--all_frames', action='store_true', help='Do inference for infer video')
+    parser.add_argument('--sample_duration', type=float, help='Duration to sample video',
+                        default=0.5)
 
     args = parser.parse_args()
     model_name = args.model_name
