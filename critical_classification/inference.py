@@ -185,18 +185,8 @@ def inference_with_model(num_frame,
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Inference pipeline")
-    parser.add_argument('--data_location', type=str, help='Path to the data location',
-                        default='critical_classification/critical_dataset/Dashcam_video/')
-    parser.add_argument('--model_name', type=str, help='pytorch model',
-                        default=None)
-    parser.add_argument('--pretrained_path', type=str, help='Path to model location',
-                        default=None)
-    parser.add_argument('--all_frames', action='store_true', help='Do inference for infer video')
 
-    args = parser.parse_args()
-
-    config = GetConfig(args)
+    config = GetConfig()
 
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)

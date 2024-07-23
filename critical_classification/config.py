@@ -1,3 +1,5 @@
+import argparse
+
 import pandas as pd
 from datetime import datetime
 
@@ -81,7 +83,17 @@ class Monocular3DConfig(Config):
         self.additional_saving_info = f'experiment_{self.current_time}'
 
 
-def GetConfig(args):
+def GetConfig():
+    parser = argparse.ArgumentParser(description="Train and/or infer pipeline")
+    parser.add_argument('--data_location', type=str, help='Path to the data location',
+                        default='critical_classification/critical_dataset/Dashcam_video/')
+    parser.add_argument('--model_name', type=str, help='pytorch model',
+                        default=None)
+    parser.add_argument('--pretrained_path', type=str, help='Path to model location',
+                        default=None)
+    parser.add_argument('--all_frames', action='store_true', help='Do inference for infer video')
+
+    args = parser.parse_args()
     model_name = args.model_name
 
     if model_name == 'YOLOv1_video':
