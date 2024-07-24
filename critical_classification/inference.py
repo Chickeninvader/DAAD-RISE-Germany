@@ -95,11 +95,16 @@ class FullVideoDataset:
             if len(frames) != 15 or frame_idx % 5 != 0:
                 continue
 
-            video_tensor_frame = torch.tensor(np.expand_dims(np.stack(frames, axis=0), axis=0))
+            if config.model_name == 'YOLOv1_video':
+                video_tensor_frame = torch.tensor(np.stack(frames, axis=0))
+            elif config.model_name == 'Swin3D':
+                video_tensor_frame = torch.tensor(np.expand_dims(np.stack(frames, axis=0), axis=0))
+            else:
+                raise NotImplementedError()
             with torch.no_grad():
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
-            current_time_list.append(frame_idx / config.FRAME_RATE)
+            current_time_list.append(frame_idx / 30)
 
         cap.release()
         pbar.close()  # Close the progress bar
