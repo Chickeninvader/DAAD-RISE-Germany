@@ -85,6 +85,7 @@ class Monocular3DConfig(Config):
         self.img_size = 224
         self.additional_saving_info = f'experiment_{self.current_time}'
 
+
 class InferConfig(Config):
     def __init__(self,
                  ):
