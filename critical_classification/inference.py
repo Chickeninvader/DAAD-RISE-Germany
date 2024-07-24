@@ -117,7 +117,7 @@ class FullVideoDataset:
         os.makedirs(directory, exist_ok=True)
 
         temp_dict = {
-            'name': f'{config.model_name}_{config.additional_saving_info}',
+            'name': f'{str(file_name[:-4])}',
             'current_time_list': current_time_list,
             'prediction_list': prediction_list
         }
