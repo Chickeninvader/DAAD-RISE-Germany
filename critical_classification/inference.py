@@ -23,7 +23,7 @@ class FullVideoDataset:
         self.img_size = config.img_size
         self.data_location = config.data_location
         self.dataset_name = config.dataset_name
-        self.frame_rate = config.FRAME_RATE
+        self.frame_rate = 30
         self.config = config
 
         self.metadata = self.metadata[self.metadata['train_or_test'] == 'infer']
