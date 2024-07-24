@@ -21,7 +21,7 @@ date
 
 # For training the model
 python critical_classification/training_torch.py \
-  --model_name YOLOv1_video \
+  --model_name Swin3D \
   --data_location /data/nvo/ \
   --image_batch_size 10
 

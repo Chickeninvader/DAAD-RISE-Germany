@@ -383,7 +383,9 @@ def get_loaders(datasets: typing.Dict[str, CriticalDataset],
              for idx in np.where(datasets[split].metadata['label'] == 1, 1, 0)])
         samples_weight = torch.from_numpy(samples_weight)
         samples_weight = samples_weight.double()
-        sampler = torch.utils.data.sampler.WeightedRandomSampler(samples_weight, len(samples_weight))
+
+        # reduce number of sample to 4 for faster evaluation
+        sampler = torch.utils.data.sampler.WeightedRandomSampler(samples_weight, int(len(samples_weight) / 4))
 
         loaders[split] = torch.utils.data.DataLoader(
             dataset=datasets[split],

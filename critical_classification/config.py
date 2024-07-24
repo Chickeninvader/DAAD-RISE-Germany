@@ -61,6 +61,7 @@ class Swin3DConfig(Config):
         # Model-specific configurations
         self.model_name = 'Swin3D'
         self.img_representation = 'CHW'
+        self.lr = 0.00001
         self.img_size = 224
         self.additional_saving_info = f'experiment_{self.current_time}'
 
