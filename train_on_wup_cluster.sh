@@ -2,10 +2,10 @@
 #SBATCH --partition=compute # partition
 #SBATCH --nodes=1  # number of nodes
 #SBATCH --tasks-per-node=1  # number of tasks per node
-#SBATCH --cpus-per-task 16  # number of cpus per task
+#SBATCH --cpus-per-task 2  # number of cpus per task
 #SBATCH --gres=gpu:1 # number of gpus (4 out of 8)
 #SBATCH --mem=10000  # memory pool for all cores (in megabytes, if w/o suffix)
-#SBATCH -t 0-24:00  # time (D-HH:MM)
+#SBATCH -t 0-02:00  # time (D-HH:MM)
 #SBATCH -o /home/nvo/slurm_logs/slurm.%N.%j.out  # STDOUT
 #SBATCH -e /home/nvo/slurm_logs/slurm.%N.%j.err  # STDERR
 # show visible gpus
