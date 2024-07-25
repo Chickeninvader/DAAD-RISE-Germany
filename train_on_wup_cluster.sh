@@ -30,7 +30,7 @@ date
 python critical_classification/inference.py \
   --model_name YOLOv1_video \
   --data_location /data/nvo/ \
-  --pretrained_path critical_classification/save_models/Dall_MYOLOv1_video_lr0.0001_lossBCE_e10_scosine_Aexperiment_20240723_164350_hidden_size_128_lstm_layer_4.pth \
+  --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr1e-05_lossBCE_e10_scosine_Aexperiment_20240724_010605.pth \
   --infer_all_video
 
 

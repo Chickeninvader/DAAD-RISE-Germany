@@ -36,6 +36,13 @@ class Config:
         # Current time for saving info
         self.current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+    def get_file_name(self, num_epochs):
+        file_name = (f"D{self.dataset_name}_M{self.model_name}_lr{self.lr}_loss{self.loss}_e"
+                     f"{num_epochs}_s{self.scheduler}_A{self.additional_saving_info}")
+        save_fig_path = f"critical_classification/output/loss_visualization/{file_name}"
+        save_model_path = f"critical_classification/save_models/{file_name}.pth"
+        return save_fig_path, save_model_path
+
     def print_config(self):
         for key, value in self.__dict__.items():
             print(f"{key}: {value}")

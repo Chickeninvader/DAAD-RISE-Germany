@@ -17,10 +17,33 @@
 module load mamba/latest
 
 # Activate our enviornment
-source activate test1
+source activate daad7
 
 # Change to the directory of our script
 cd /scratch/ngocbach/DAAD-RISE-Germany
 
-#Run the software/python script
-python critical_classification/training_tensorflow.py
+echo Starting Train
+date
+## < Here comes the command to be executed >
+
+# For training the model
+#python critical_classification/training_torch.py \
+#  --model_name Swin3D \
+#  --data_location /data/nvo/ \
+#  --image_batch_size 10
+
+# For visualization
+
+python critical_classification/inference.py \
+  --model_name YOLOv1_video \
+  --data_location /data/nvo/ \
+  --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr1e-05_lossBCE_e10_scosine_Aexperiment_20240724_010605.pth \
+  --infer_all_video
+
+
+# For other purpose
+# download dataset
+#python critical_classification/src/dataset/download_video.py
+
+echo Training complete
+date
