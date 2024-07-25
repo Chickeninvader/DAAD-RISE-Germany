@@ -10,7 +10,6 @@
 #SBATCH -o /home/ngocbach/slurm_logs/slurm.%j.out # file to save job's STDOUT (%j = JobId)
 #SBATCH -e /home/ngocbach/slurm_logs/slurm.%j.err # file to save job's STDERR (%j = JobId)
 #SBATCH --mail-type=ALL # Send an e-mail when a job starts, stops, or fails
-#SBATCH --mail-user="%u@asu.edu"
 #SBATCH --export=NONE   # Purge the job-submitting shell environment
 
 # Load required software
