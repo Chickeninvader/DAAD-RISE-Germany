@@ -49,7 +49,7 @@ def initiate(config: Config):
     elif model_name == 'YOLOv1_image':
         fine_tuner = YOLOv1_image_binary(split_size=14, num_boxes=2, num_classes=13, device=device)
     elif model_name == 'YOLOv1_video':
-        fine_tuner = YOLOv1_video_binary(split_size=14, num_boxes=2, num_classes=13, device=device)
+        fine_tuner = YOLOv1_video_binary(split_size=14, num_boxes=2, num_classes=13, device=device, config=config)
     elif model_name == 'Swin3D':
         fine_tuner = VideoSwinTransformer()
 
