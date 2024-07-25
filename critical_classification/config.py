@@ -50,9 +50,11 @@ class Config:
         elif file_type == 'model':
             return (f"critical_classification/save_models/{file_name}/"
                     f"{file_name}_e{current_epoch}_{additional_info}.pth")
-        elif file_name == 'pickle':
+        elif file_type == 'pickle':
             return f"critical_classification/output/loss_visualization/{file_name}/{file_name}_{additional_info}.pkl"
-        
+        else:
+            raise NotImplementedError()
+
     def print_config(self):
         for key, value in self.__dict__.items():
             print(f"{key}: {value}")

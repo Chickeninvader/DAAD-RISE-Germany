@@ -1,4 +1,3 @@
-import argparse
 import copy
 import os
 import sys
@@ -59,6 +58,7 @@ def batch_learning_and_evaluating(loaders,
                                   fine_tuner: torch.nn.Module,
                                   scheduler: torch.optim.lr_scheduler,
                                   optimizer: torch.optim.Optimizer,
+                                  config: Config,
                                   evaluation: bool = False):
     num_batches = len(loaders)
     batches = tqdm(enumerate(loaders, 0),
@@ -185,6 +185,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                                               device=device,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner,
+                                              config=config,
                                               scheduler=scheduler)
             train_result_dict['acc'].append(train_accuracy)
             train_result_dict['f1'].append(train_f1)
@@ -203,6 +204,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                                               optimizer=optimizer,
                                               fine_tuner=fine_tuner,
                                               scheduler=scheduler,
+                                              config=config,
                                               evaluation=True)
             test_result_dict['acc'].append(test_accuracy)
             test_result_dict['f1'].append(test_f1)
@@ -234,6 +236,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                                   optimizer=optimizer,
                                   fine_tuner=best_fine_tuner,
                                   scheduler=scheduler,
+                                  config=config,
                                   evaluation=True)
 
     print('#' * 100)
