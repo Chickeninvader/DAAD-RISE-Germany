@@ -4,7 +4,7 @@
 #SBATCH -N 1            # number of nodes
 #SBATCH -c 2            # number of cores
 #SBATCH -G a100:1            # Request 1 gpu
-#SBATCH -t 0-0:30:00   # time in d-hh:mm:ss
+#SBATCH -t 1-0:00:00   # time in d-hh:mm:ss
 #SBATCH -p general      # partition
 #SBATCH -q public       # QOS
 #SBATCH -o slurm_logs/slurm.%j.out # file to save job's STDOUT (%j = JobId)
@@ -29,7 +29,6 @@ date
 # For training the model
 python critical_classification/training_torch.py \
   --model_name Swin3D \
-  --data_location /data/nvo/ \
   --image_batch_size 10
 
 # For visualization
