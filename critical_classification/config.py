@@ -6,7 +6,7 @@ from datetime import datetime
 
 class Config:
     def __init__(self,
-                 ):
+                 additional_config=''):
         # Common configurations
         self.device_str = 'cuda:0'
         self.framework = 'torch'
@@ -14,7 +14,7 @@ class Config:
         self.video_batch_size = 4
         self.image_batch_size = 10
         self.loss = 'BCE'
-        self.num_epochs = 10
+        self.num_epochs = 20
         self.lr = 0.0001
         self.scheduler = 'cosine'
         self.save_files = True
@@ -22,6 +22,7 @@ class Config:
         self.sample_duration = self.image_batch_size / 30
         self.metadata = pd.read_excel('critical_classification/critical_dataset/metadata.xlsx')
         self.infer_all_video = False
+        self.additional_config = additional_config
 
         # These variable need to specify during training/inference
         self.data_location = None
@@ -36,13 +37,14 @@ class Config:
         # Current time for saving info
         self.current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    def get_file_name(self, num_epochs):
+    def get_file_name(self, file_type, current_epoch=0, additional_config=''):
         file_name = (f"D{self.dataset_name}_M{self.model_name}_lr{self.lr}_loss{self.loss}_e"
-                     f"{num_epochs}_s{self.scheduler}_A{self.additional_saving_info}")
-        save_fig_path = f"critical_classification/output/loss_visualization/{file_name}"
-        save_model_path = f"critical_classification/save_models/{file_name}.pth"
-        return save_fig_path, save_model_path
-
+                     f"{self.num_epochs}_s{self.scheduler}_A{self.additional_saving_info}")
+        if file_type == 'fig':
+            return f"critical_classification/output/loss_visualization/{file_name}/{file_name}_{additional_config}.png"
+        elif file_type == 'model':
+            return f"critical_classification/save_models/{file_name}/{file_name}_e{current_epoch}_{additional_config}.pth"
+        
     def print_config(self):
         for key, value in self.__dict__.items():
             print(f"{key}: {value}")
@@ -50,21 +52,22 @@ class Config:
 
 class YOLOv1VideoConfig(Config):
     def __init__(self,
-                 ):
-        super().__init__()
+                 additional_config):
+        super().__init__(additional_config)
         # Model-specific configurations
         self.model_name = 'YOLOv1_video'
         self.img_representation = 'CHW'
         self.img_size = 448
         self.video_batch_size = 1
-        hidden_size = 128
-        lstm_layer = 4
-        self.additional_saving_info = f'experiment_{self.current_time}_hidden_size_{hidden_size}_lstm_layer_{lstm_layer}'
+        self.additional_saving_info = f'experiment_{self.current_time}_{additional_config}'
+        if 'no_fc' in additional_config:
+            pass
 
 
 class Swin3DConfig(Config):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,
+                 additional_config):
+        super().__init__(additional_config)
         # Model-specific configurations
         self.model_name = 'Swin3D'
         self.img_representation = 'CHW'
@@ -74,8 +77,9 @@ class Swin3DConfig(Config):
 
 
 class ResNet3DConfig(Config):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,
+                 additional_config):
+        super().__init__(additional_config)
         # Model-specific configurations
         self.model_name = 'ResNet3D'
         self.img_representation = 'CHW'
@@ -84,8 +88,9 @@ class ResNet3DConfig(Config):
 
 
 class Monocular3DConfig(Config):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,
+                 additional_config):
+        super().__init__(additional_config)
         # Model-specific configurations
         self.model_name = 'Monocular3D'
         self.img_representation = 'HWC'
@@ -95,8 +100,8 @@ class Monocular3DConfig(Config):
 
 class InferConfig(Config):
     def __init__(self,
-                 ):
-        super().__init__()
+                 additional_config):
+        super().__init__(additional_config)
         # Model-specific configurations
         self.model_name = None
         self.img_representation = 'CHW'
@@ -116,15 +121,17 @@ def GetConfig():
     parser.add_argument('--infer_all_video', action='store_true', help='Do inference for infer video')
     parser.add_argument('--image_batch_size', type=int, help='Number of frames to sample video',
                         default=15)
+    parser.add_argument('--additional_config', type=str, help='Other necessary arguments, ...',
+                        default='')
 
     args = parser.parse_args()
 
     if args.model_name == 'YOLOv1_video':
-        config = YOLOv1VideoConfig()
+        config = YOLOv1VideoConfig(args.additional_config)
     elif args.model_name == 'Swin3D':
-        config = Swin3DConfig()
+        config = Swin3DConfig(args.additional_config)
     else:
-        config = InferConfig()
+        config = InferConfig(args.additional_config)
 
     config.data_location = args.data_location
     config.image_batch_size = args.image_batch_size

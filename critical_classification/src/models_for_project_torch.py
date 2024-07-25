@@ -1,3 +1,6 @@
+import os
+import sys
+
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -7,6 +10,10 @@ import torchvision
 from transformers import VideoMAEForVideoClassification
 from torch.autograd import Variable
 import torchvision.models as models
+
+sys.path.append(os.getcwd())
+
+from critical_classification.config import Config
 
 
 class YOLOv1(nn.Module):
@@ -237,7 +244,7 @@ class YOLOv1_video_binary(nn.Module):
         cell.
         """
 
-    def __init__(self, split_size, num_boxes, num_classes, device=torch.device('cpu')):
+    def __init__(self, split_size, num_boxes, num_classes, device, config: Config):
         """
         Initializes the neural-net with the parameter values to produce the
         desired predictions.
@@ -254,6 +261,7 @@ class YOLOv1_video_binary(nn.Module):
         self.split_size = split_size
         self.num_boxes = num_boxes
         self.num_classes = num_classes
+        self.config = config
         self.pretrain_base_model_path = 'critical_classification/save_models/YOLO_bdd100k.pt'
         self.category_list = ["other vehicle", "pedestrian", "traffic light", "traffic sign",
                               "truck", "train", "other person", "bus", "car", "rider",
@@ -272,16 +280,23 @@ class YOLOv1_video_binary(nn.Module):
         self.hidden_size = 256  # hidden size of lstm
         self.num_layers = 4  # number of LSTM layers stacked
 
-        self.LSTM = torch.nn.LSTM(input_size=split_size * split_size * (num_classes + num_boxes * 5),
-                                  hidden_size=self.hidden_size,
-                                  num_layers=self.num_layers)
+        if 'no_fc' in config.additional_config:
+            self.LSTM = torch.nn.LSTM(input_size=1024 * split_size * split_size,
+                                      hidden_size=self.hidden_size,
+                                      num_layers=self.num_layers)
+        else:
+            self.LSTM = torch.nn.LSTM(input_size=split_size * split_size * (num_classes + num_boxes * 5),
+                                      hidden_size=self.hidden_size,
+                                      num_layers=self.num_layers)
 
         self.fc = nn.Sequential(
-            nn.Linear(self.hidden_size * self.num_layers, 32),
+            nn.Linear(self.hidden_size * self.num_layers, 256),
             nn.LeakyReLU(0.1, inplace=True),
-            nn.Linear(32, 8),
+            nn.Linear(256, 128),
             nn.LeakyReLU(0.1, inplace=True),
-            nn.Linear(8, 1),
+            nn.Linear(128, 64),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Linear(64, 1),
             nn.Sigmoid()
         )
 
@@ -302,7 +317,9 @@ class YOLOv1_video_binary(nn.Module):
 
         x = self.base_model.darkNet(x)
         x = torch.flatten(x, start_dim=1)
-        x = self.base_model.fc(x)
+
+        if 'no_fc' not in self.config.additional_config:
+            x = self.base_model.fc(x)
 
         x = x.unsqueeze(1)
 

@@ -150,16 +150,14 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     fine_tuner.to(device)
     fine_tuner.train()
 
-    file_name = (f"D{config.dataset_name}_M{config.model_name}_lr{config.lr}_loss{config.loss}_e"
-                 f"{config.num_epochs}_s{config.scheduler}_A{config.additional_saving_info}")
-    save_fig_path = f"critical_classification/output/loss_visualization/{file_name}"
-    save_model_path = f"critical_classification/save_models/{file_name}.pth"
     optimizer = torch.optim.Adam(params=fine_tuner.parameters(),
                                  lr=config.lr)
     if config.scheduler == 'cosine':
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer,
                                                                T_max=int(config.num_epochs / 2),
-                                                               eta_min=1e-07)
+                                                               # eta_min=1e-07,
+                                                               eta_min=config.lr * 10
+                                                               )
     elif config.scheduler == 'step':
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=2, gamma=0.5)
     elif config.scheduler == 'exponential':
@@ -181,10 +179,6 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     test_result_dict = {'acc': [], 'f1': [], 'loss': [], 'lr': []}
     max_f1_score = 0
 
-    print(utils.green_text(f'save best fine tuner!'))
-    torch.save(best_fine_tuner.state_dict(),
-               save_model_path)
-
     for epoch in range(config.num_epochs):
         with ((context_handlers.TimeWrapper())):
             print('#' * 50 + f'train epoch {epoch}' + '#' * 50)
@@ -198,7 +192,9 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             train_result_dict['f1'].append(train_f1)
             train_result_dict['loss'].append(train_total_loss)
             train_result_dict['lr'].append(train_lr)
-            utils.plot_figure(train_result_dict, f'{save_fig_path}_train.png', train_or_test='train')
+            utils.plot_figure(train_result_dict,
+                              config.get_file_name(current_epoch=0, file_type='fig', additional_info='train')
+                              , train_or_test='train')
             # Testing
             print('#' * 50 + f'test epoch {epoch}' + '#' * 50)
             optimizer, fine_tuner, test_accuracy, test_f1, test_total_loss, test_lr = \
@@ -212,15 +208,22 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             test_result_dict['f1'].append(test_f1)
             test_result_dict['loss'].append(test_total_loss)
             test_result_dict['lr'].append(test_lr)
-            utils.plot_figure(test_result_dict, f'{save_fig_path}_test.png', train_or_test='test')
+            utils.plot_figure(test_result_dict,
+                              config.get_file_name(current_epoch=0, file_type='fig', additional_info='test'),
+                              train_or_test='test')
+
+            if epoch % 2 == 0:
+                print(utils.blue_text(f'save current fine tuner at epoch {epoch}!'))
+                torch.save(best_fine_tuner.state_dict(),
+                           config.get_file_name(current_epoch=0, file_type='model'))
 
             if max_f1_score < test_f1:
                 max_f1_score = test_f1
                 best_fine_tuner = copy.deepcopy(fine_tuner)
-                print(utils.green_text(f'save best fine tuner!'))
+                print(utils.green_text(f'save best fine tuner at epoch {epoch}!'))
 
                 torch.save(best_fine_tuner.state_dict(),
-                           save_model_path)
+                           config.get_file_name(current_epoch=epoch, file_type='model', additional_info='best'))
 
     # Final model
     print('#' * 50 + f'test best fine_tuner' + '#' * 50)
