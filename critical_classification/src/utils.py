@@ -1,4 +1,5 @@
 import os
+import pickle
 import sys
 import pathlib
 import datetime
@@ -96,7 +97,7 @@ def format_integer(n):
         return f"{sign}{a} * 10^{b}"
 
 
-def plot_figure(data_dict, save_path: str, train_or_test: str):
+def plot_figure_and_save_dict(data_dict, save_fig_path: str, save_dict_path: str, train_or_test: str):
     """
     Plots and saves a graph of multiple values over epochs.
 
@@ -115,8 +116,11 @@ def plot_figure(data_dict, save_path: str, train_or_test: str):
     plt.title(f'Metrics over Epochs on {train_or_test}')
     plt.legend()
     plt.grid(True)
-    plt.savefig(save_path)
+    plt.savefig(save_fig_path)
     plt.close()
+
+    with open(save_dict_path, 'wb') as file:
+        pickle.dump(data_dict, file)
 
 
 def _format_time(seconds):

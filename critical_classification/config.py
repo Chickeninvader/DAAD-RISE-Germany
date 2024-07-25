@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import pandas as pd
 from datetime import datetime
@@ -37,13 +38,20 @@ class Config:
         # Current time for saving info
         self.current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    def get_file_name(self, file_type, current_epoch=0, additional_config=''):
+    def get_file_name(self, file_type, current_epoch=0, additional_info=''):
         file_name = (f"D{self.dataset_name}_M{self.model_name}_lr{self.lr}_loss{self.loss}_e"
                      f"{self.num_epochs}_s{self.scheduler}_A{self.additional_saving_info}")
+
+        os.makedirs(f'critical_classification/output/loss_visualization/{file_name}/', exist_ok=True)
+        os.makedirs(f'critical_classification/save_models/{file_name}/', exist_ok=True)
+
         if file_type == 'fig':
-            return f"critical_classification/output/loss_visualization/{file_name}/{file_name}_{additional_config}.png"
+            return f"critical_classification/output/loss_visualization/{file_name}/{file_name}_{additional_info}.png"
         elif file_type == 'model':
-            return f"critical_classification/save_models/{file_name}/{file_name}_e{current_epoch}_{additional_config}.pth"
+            return (f"critical_classification/save_models/{file_name}/"
+                    f"{file_name}_e{current_epoch}_{additional_info}.pth")
+        elif file_name == 'pickle':
+            return f"critical_classification/output/loss_visualization/{file_name}/{file_name}_{additional_info}.pkl"
         
     def print_config(self):
         for key, value in self.__dict__.items():

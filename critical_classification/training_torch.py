@@ -13,7 +13,6 @@ from tqdm import tqdm
 import warnings
 import torch.multiprocessing
 
-
 sys.path.append(os.getcwd())
 
 from critical_classification.src import utils, context_handlers, backbone_pipeline
@@ -95,7 +94,6 @@ def batch_learning_and_evaluating(loaders,
 
             if Y_pred.ndim == 1:
                 Y_pred = Y_pred.unsqueeze(dim=1)
-
 
             predictions.append(torch.squeeze(torch.where(Y_pred > 0.5, 1, 0)).detach().to('cpu'))
             ground_truths.append(Y_true.detach().to('cpu'))
@@ -192,9 +190,11 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             train_result_dict['f1'].append(train_f1)
             train_result_dict['loss'].append(train_total_loss)
             train_result_dict['lr'].append(train_lr)
-            utils.plot_figure(train_result_dict,
-                              config.get_file_name(current_epoch=0, file_type='fig', additional_info='train')
-                              , train_or_test='train')
+            utils.plot_figure_and_save_dict(
+                train_result_dict,
+                config.get_file_name(current_epoch=0, file_type='fig', additional_info='train'),
+                config.get_file_name(current_epoch=0, file_type='pickle', additional_info='train'),
+                train_or_test='train')
             # Testing
             print('#' * 50 + f'test epoch {epoch}' + '#' * 50)
             optimizer, fine_tuner, test_accuracy, test_f1, test_total_loss, test_lr = \
@@ -208,9 +208,11 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             test_result_dict['f1'].append(test_f1)
             test_result_dict['loss'].append(test_total_loss)
             test_result_dict['lr'].append(test_lr)
-            utils.plot_figure(test_result_dict,
-                              config.get_file_name(current_epoch=0, file_type='fig', additional_info='test'),
-                              train_or_test='test')
+            utils.plot_figure_and_save_dict(
+                test_result_dict,
+                config.get_file_name(current_epoch=0, file_type='fig', additional_info='test'),
+                config.get_file_name(current_epoch=0, file_type='pickle', additional_info='test'),
+                train_or_test='test')
 
             if epoch % 2 == 0:
                 print(utils.blue_text(f'save current fine tuner at epoch {epoch}!'))
@@ -254,6 +256,5 @@ def run_combined_fine_tuning_pipeline(config: Config):
 
 
 if __name__ == '__main__':
-
     config = GetConfig()
     run_combined_fine_tuning_pipeline(config)
