@@ -24,7 +24,12 @@ python critical_classification/training_torch.py \
   --model_name YOLOv1_video \
   --data_location /data/nvo/ \
   --image_batch_size 10 \
+  --additional_config train_from_scratch
+
+# For YOLOv1_video
 #  --additional_config no_fc
+# For Swin3D:
+#  --additional_config train_from_scratch
 
 # For visualization
 
