@@ -11,6 +11,8 @@ from transformers import VideoMAEForVideoClassification
 from torch.autograd import Variable
 import torchvision.models as models
 
+from critical_classification.src import utils
+
 sys.path.append(os.getcwd())
 
 from critical_classification.config import Config
@@ -429,6 +431,7 @@ class VideoSwinTransformer(torch.nn.Module):
         if 'train_from_scratch' in config.additional_config:
             # train from scratch
             self.model = models.video.swin3d_b(dropout=0.1)
+            print(utils.blue_text('train model from scratch'))
         else:
             self.model = models.video.swin3d_b(weights=models.video.Swin3D_B_Weights.KINETICS400_V1)
 
