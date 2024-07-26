@@ -423,9 +423,14 @@ class VideoMAE(torch.nn.Module):
 
 
 class VideoSwinTransformer(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__()
-        self.model = models.video.swin3d_b(weights=models.video.Swin3D_B_Weights.KINETICS400_V1)
+        # pass dropout 0.1
+        if 'train_from_scratch' in config.additional_config:
+            # train from scratch
+            self.model = models.video.swin3d_b(dropout=0.1)
+        else:
+            self.model = models.video.swin3d_b(weights=models.video.Swin3D_B_Weights.KINETICS400_V1)
 
         # Suppose the final layer is named 'head'
         num_features = self.model.head.in_features
