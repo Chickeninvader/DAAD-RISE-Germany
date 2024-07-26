@@ -39,7 +39,7 @@ class Config:
         self.device_str = 'cuda:0'
         self.framework = 'torch'
         self.dataset_name = 'all'
-        self.video_batch_size = 4
+        self.video_batch_size = 8
         self.image_batch_size = 10
         self.loss = 'BCE'
         self.num_epochs = 20
