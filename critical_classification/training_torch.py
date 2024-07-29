@@ -11,6 +11,7 @@ import typing
 from tqdm import tqdm
 import warnings
 import torch.multiprocessing
+import wandb
 
 sys.path.append(os.getcwd())
 
@@ -173,8 +174,8 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
     if all_on_device:
         print(f"All parameters are on {device}")
 
-    train_result_dict = {'acc': [], 'f1': [], 'loss': [], 'lr': []}
-    test_result_dict = {'acc': [], 'f1': [], 'loss': [], 'lr': []}
+    # train_result_dict = {'acc': [], 'f1': [], 'loss': [], 'lr': []}
+    # test_result_dict = {'acc': [], 'f1': [], 'loss': [], 'lr': []}
     max_f1_score = 0
 
     for epoch in range(config.num_epochs):
@@ -187,15 +188,25 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                                               fine_tuner=fine_tuner,
                                               config=config,
                                               scheduler=scheduler)
-            train_result_dict['acc'].append(train_accuracy)
-            train_result_dict['f1'].append(train_f1)
-            train_result_dict['loss'].append(train_total_loss)
-            train_result_dict['lr'].append(train_lr)
-            utils.plot_figure_and_save_dict(
-                train_result_dict,
-                config.get_file_name(current_epoch=0, file_type='fig', additional_info='train'),
-                config.get_file_name(current_epoch=0, file_type='pickle', additional_info='train'),
-                train_or_test='train')
+            # train_result_dict['acc'].append(train_accuracy)
+            # train_result_dict['f1'].append(train_f1)
+            # train_result_dict['loss'].append(train_total_loss)
+            # train_result_dict['lr'].append(train_lr)
+            # utils.plot_figure_and_save_dict(
+            #     train_result_dict,
+            #     config.get_file_name(current_epoch=0, file_type='fig', additional_info='train'),
+            #     config.get_file_name(current_epoch=0, file_type='pickle', additional_info='train'),
+            #     train_or_test='train')
+
+            # Log training metrics to W&B
+            wandb.log({
+                'train/accuracy': train_accuracy,
+                'train/f1': train_f1,
+                'train/loss': train_total_loss,
+                'train/lr': train_lr,
+                'epoch': epoch
+            })
+
             # Testing
             print('#' * 50 + f'test epoch {epoch}' + '#' * 50)
             optimizer, fine_tuner, test_accuracy, test_f1, test_total_loss, test_lr = \
@@ -206,15 +217,24 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
                                               scheduler=scheduler,
                                               config=config,
                                               evaluation=True)
-            test_result_dict['acc'].append(test_accuracy)
-            test_result_dict['f1'].append(test_f1)
-            test_result_dict['loss'].append(test_total_loss)
-            test_result_dict['lr'].append(test_lr)
-            utils.plot_figure_and_save_dict(
-                test_result_dict,
-                config.get_file_name(current_epoch=0, file_type='fig', additional_info='test'),
-                config.get_file_name(current_epoch=0, file_type='pickle', additional_info='test'),
-                train_or_test='test')
+            # test_result_dict['acc'].append(test_accuracy)
+            # test_result_dict['f1'].append(test_f1)
+            # test_result_dict['loss'].append(test_total_loss)
+            # test_result_dict['lr'].append(test_lr)
+            # utils.plot_figure_and_save_dict(
+            #     test_result_dict,
+            #     config.get_file_name(current_epoch=0, file_type='fig', additional_info='test'),
+            #     config.get_file_name(current_epoch=0, file_type='pickle', additional_info='test'),
+            #     train_or_test='test')
+
+            # Log testing metrics to W&B
+            wandb.log({
+                'test/accuracy': test_accuracy,
+                'test/f1': test_f1,
+                'test/loss': test_total_loss,
+                'test/lr': test_lr,
+                'epoch': epoch
+            })
 
             if epoch % 2 == 0:
                 print(utils.blue_text(f'save current fine tuner at epoch {epoch}!'))
@@ -224,6 +244,7 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
             if max_f1_score < test_f1:
                 max_f1_score = test_f1
                 best_fine_tuner = copy.deepcopy(fine_tuner)
+                wandb.log({"best_f1_score": max_f1_score})
                 print(utils.green_text(f'save best fine tuner at epoch {epoch}!'))
 
                 torch.save(best_fine_tuner.state_dict(),
@@ -245,6 +266,15 @@ def fine_tune_combined_model(fine_tuner: torch.nn.Module,
 
 
 def run_combined_fine_tuning_pipeline(config: Config):
+    # start a new wandb run to track this script
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="DAAD RISE Germany",
+
+        # track hyperparameters and run metadata
+        config=config.get_config(),
+    )
+
     fine_tuner, loaders, device = (
         backbone_pipeline.initiate(config)
     )

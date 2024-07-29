@@ -93,6 +93,9 @@ class Config:
         else:
             raise NotImplementedError()
 
+    def get_config(self):
+        return {key: value for key, value in self.__dict__.items() if key != 'metadata'}
+
     def print_config(self):
         """Print the configuration settings."""
         for key, value in self.__dict__.items():
@@ -134,7 +137,6 @@ class Swin3DConfig(Config):
         # Model-specific configurations
         self.model_name = 'Swin3D'
         self.img_representation = 'CHW'
-        self.lr = 0.00001
         self.img_size = 224
         self.additional_saving_info = f'experiment_{self.current_time}'
 
