@@ -299,7 +299,6 @@ class YOLOv1_video_binary(nn.Module):
             nn.Linear(128, 64),
             nn.LeakyReLU(0.1, inplace=True),
             nn.Linear(64, 1),
-            nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -389,7 +388,6 @@ class ResNet3D(torch.nn.Module):
             nn.Linear(64, 8),  # Second layer
             nn.LeakyReLU(0.1),  # Leaky ReLU
             nn.Linear(8, 1),  # Output layer
-            nn.Sigmoid()
         )
         self.output_layer.apply(init_weights)
 
@@ -440,11 +438,10 @@ class VideoSwinTransformer(torch.nn.Module):
 
         # Replace the final layer
         self.model.head = torch.nn.Linear(num_features, 1)
-        self.sigmoid = torch.nn.Sigmoid()
 
     def forward(self, x):
         x = torch.permute(x, (0, 2, 1, 3, 4))
-        return self.sigmoid(self.model(x))
+        return self.model(x)
 
 
 class DummyModel(nn.Module):
