@@ -5,7 +5,7 @@ from dash import dcc, html
 import plotly.graph_objs as go
 import pandas as pd
 
-file_name = '/Users/khoavo2003/PycharmProjects/DAAD-RISE-Germany/critical_classification/output/Swin3D_experiment_20240724_235746/Rettungsgassenmissbrauch verrücktes Überholen und kaputter LKW DDG Dashcam Germany  284.pkl'
+file_name = '/critical_classification/output/inference_results/Swin3D_experiment_20240724_235746/Rettungsgassenmissbrauch verrücktes Überholen und kaputter LKW DDG Dashcam Germany  284.pkl'
 
 with open(file_name, 'rb') as file:
     loaded_list = pickle.load(file)
