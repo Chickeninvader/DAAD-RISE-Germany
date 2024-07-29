@@ -27,7 +27,13 @@ date
 # For training the model
 python critical_classification/training_torch.py \
   --model_name Swin3D \
-  --image_batch_size 10
+  --image_batch_size 10 \
+  --additional_config train_from_scratch
+
+# For YOLOv1_video
+#  --additional_config no_fc
+# For Swin3D:
+#  --additional_config train_from_scratch
 
 # For visualization
 
