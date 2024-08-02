@@ -40,6 +40,7 @@ date
 python critical_classification/inference.py \
   --model_name Swin3D \
   --data_location /data/nvo/ \
+  --image_batch_size 10 \
   --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_053945/Dall_MSwin3D_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_053945_e14_best.pth \
   --infer_all_video
 

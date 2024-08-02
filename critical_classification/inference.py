@@ -57,7 +57,7 @@ class FullVideoDataset:
                               idx: int,
                               config: Config,
                               device: torch.device,
-                              base_folder: str = 'critical_classification/output/inference_results',
+                              base_folder: str = 'critical_classification/output/inference_results/',
                               ):
         video_path = self.metadata['full_path'][idx]
         file_name = self.metadata['path'][idx]
