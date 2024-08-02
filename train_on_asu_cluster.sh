@@ -25,10 +25,10 @@ date
 ## < Here comes the command to be executed >
 
 # For training the model
-python critical_classification/training_torch.py \
-  --model_name Swin3D \
-  --image_batch_size 10 \
-  --additional_config train_from_scratch
+#python critical_classification/training_torch.py \
+#  --model_name Swin3D \
+#  --image_batch_size 10 \
+#  --additional_config train_from_scratch
 
 # For YOLOv1_video
 #  --additional_config no_fc
@@ -37,11 +37,11 @@ python critical_classification/training_torch.py \
 
 # For visualization
 
-#python critical_classification/inference.py \
-#  --model_name YOLOv1_video \
-#  --data_location /data/nvo/ \
-#  --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr1e-05_lossBCE_e10_scosine_Aexperiment_20240724_010605.pth \
-#  --infer_all_video
+python critical_classification/inference.py \
+  --model_name Swin3D \
+  --data_location /data/nvo/ \
+  --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_053945/Dall_MSwin3D_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_053945_e14_best.pth \
+  --infer_all_video
 
 
 # For other purpose

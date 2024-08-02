@@ -57,7 +57,7 @@ class FullVideoDataset:
                               idx: int,
                               config: Config,
                               device: torch.device,
-                              base_folder: str = 'critical_classification/output/',
+                              base_folder: str = 'critical_classification/output/inference_results',
                               ):
         video_path = self.metadata['full_path'][idx]
         file_name = self.metadata['path'][idx]
@@ -74,7 +74,7 @@ class FullVideoDataset:
 
         cap.set(cv2.CAP_PROP_POS_MSEC, 0)
 
-        frames = deque(maxlen=15)
+        frames = deque(maxlen=config.image_batch_size)
         ret = True
         frame_idx = 0
         prediction_list = []
@@ -92,7 +92,7 @@ class FullVideoDataset:
             frames.append(frame)
             pbar.update(1)  # Update the progress bar
 
-            if len(frames) != 15 or frame_idx % 5 != 0:
+            if len(frames) != config.image_batch_size or frame_idx % 5 != 0:
                 continue
 
             if config.model_name == 'YOLOv1_video':
