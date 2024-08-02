@@ -44,6 +44,7 @@ python critical_classification/inference.py \
   --model_name YOLOv1_video \
   --data_location /data/nvo/ \
   --image_batch_size 10 \
+  --additional_config no_fc
   --pretrained_path critical_classification/save_models/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143712_no_fc/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143712_no_fc_e10_best.pth \
   --infer_all_video
 
