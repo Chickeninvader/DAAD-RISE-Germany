@@ -20,11 +20,11 @@ date
 ## < Here comes the command to be executed >
 
 # For training the model
-python critical_classification/training_torch.py \
-  --model_name YOLOv1_video \
-  --data_location /data/nvo/ \
-  --image_batch_size 10 \
-  --additional_config no_fc
+#python critical_classification/training_torch.py \
+#  --model_name YOLOv1_video \
+#  --data_location /data/nvo/ \
+#  --image_batch_size 10 \
+#  --additional_config no_fc
 
 # For YOLOv1_video
 #  --additional_config no_fc
@@ -33,12 +33,19 @@ python critical_classification/training_torch.py \
 
 # For visualization
 
+python critical_classification/inference.py \
+  --model_name YOLOv1_video \
+  --data_location /data/nvo/ \
+  --image_batch_size 10 \
+  --pretrained_path critical_classification/save_models/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143640_/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143640__e19_best.pth \
+  --infer_all_video
+
 #python critical_classification/inference.py \
 #  --model_name YOLOv1_video \
 #  --data_location /data/nvo/ \
-#  --pretrained_path critical_classification/save_models/Dall_MSwin3D_lr1e-05_lossBCE_e10_scosine_Aexperiment_20240724_010605.pth \
+#  --image_batch_size 10 \
+#  --pretrained_path critical_classification/save_models/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143712_no_fc/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143712_no_fc_e10_best.pth \
 #  --infer_all_video
-
 
 # For other purpose
 # download dataset
