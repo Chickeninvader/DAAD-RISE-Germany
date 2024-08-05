@@ -110,7 +110,7 @@ class FullVideoDataset:
         pbar.close()  # Close the progress bar
 
         # Construct the full path
-        directory = f'{base_folder}{config.model_name}_{config.additional_saving_info}'
+        directory = f'{base_folder}{config.model_name}_{config.additional_config}'
         file_path = f'{directory}/{str(file_name[:-4])}.pkl'
 
         # Create the directory if it does not exist

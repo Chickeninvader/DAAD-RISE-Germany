@@ -9,16 +9,16 @@ import pandas as pd
 # Define folder names and common file name
 folder_names = [
     'Swin3D_experiment_20240802_043855',
-    'Swin3D_experiment_20240724_235746'
+    'YOLOv1_video_experiment_20240802_134348_',
+    'YOLOv1_video_experiment_20240802_135545_no_fc'
 ]
-common_file_name = 'cd2af7d8-a65bb530.pkl'
+common_file_name = 'Von heftigem Ausweichen Stress und Radfahrer auf der Autobahn DDG Dashcam Germany  288.pkl'
 
 # Create a dictionary to store the data with labels
 data = {
     'Swin3D': folder_names[0] + '/' + common_file_name,
-    'Swin3D_past': folder_names[1] + '/' + common_file_name,
-    # 'YOLOv1_video': folder_names[1] + '/' + common_file_name,
-    # 'YOLOv1_video_no_fc': folder_names[2] + '/' + common_file_name
+    'YOLOv1_video': folder_names[1] + '/' + common_file_name,
+    'YOLOv1_video_no_fc': folder_names[2] + '/' + common_file_name
 }
 
 
@@ -36,7 +36,10 @@ for label, file_path in data.items():
         loaded_list = pickle.load(file)
 
     current_time_list = loaded_list['current_time_list']
-    prediction_list = sigmoid(np.array(loaded_list['prediction_list']))
+    if 'past' not in label:
+        prediction_list = sigmoid(np.array(loaded_list['prediction_list']))
+    else:
+        prediction_list = np.array(loaded_list['prediction_list'])
 
     df = pd.DataFrame({
         'time': current_time_list,
@@ -50,8 +53,15 @@ for label, file_path in data.items():
 # Combine all data frames
 combined_df = pd.concat(data_frames, ignore_index=True)
 
+# Calculate the total duration and set initial range
+total_duration = combined_df['time'].max()
+initial_range = [0, min(10, total_duration // 10)]  # Adjust initial range as 10% of the video or up to 10 seconds
+dtick = max(1, total_duration // 20)  # Adjust dtick dynamically
+marks = int(total_duration // 20)
+
 # Initialize the Dash app
 app = dash.Dash(__name__)
+
 
 # Layout of the app
 app.layout = html.Div([
@@ -61,8 +71,7 @@ app.layout = html.Div([
         min=combined_df['time'].min(),
         max=combined_df['time'].max(),
         step=1,
-        value=[5, 10],
-        marks={i: str(i) for i in range(int(combined_df['time'].min()), int(combined_df['time'].max()) + 1, 5)},
+        marks={i: str(i) for i in range(int(combined_df['time'].min()), int(combined_df['time'].max()) + 1, marks)},
         tooltip={"placement": "bottom", "always_visible": True}
     )
 ])
@@ -88,9 +97,9 @@ def update_graph(selected_range):
         title='Predictions Over Time',
         xaxis_title='Time (s)',
         yaxis_title='Prediction',
-        xaxis=dict(tickmode='linear', tick0=0, dtick=1),
+        xaxis=dict(tickmode='linear', tick0=0, dtick=dtick),
         yaxis=dict(range=[0, 1]),
-        width=400,
+        width=800,
         height=400
     )
 
