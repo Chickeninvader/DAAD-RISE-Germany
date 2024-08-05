@@ -33,12 +33,12 @@ date
 
 # For visualization
 
-#python critical_classification/inference.py \
-#  --model_name YOLOv1_video \
-#  --data_location /data/nvo/ \
-#  --image_batch_size 10 \
-#  --pretrained_path critical_classification/save_models/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143640_/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143640__e19_best.pth \
-#  --infer_all_video
+python critical_classification/inference.py \
+  --model_name YOLOv1_video \
+  --data_location /data/nvo/ \
+  --image_batch_size 10 \
+  --pretrained_path critical_classification/save_models/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143640_/Dall_MYOLOv1_video_lr0.0001_lossBCE_e20_scosine_Aexperiment_20240729_143640__e19_best.pth \
+  --infer_all_video
 
 python critical_classification/inference.py \
   --model_name YOLOv1_video \
