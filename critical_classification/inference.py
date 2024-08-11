@@ -104,7 +104,7 @@ class FullVideoDataset:
             with torch.no_grad():
                 prediction_list.append(float(fine_tuner(video_tensor_frame.to(device))))
 
-            current_time_list.append(frame_idx / 30)
+            current_time_list.append(frame_idx / 30 if 'Car_crash' not in video_path else frame_idx / 10)
 
         cap.release()
         pbar.close()  # Close the progress bar
