@@ -6,7 +6,6 @@ This project implements a binary classification model for predicting traffic acc
 ## Features
 - Video-based traffic accident classification
 - Support for multiple deep learning architectures
-- Real-time inference capabilities
 - Visualization tools for model predictions
 
 ## Models
