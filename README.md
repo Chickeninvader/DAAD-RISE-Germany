@@ -66,7 +66,7 @@ The project includes SLURM scripts for HPC environments:
 
 GPU: A100, Time allocation: 1 day
 
-For more detail please refer to the presentation
+For more detail please refer to the report
 
 ## Future Work
 
