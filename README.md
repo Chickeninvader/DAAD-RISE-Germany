@@ -1,7 +1,7 @@
 # Traffic Accident Classification Project
 
 ## Overview
-This project implements a binary classification model for predicting traffic accidents from video data, achieving a 0.7 F1 score. The model can be used to automatically collect and classify traffic accident data, particularly focusing on ego-vehicle (first-person perspective) scenarios.
+This project implements a binary classification model for predicting traffic accidents from video data, achieving a 0.75 F1 score. The model can be used to automatically collect and classify traffic accident data, particularly focusing on ego-vehicle (first-person perspective) scenarios.
 
 ## Features
 - Video-based traffic accident classification
